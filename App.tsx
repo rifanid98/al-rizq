@@ -202,7 +202,8 @@ const App: React.FC = () => {
         setIsSearching(false); setSearchQuery(''); setShowHistory(false); setSuggestions([]);
         addToHistory(manualAddress);
       } else {
-        const pos: any = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, { timeout: 10000 }));
+        const options = { timeout: 15000, enableHighAccuracy: false, maximumAge: 60000 };
+        const pos: any = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, options));
         const schedule = await fetchPrayerTimes({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setState(prev => ({ ...prev, location: { lat: pos.coords.latitude, lng: pos.coords.longitude }, schedule, isLoading: false }));
       }
@@ -210,7 +211,8 @@ const App: React.FC = () => {
       console.error(err);
       let errorMessage = 'Gagal mengambil jadwal sholat.';
       if (err.code === 1) errorMessage = 'Izin lokasi ditolak. Silakan cari lokasi secara manual melalui tombol di atas.';
-      else if (err.code === 3) errorMessage = 'GPS tidak merespon. Silakan gunakan pencarian manual.';
+      else if (err.code === 2) errorMessage = 'Lokasi tidak tersedia. Pastikan GPS aktif atau gunakan pencarian manual.';
+      else if (err.code === 3) errorMessage = 'Waktu pengambilan lokasi habis. Silakan gunakan pencarian manual.';
 
       setState(prev => ({ ...prev, isLoading: false, error: errorMessage }));
       if (!manualAddress) setIsSearching(true);
@@ -401,45 +403,47 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 lg:gap-3">
-            <button onClick={() => setIsSearching(!isSearching)} className="flex-1 lg:flex-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden">
-              <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-              <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[120px] lg:max-w-[150px]">{state.schedule?.location || 'Cari lokasi...'}</span>
-              <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isSearching ? 'rotate-90' : ''}`} />
-            </button>
-            <Button
-              variant="ghost"
-              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
-              onClick={() => getLocationAndSchedule()}
-              isLoading={state.isLoading && !isSearching}
-              title="Perbarui Jadwal Sholat"
-            >
-              <RefreshCw className={`w-4 h-4 ${state.isLoading ? 'animate-spin' : ''}`} />
-            </Button>
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 lg:gap-3 w-full md:w-auto">
+            <div className="flex gap-2 w-full md:w-auto">
+              <button onClick={() => setIsSearching(!isSearching)} className="flex-1 md:flex-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden min-w-0">
+                <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1">{state.schedule?.location || 'Cari lokasi...'}</span>
+                <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isSearching ? 'rotate-90' : ''}`} />
+              </button>
+              <Button
+                variant="ghost"
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5"
+                onClick={() => getLocationAndSchedule()}
+                isLoading={state.isLoading && !isSearching}
+                title="Perbarui Jadwal Sholat"
+              >
+                <RefreshCw className={`w-4 h-4 ${state.isLoading ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
 
             {state.user && (
-              <>
+              <div className="flex gap-2 w-full md:w-auto justify-stretch">
                 <Button
                   variant="ghost"
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2"
+                  className="flex-1 md:flex-none rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center gap-2 p-2.5"
                   onClick={handleUpload}
                   isLoading={state.isSyncing && !state.isLoading}
                   title="Upload Riwayat ke Cloud"
                 >
                   <CloudUpload className="w-4 h-4" />
-                  <span className="hidden lg:inline text-xs font-bold">Upload</span>
+                  <span className="text-xs font-bold md:hidden lg:inline">Upload</span>
                 </Button>
                 <Button
                   variant="ghost"
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2"
+                  className="flex-1 md:flex-none rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center gap-2 p-2.5"
                   onClick={handleDownload}
                   isLoading={state.isSyncing && !state.isLoading}
                   title="Download Riwayat dari Cloud"
                 >
                   <CloudDownload className="w-4 h-4" />
-                  <span className="hidden lg:inline text-xs font-bold">Download</span>
+                  <span className="text-xs font-bold md:hidden lg:inline">Download</span>
                 </Button>
-              </>
+              </div>
             )}
           </div>
         </header>
