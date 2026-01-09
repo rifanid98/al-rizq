@@ -25,12 +25,13 @@ import {
   Sun,
   Monitor,
   AlertCircle,
-  Lock
+  Lock,
+  CloudDownload
 } from 'lucide-react';
 import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile } from './types';
 import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS } from './constants';
 import { fetchPrayerTimes, searchLocations } from './services/prayerService';
-import { syncHistoryWithCloud, shouldAutoSync } from './services/syncService';
+import { uploadToCloud, downloadFromCloud, shouldAutoSync } from './services/syncService';
 import { getCurrentTimeStr, calculateDelay, isLate, formatDate, isTimePassed } from './utils/helpers';
 import { Dashboard } from './components/Dashboard';
 import { Button } from './components/ui/Button';
@@ -239,34 +240,39 @@ const App: React.FC = () => {
     if (savedHistory) setLocationHistory(JSON.parse(savedHistory));
   }, [getLocationAndSchedule]);
 
-  const handleSyncData = useCallback(async () => {
+  const handleUpload = useCallback(async () => {
     if (!state.user) return;
-
     setState(prev => ({ ...prev, isSyncing: true }));
-    const localLastUpdated = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_UPDATED) || '0');
     try {
-      const result = await syncHistoryWithCloud(state.logs, localLastUpdated);
-
-      if (result.status === 'synced_from_cloud') {
-        setState(prev => ({ ...prev, logs: result.logs }));
-        localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(result.logs));
-      }
-
-      localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, result.lastUpdated.toString());
-      localStorage.setItem(STORAGE_KEYS.LAST_SYNC, Date.now().toString());
+      const timestamp = await uploadToCloud(state.logs);
+      localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, timestamp.toString());
+      localStorage.setItem(STORAGE_KEYS.LAST_SYNC, timestamp.toString());
     } catch (err) {
-      console.error('History Sync failed:', err);
+      console.error('Upload failed:', err);
     } finally {
       setState(prev => ({ ...prev, isSyncing: false }));
     }
   }, [state.user, state.logs]);
 
-  // Auto-sync effect (once a day if logged in)
-  useEffect(() => {
-    if (state.user && shouldAutoSync()) {
-      handleSyncData();
+  const handleDownload = useCallback(async () => {
+    if (!state.user) return;
+    setState(prev => ({ ...prev, isSyncing: true }));
+    try {
+      const result = await downloadFromCloud();
+      if (result) {
+        setState(prev => ({ ...prev, logs: result.logs }));
+        localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(result.logs));
+        localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, result.lastUpdated.toString());
+        localStorage.setItem(STORAGE_KEYS.LAST_SYNC, Date.now().toString());
+      }
+    } catch (err) {
+      console.error('Download failed:', err);
+    } finally {
+      setState(prev => ({ ...prev, isSyncing: false }));
     }
-  }, [state.user, handleSyncData]);
+  }, [state.user]);
+
+  // Manual sync only as requested
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(state.logs));
@@ -405,16 +411,38 @@ const App: React.FC = () => {
             </button>
             <Button
               variant="ghost"
-              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2"
-              onClick={() => {
-                getLocationAndSchedule();
-                if (state.user) handleSyncData();
-              }}
-              isLoading={(state.isLoading || state.isSyncing) && !isSearching}
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
+              onClick={() => getLocationAndSchedule()}
+              isLoading={state.isLoading && !isSearching}
+              title="Perbarui Jadwal Sholat"
             >
-              <RefreshCw className={`w-4 h-4 ${(state.isLoading || state.isSyncing) ? 'animate-spin' : ''}`} />
-              <span className="hidden lg:inline text-xs font-bold">Sinkron</span>
+              <RefreshCw className={`w-4 h-4 ${state.isLoading ? 'animate-spin' : ''}`} />
             </Button>
+
+            {state.user && (
+              <>
+                <Button
+                  variant="ghost"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2"
+                  onClick={handleUpload}
+                  isLoading={state.isSyncing && !state.isLoading}
+                  title="Upload Riwayat ke Cloud"
+                >
+                  <CloudUpload className="w-4 h-4" />
+                  <span className="hidden lg:inline text-xs font-bold">Upload</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2"
+                  onClick={handleDownload}
+                  isLoading={state.isSyncing && !state.isLoading}
+                  title="Download Riwayat dari Cloud"
+                >
+                  <CloudDownload className="w-4 h-4" />
+                  <span className="hidden lg:inline text-xs font-bold">Download</span>
+                </Button>
+              </>
+            )}
           </div>
         </header>
 
