@@ -1,16 +1,16 @@
 
 import React, { useMemo, useContext } from 'react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  PieChart, 
-  Pie, 
-  Cell 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
 } from 'recharts';
 import { PrayerLog } from '../types';
 import { CheckCircle2, Clock, XCircle, TrendingUp } from 'lucide-react';
@@ -24,11 +24,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
 
   const stats = useMemo(() => {
     const total = logs.length;
-    const ontime = logs.filter(l => l.status === 'Ontime').length;
-    const late = logs.filter(l => l.status === 'Late').length;
-    const missed = logs.filter(l => l.status === 'Missed').length;
-    const avgDelay = late > 0 
-      ? Math.round(logs.filter(l => l.status === 'Late').reduce((acc, curr) => acc + curr.delayMinutes, 0) / late) 
+    const ontime = logs.filter(l => l.status === 'Tepat Waktu' || l.status === 'Ontime').length;
+    const late = logs.filter(l => l.status === 'Terlambat' || l.status === 'Late').length;
+    const missed = logs.filter(l => l.status === 'Terlewat' || l.status === 'Missed').length;
+    const avgDelay = late > 0
+      ? Math.round(logs.filter(l => l.status === 'Terlambat' || l.status === 'Late').reduce((acc, curr) => acc + curr.delayMinutes, 0) / late)
       : 0;
 
     return { total, ontime, late, missed, avgDelay };
@@ -43,9 +43,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
   const chartData = useMemo(() => {
     const days = [...new Set(logs.map(l => l.date))].sort().slice(-7);
     return days.map(date => ({
-      name: new Date(date).toLocaleDateString('id-ID', { weekday: 'short' }),
-      ontime: logs.filter(l => l.date === date && l.status === 'Ontime').length,
-      late: logs.filter(l => l.date === date && l.status === 'Late').length,
+      name: new Date(date as string).toLocaleDateString('id-ID', { weekday: 'short' }),
+      ontime: logs.filter(l => l.date === date && (l.status === 'Tepat Waktu' || l.status === 'Ontime')).length,
+      late: logs.filter(l => l.date === date && (l.status === 'Terlambat' || l.status === 'Late')).length,
     }));
   }, [logs]);
 
@@ -113,7 +113,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#1e293b' : '#e2e8f0'} />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: isDark ? '#64748b' : '#94a3b8' }} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: isDark ? '#64748b' : '#94a3b8' }} />
-                <Tooltip 
+                <Tooltip
                   cursor={{ fill: isDark ? '#0f172a' : '#f8fafc' }}
                   contentStyle={{ backgroundColor: isDark ? '#0f172a' : '#fff', border: isDark ? '1px solid #334155' : '1px solid #e2e8f0', borderRadius: '16px', fontWeight: 700 }}
                 />
@@ -144,14 +144,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip 
-                   contentStyle={{ backgroundColor: isDark ? '#0f172a' : '#fff', border: isDark ? '1px solid #334155' : '1px solid #e2e8f0', borderRadius: '16px', fontWeight: 700 }}
+                <Tooltip
+                  contentStyle={{ backgroundColor: isDark ? '#0f172a' : '#fff', border: isDark ? '1px solid #334155' : '1px solid #e2e8f0', borderRadius: '16px', fontWeight: 700 }}
                 />
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total</p>
-               <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.total}</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total</p>
+              <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.total}</p>
             </div>
           </div>
           <div className="flex flex-wrap justify-center gap-6 mt-10">

@@ -12,7 +12,7 @@ export interface PrayerLog {
   prayerName: PrayerName;
   scheduledTime: string;
   actualTime: string;
-  status: 'Ontime' | 'Late' | 'Missed';
+  status: 'Tepat Waktu' | 'Terlambat' | 'Terlewat';
   delayMinutes: number;
 }
 

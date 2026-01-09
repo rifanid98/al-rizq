@@ -19,6 +19,15 @@ export const isLate = (scheduled: string, actual: string, gracePeriod = 15): boo
   return calculateDelay(scheduled, actual) > gracePeriod;
 };
 
+export const getStatusLabel = (status: string) => {
+  switch (status) {
+    case 'Ontime': return 'Tepat Waktu';
+    case 'Late': return 'Terlambat';
+    case 'Missed': return 'Terlewat';
+    default: return status;
+  }
+};
+
 export const isTimePassed = (scheduledTime: string): boolean => {
   const now = new Date();
   const [h, m] = scheduledTime.split(':').map(Number);

@@ -207,10 +207,19 @@ const App: React.FC = () => {
     const savedLogs = localStorage.getItem(STORAGE_KEYS.LOGS);
     const savedSchedule = localStorage.getItem(STORAGE_KEYS.SCHEDULE);
     const savedHistory = localStorage.getItem(STORAGE_KEYS.LOCATION_HISTORY);
+
     if (savedLogs) setState(prev => ({ ...prev, logs: JSON.parse(savedLogs) }));
-    if (savedSchedule) setState(prev => ({ ...prev, schedule: JSON.parse(savedSchedule) }));
+    if (savedSchedule) {
+      const parsed = JSON.parse(savedSchedule);
+      setState(prev => ({ ...prev, schedule: parsed }));
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (parsed.date !== todayStr) {
+        getLocationAndSchedule();
+      }
+    }
     if (savedHistory) setLocationHistory(JSON.parse(savedHistory));
-  }, []);
+  }, [getLocationAndSchedule]);
 
   useEffect(() => localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(state.logs)), [state.logs]);
   useEffect(() => { if (state.schedule) localStorage.setItem(STORAGE_KEYS.SCHEDULE, JSON.stringify(state.schedule)); }, [state.schedule]);
@@ -225,7 +234,7 @@ const App: React.FC = () => {
       prayerName,
       scheduledTime,
       actualTime,
-      status: isLate(scheduledTime, actualTime) ? 'Late' : 'Ontime',
+      status: isLate(scheduledTime, actualTime) ? 'Terlambat' : 'Tepat Waktu',
       delayMinutes: delay,
     };
     setState(prev => ({ ...prev, logs: [...prev.logs, newLog] }));
@@ -334,8 +343,14 @@ const App: React.FC = () => {
               <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[120px] lg:max-w-[150px]">{state.schedule?.location || 'Cari lokasi...'}</span>
               <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isSearching ? 'rotate-90' : ''}`} />
             </button>
-            <Button variant="ghost" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900" onClick={() => getLocationAndSchedule()} isLoading={state.isLoading && !isSearching}>
-              <RefreshCw className="w-4 h-4" />
+            <Button
+              variant="ghost"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2"
+              onClick={() => getLocationAndSchedule()}
+              isLoading={state.isLoading && !isSearching}
+            >
+              <RefreshCw className={`w-4 h-4 ${state.isLoading ? 'animate-spin' : ''}`} />
+              <span className="hidden lg:inline text-xs font-bold">Sinkron</span>
             </Button>
           </div>
         </header>
@@ -424,7 +439,7 @@ const App: React.FC = () => {
                           <CheckCircle className="w-6 h-6" />
                           <div><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pelaksanaan</p><p className="text-sm font-black text-slate-800 dark:text-slate-100">{loggedToday.actualTime}</p></div>
                         </div>
-                        {loggedToday.status === 'Late' && <span className="px-3 py-1 bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 rounded-xl text-xs font-black">+{loggedToday.delayMinutes}m</span>}
+                        {loggedToday.status === 'Terlambat' && <span className="px-3 py-1 bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 rounded-xl text-xs font-black">+{loggedToday.delayMinutes}m</span>}
                       </div>
                     ) : (
                       <div className="space-y-3">
