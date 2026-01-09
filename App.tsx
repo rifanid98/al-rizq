@@ -156,6 +156,15 @@ const App: React.FC = () => {
     } else { initGoogle(); }
   }, [initGoogle]);
 
+  // Re-init Google when logging out to show the button again
+  useEffect(() => {
+    if (!state.user) {
+      // Small delay to ensure the DOM elements for buttons are rendered
+      const timeout = setTimeout(initGoogle, 100);
+      return () => clearTimeout(timeout);
+    }
+  }, [state.user, initGoogle]);
+
   // Live Search Suggestions
   useEffect(() => {
     if (searchQuery.length < 3) {
@@ -196,7 +205,12 @@ const App: React.FC = () => {
         setState(prev => ({ ...prev, location: { lat: pos.coords.latitude, lng: pos.coords.longitude }, schedule, isLoading: false }));
       }
     } catch (err: any) {
-      setState(prev => ({ ...prev, isLoading: false, error: err.message || 'Gagal sinkronisasi data sholat.' }));
+      console.error(err);
+      let errorMessage = 'Gagal sinkronisasi data sholat.';
+      if (err.code === 1) errorMessage = 'Akses lokasi ditolak. Silakan masukkan lokasi secara manual.';
+      else if (err.code === 3) errorMessage = 'Waktu pengambilan lokasi habis. Coba lagi atau masukkan manual.';
+
+      setState(prev => ({ ...prev, isLoading: false, error: errorMessage }));
       setIsSearching(true);
     }
   }, []);
