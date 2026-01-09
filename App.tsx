@@ -46,14 +46,20 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID || "";
 type ThemeMode = 'light' | 'dark' | 'system';
 
 const App: React.FC = () => {
-  const [state, setState] = useState<AppState>({
-    logs: [],
-    schedule: null,
-    location: null,
-    isLoading: false,
-    error: null,
-    user: null,
-    isSyncing: false
+  const [state, setState] = useState<AppState>(() => {
+    const savedLogs = localStorage.getItem(STORAGE_KEYS.LOGS);
+    const savedSchedule = localStorage.getItem(STORAGE_KEYS.SCHEDULE);
+    const savedUser = localStorage.getItem('al_rizq_user');
+
+    return {
+      logs: savedLogs ? JSON.parse(savedLogs) : [],
+      schedule: savedSchedule ? JSON.parse(savedSchedule) : null,
+      location: null,
+      isLoading: false,
+      error: null,
+      user: savedUser ? JSON.parse(savedUser) : null,
+      isSyncing: false
+    };
   });
 
   const [activeTab, setActiveTab] = useState<'tracker' | 'dashboard' | 'history'>('tracker');
@@ -145,9 +151,6 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('al_rizq_user');
-    if (savedUser) setState(prev => ({ ...prev, user: JSON.parse(savedUser) }));
-
     if (!(window as any).google?.accounts?.id) {
       const script = document.createElement('script');
       script.src = "https://accounts.google.com/gsi/client";
@@ -223,21 +226,16 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    const savedLogs = localStorage.getItem(STORAGE_KEYS.LOGS);
-    const savedSchedule = localStorage.getItem(STORAGE_KEYS.SCHEDULE);
     const savedHistory = localStorage.getItem(STORAGE_KEYS.LOCATION_HISTORY);
+    if (savedHistory) setLocationHistory(JSON.parse(savedHistory));
 
-    if (savedLogs) setState(prev => ({ ...prev, logs: JSON.parse(savedLogs) }));
-    if (savedSchedule) {
-      const parsed = JSON.parse(savedSchedule);
-      setState(prev => ({ ...prev, schedule: parsed }));
-
+    // Refresh schedule if it's a new day
+    if (state.schedule) {
       const todayStr = new Date().toISOString().split('T')[0];
-      if (parsed.date !== todayStr) {
+      if (state.schedule.date !== todayStr) {
         getLocationAndSchedule();
       }
     }
-    if (savedHistory) setLocationHistory(JSON.parse(savedHistory));
   }, [getLocationAndSchedule]);
 
   const handleUpload = useCallback(async () => {
