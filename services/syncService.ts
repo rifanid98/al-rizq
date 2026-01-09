@@ -2,45 +2,51 @@
 import { PrayerLog } from '../types';
 import { STORAGE_KEYS } from '../constants';
 
-// Simulated Cloud Storage using localStorage under a different key
-const CLOUD_STORAGE_KEY = 'al_rizq_cloud_mock_storage';
+// SIMULASI CLOUD STORAGE (Dapat diganti dengan Firebase/Supabase nanti)
+// Untuk simulasi antar tab/window, kita gunakan key yang berbeda di localStorage
+const REMOTE_CLOUD_STORAGE_KEY = 'al_rizq_simulated_remote_db';
 
-interface CloudData {
+interface SyncPackage {
     logs: PrayerLog[];
     lastUpdated: number;
 }
 
-export const syncWithCloud = async (localLogs: PrayerLog[], localLastUpdated: number): Promise<{ logs: PrayerLog[], lastUpdated: number, action: 'pulled' | 'pushed' | 'none' }> => {
-    // Simulate network delay
-    await new Promise(res => setTimeout(res, 1000));
+export const syncHistoryWithCloud = async (localLogs: PrayerLog[], localLastUpdated: number): Promise<{
+    logs: PrayerLog[],
+    lastUpdated: number,
+    status: 'synced_to_cloud' | 'synced_from_cloud' | 'up_to_date'
+}> => {
+    // Simulasi Delay Network
+    await new Promise(res => setTimeout(res, 800));
 
-    const remoteRaw = localStorage.getItem(CLOUD_STORAGE_KEY);
-    const remoteData: CloudData | null = remoteRaw ? JSON.parse(remoteRaw) : null;
+    const remoteRaw = localStorage.getItem(REMOTE_CLOUD_STORAGE_KEY);
+    const remoteData: SyncPackage | null = remoteRaw ? JSON.parse(remoteRaw) : null;
 
+    // JIKA CLOUD KOSONG: Push data lokal ke cloud
     if (!remoteData) {
-        // No remote data, push local
         const newData = { logs: localLogs, lastUpdated: localLastUpdated };
-        localStorage.setItem(CLOUD_STORAGE_KEY, JSON.stringify(newData));
-        return { ...newData, action: 'pushed' };
+        localStorage.setItem(REMOTE_CLOUD_STORAGE_KEY, JSON.stringify(newData));
+        return { ...newData, status: 'synced_to_cloud' };
     }
 
+    // LOGIKA PERBANDINGAN:
     if (localLastUpdated > remoteData.lastUpdated) {
-        // Local is newer, push local
+        // Data lokal lebih baru -> Update Cloud
         const newData = { logs: localLogs, lastUpdated: localLastUpdated };
-        localStorage.setItem(CLOUD_STORAGE_KEY, JSON.stringify(newData));
-        return { ...newData, action: 'pushed' };
+        localStorage.setItem(REMOTE_CLOUD_STORAGE_KEY, JSON.stringify(newData));
+        return { ...newData, status: 'synced_to_cloud' };
     } else if (remoteData.lastUpdated > localLastUpdated) {
-        // Remote is newer, pull remote
-        return { ...remoteData, action: 'pulled' };
+        // Data cloud lebih baru -> Update Lokal (Replace)
+        return { ...remoteData, status: 'synced_from_cloud' };
     }
 
-    return { logs: localLogs, lastUpdated: localLastUpdated, action: 'none' };
+    return { logs: localLogs, lastUpdated: localLastUpdated, status: 'up_to_date' };
 };
 
 export const shouldAutoSync = (): boolean => {
     const lastSync = localStorage.getItem(STORAGE_KEYS.LAST_SYNC);
     if (!lastSync) return true;
 
-    const msPerDay = 24 * 60 * 60 * 1000;
-    return Date.now() - parseInt(lastSync) > msPerDay;
+    const msPerHour = 60 * 60 * 1000;
+    return Date.now() - parseInt(lastSync) > msPerHour; // Cek tiap jam untuk auto-sync
 };

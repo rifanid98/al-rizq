@@ -30,7 +30,7 @@ import {
 import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile } from './types';
 import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS } from './constants';
 import { fetchPrayerTimes, searchLocations } from './services/prayerService';
-import { syncWithCloud, shouldAutoSync } from './services/syncService';
+import { syncHistoryWithCloud, shouldAutoSync } from './services/syncService';
 import { getCurrentTimeStr, calculateDelay, isLate, formatDate, isTimePassed } from './utils/helpers';
 import { Dashboard } from './components/Dashboard';
 import { Button } from './components/ui/Button';
@@ -156,12 +156,10 @@ const App: React.FC = () => {
     } else { initGoogle(); }
   }, [initGoogle]);
 
-  // Re-init Google when logging out to show the button again
+  // Re-init Google when logging out
   useEffect(() => {
-    if (!state.user) {
-      // Small delay to ensure the DOM elements for buttons are rendered
-      const timeout = setTimeout(initGoogle, 100);
-      return () => clearTimeout(timeout);
+    if (!state.user && (window as any).google?.accounts?.id) {
+      initGoogle();
     }
   }, [state.user, initGoogle]);
 
@@ -206,12 +204,12 @@ const App: React.FC = () => {
       }
     } catch (err: any) {
       console.error(err);
-      let errorMessage = 'Gagal sinkronisasi data sholat.';
-      if (err.code === 1) errorMessage = 'Akses lokasi ditolak. Silakan masukkan lokasi secara manual.';
-      else if (err.code === 3) errorMessage = 'Waktu pengambilan lokasi habis. Coba lagi atau masukkan manual.';
+      let errorMessage = 'Gagal mengambil jadwal sholat.';
+      if (err.code === 1) errorMessage = 'Izin lokasi ditolak. Silakan cari lokasi secara manual melalui tombol di atas.';
+      else if (err.code === 3) errorMessage = 'GPS tidak merespon. Silakan gunakan pencarian manual.';
 
       setState(prev => ({ ...prev, isLoading: false, error: errorMessage }));
-      setIsSearching(true);
+      if (!manualAddress) setIsSearching(true);
     }
   }, []);
 
@@ -245,19 +243,19 @@ const App: React.FC = () => {
     if (!state.user) return;
 
     setState(prev => ({ ...prev, isSyncing: true }));
+    const localLastUpdated = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_UPDATED) || '0');
     try {
-      const localLastUpdated = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_UPDATED) || '0');
-      const result = await syncWithCloud(state.logs, localLastUpdated);
+      const result = await syncHistoryWithCloud(state.logs, localLastUpdated);
 
-      if (result.action === 'pulled') {
+      if (result.status === 'synced_from_cloud') {
         setState(prev => ({ ...prev, logs: result.logs }));
         localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(result.logs));
-        localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, result.lastUpdated.toString());
       }
 
+      localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, result.lastUpdated.toString());
       localStorage.setItem(STORAGE_KEYS.LAST_SYNC, Date.now().toString());
     } catch (err) {
-      console.error('Sync failed:', err);
+      console.error('History Sync failed:', err);
     } finally {
       setState(prev => ({ ...prev, isSyncing: false }));
     }
@@ -272,6 +270,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(state.logs));
+    // Update last updated whenever logs change
     localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, Date.now().toString());
   }, [state.logs]);
 
@@ -337,6 +336,10 @@ const App: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{state.user.name}</p>
                   <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{state.user.email}</p>
+                  <div className="flex items-center gap-1 mt-1 opacity-60">
+                    <Cloud className="w-3 h-3 text-emerald-500" />
+                    <span className="text-[9px] font-bold text-slate-400">Terakhir Sinkron: {localStorage.getItem(STORAGE_KEYS.LAST_SYNC) ? new Date(parseInt(localStorage.getItem(STORAGE_KEYS.LAST_SYNC)!)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Belum'}</span>
+                  </div>
                 </div>
               </div>
               <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-slate-400 hover:text-rose-600 rounded-xl text-xs font-medium transition-all">
@@ -378,7 +381,11 @@ const App: React.FC = () => {
               </button>
 
               {state.user ? (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="flex flex-col items-end hidden md:flex">
+                    <p className="text-[10px] font-black text-slate-800 dark:text-slate-100">{state.user.name}</p>
+                    <span className="text-[8px] font-bold text-emerald-600 dark:text-emerald-400">Cloud Synced</span>
+                  </div>
                   <img src={state.user.picture} alt="Avatar" referrerPolicy="no-referrer" className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-800" />
                   <button onClick={handleLogout} className="p-2.5 text-rose-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
                     <LogOut className="w-5 h-5" />
