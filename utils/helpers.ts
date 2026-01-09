@@ -20,6 +20,14 @@ export const isLate = (scheduled: string, actual: string, gracePeriod = 15): boo
   return calculateDelay(scheduled, actual) > gracePeriod;
 };
 
+export const isTimePassed = (scheduledTime: string): boolean => {
+  const now = new Date();
+  const [h, m] = scheduledTime.split(':').map(Number);
+  const prayerDate = new Date();
+  prayerDate.setHours(h, m, 0, 0);
+  return now >= prayerDate;
+};
+
 export const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString('id-ID', {
     weekday: 'long',
