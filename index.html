@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Al-Rizq - Tracker & Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Enable class-based dark mode for Tailwind CDN
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        arabic: ['Amiri', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Google Identity Services & GAPI -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <script>
+        // Check local storage or system preference on initial load
+        (function() {
+            function applyTheme(theme) {
+                if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }
+            const savedTheme = localStorage.getItem('al_rizq_theme') || 'system';
+            applyTheme(savedTheme);
+        })();
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-arabic {
+            font-family: 'Amiri', serif;
+        }
+        .sync-animation {
+            animation: spin-slow 3s linear infinite;
+        }
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        /* Smooth transition for theme switching */
+        html, html * {
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+    </style>
+
+<link rel="stylesheet" href="/index.css">
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
+    "recharts": "https://esm.sh/recharts@^3.6.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
+  }
+}
+</script>
+  <script type="module" crossorigin src="/al-rizq/assets/index-DZMxNSbF.js"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <div id="root"></div>
+</body>
+</html>
