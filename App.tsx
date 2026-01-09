@@ -231,6 +231,13 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, logs: [...prev.logs, newLog] }));
   };
 
+  const handleResetData = useCallback(() => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus semua data tracker? Tindakan ini tidak dapat dibatalkan.')) {
+      setState(prev => ({ ...prev, logs: [] }));
+      localStorage.removeItem(STORAGE_KEYS.LOGS);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen pb-32 lg:pb-0 lg:pl-64 flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
       <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 py-3 flex justify-between items-center lg:top-0 lg:bottom-0 lg:left-0 lg:w-64 lg:flex-col lg:justify-start lg:py-8 lg:border-r lg:border-t-0 z-50">
@@ -444,24 +451,35 @@ const App: React.FC = () => {
         {activeTab === 'dashboard' && <Dashboard logs={state.logs} />}
 
         {activeTab === 'history' && (
-          <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-            <table className="w-full text-left">
-              <thead className="bg-slate-50 dark:bg-slate-800">
-                <tr>
-                  {['Tanggal', 'Sholat', 'Waktu', 'Status'].map(h => <th key={h} className="px-8 py-5 text-[11px] font-black uppercase text-slate-400">{h}</th>)}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {[...state.logs].reverse().map(log => (
-                  <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                    <td className="px-8 py-5 text-sm font-bold text-slate-600 dark:text-slate-400">{log.date}</td>
-                    <td className="px-8 py-5"><span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${PRAYER_COLORS[log.prayerName]}`}>{log.prayerName}</span></td>
-                    <td className="px-8 py-5 text-sm font-black text-slate-800 dark:text-slate-100">{log.actualTime} <span className="opacity-40 text-xs ml-2">({log.scheduledTime})</span></td>
-                    <td className="px-8 py-5"><span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${log.status === 'Ontime' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{log.status}</span></td>
+          <div className="space-y-6">
+            <div className="flex justify-between items-center px-4 lg:px-0">
+              <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Log Pelaksanaan</h3>
+              <button
+                onClick={handleResetData}
+                className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl border border-rose-100 dark:border-rose-900/50 transition-all bg-white dark:bg-slate-900 shadow-sm"
+              >
+                <Trash2 className="w-4 h-4" /> Reset Data
+              </button>
+            </div>
+            <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 dark:bg-slate-800">
+                  <tr>
+                    {['Tanggal', 'Sholat', 'Waktu', 'Status'].map(h => <th key={h} className="px-8 py-5 text-[11px] font-black uppercase text-slate-400">{h}</th>)}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {[...state.logs].reverse().map(log => (
+                    <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                      <td className="px-8 py-5 text-sm font-bold text-slate-600 dark:text-slate-400">{log.date}</td>
+                      <td className="px-8 py-5"><span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${PRAYER_COLORS[log.prayerName]}`}>{log.prayerName}</span></td>
+                      <td className="px-8 py-5 text-sm font-black text-slate-800 dark:text-slate-100">{log.actualTime} <span className="opacity-40 text-xs ml-2">({log.scheduledTime})</span></td>
+                      <td className="px-8 py-5"><span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${log.status === 'Ontime' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{log.status}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </main>
