@@ -232,7 +232,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pb-20 lg:pb-0 lg:pl-64 flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+    <div className="min-h-screen pb-32 lg:pb-0 lg:pl-64 flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
       <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 py-3 flex justify-between items-center lg:top-0 lg:bottom-0 lg:left-0 lg:w-64 lg:flex-col lg:justify-start lg:py-8 lg:border-r lg:border-t-0 z-50">
         <div className="hidden lg:flex items-center gap-3 mb-10 px-2">
           <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-emerald-500/20">A</div>
