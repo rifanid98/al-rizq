@@ -1,0 +1,8 @@
+
+{
+  "name": "Al-Rizq - Prayer Tracker & Planner",
+  "description": "A sophisticated prayer management tool that automatically fetches local prayer times, tracks your consistency, and provides insightful reports on your spiritual journey.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

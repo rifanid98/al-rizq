@@ -1,0 +1,19 @@
+
+import { PrayerName } from './types';
+
+export const PRAYER_ORDER: PrayerName[] = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
+
+export const PRAYER_COLORS: Record<PrayerName, string> = {
+  Subuh: 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-400 border-blue-200 dark:border-blue-900',
+  Dzuhur: 'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-800 dark:text-yellow-400 border-yellow-200 dark:border-yellow-900',
+  Ashar: 'bg-orange-100 dark:bg-orange-950/40 text-orange-800 dark:text-orange-400 border-orange-200 dark:border-orange-900',
+  Maghrib: 'bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-400 border-purple-200 dark:border-purple-900',
+  Isya: 'bg-indigo-100 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900',
+};
+
+export const STORAGE_KEYS = {
+  LOGS: 'al_rizq_logs',
+  SCHEDULE: 'al_rizq_schedule',
+  LOCATION_HISTORY: 'al_rizq_location_history',
+  CACHE_TIMESTAMP: 'al_rizq_cache_timestamp',
+};

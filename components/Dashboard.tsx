@@ -1,0 +1,169 @@
+
+import React, { useMemo, useContext } from 'react';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer, 
+  PieChart, 
+  Pie, 
+  Cell 
+} from 'recharts';
+import { PrayerLog } from '../types';
+import { CheckCircle2, Clock, XCircle, TrendingUp } from 'lucide-react';
+
+interface DashboardProps {
+  logs: PrayerLog[];
+}
+
+export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
+  const isDark = document.documentElement.classList.contains('dark');
+
+  const stats = useMemo(() => {
+    const total = logs.length;
+    const ontime = logs.filter(l => l.status === 'Ontime').length;
+    const late = logs.filter(l => l.status === 'Late').length;
+    const missed = logs.filter(l => l.status === 'Missed').length;
+    const avgDelay = late > 0 
+      ? Math.round(logs.filter(l => l.status === 'Late').reduce((acc, curr) => acc + curr.delayMinutes, 0) / late) 
+      : 0;
+
+    return { total, ontime, late, missed, avgDelay };
+  }, [logs]);
+
+  const pieData = [
+    { name: 'Tepat Waktu', value: stats.ontime, color: '#10b981' },
+    { name: 'Terlambat', value: stats.late, color: '#f59e0b' },
+    { name: 'Terlewat', value: stats.missed, color: '#ef4444' },
+  ].filter(d => d.value > 0);
+
+  const chartData = useMemo(() => {
+    const days = [...new Set(logs.map(l => l.date))].sort().slice(-7);
+    return days.map(date => ({
+      name: new Date(date).toLocaleDateString('id-ID', { weekday: 'short' }),
+      ontime: logs.filter(l => l.date === date && l.status === 'Ontime').length,
+      late: logs.filter(l => l.date === date && l.status === 'Late').length,
+    }));
+  }, [logs]);
+
+  if (logs.length === 0) {
+    return (
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-16 text-center border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
+          <TrendingUp className="w-10 h-10 text-slate-300 dark:text-slate-700" />
+        </div>
+        <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">Belum Ada Data</h3>
+        <p className="text-slate-500 dark:text-slate-500 mt-2 font-medium">Mulai catat sholatmu untuk melihat laporan di sini.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
+          <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Tepat Waktu</p>
+            <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.ontime}</p>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-amber-500/30 transition-all">
+          <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Clock className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Terlambat</p>
+            <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.late}</p>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-rose-500/30 transition-all">
+          <div className="w-12 h-12 bg-rose-50 dark:bg-rose-950/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <XCircle className="w-6 h-6 text-rose-600 dark:text-rose-400" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Rata Delay</p>
+            <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.avgDelay}m</p>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-blue-500/30 transition-all">
+          <div className="w-12 h-12 bg-blue-50 dark:bg-blue-950/30 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Total Sholat</p>
+            <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.total}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-8">
+        {/* Adherence Chart */}
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm">
+          <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 mb-10">Konsistensi Mingguan</h3>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#1e293b' : '#e2e8f0'} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: isDark ? '#64748b' : '#94a3b8' }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: isDark ? '#64748b' : '#94a3b8' }} />
+                <Tooltip 
+                  cursor={{ fill: isDark ? '#0f172a' : '#f8fafc' }}
+                  contentStyle={{ backgroundColor: isDark ? '#0f172a' : '#fff', border: isDark ? '1px solid #334155' : '1px solid #e2e8f0', borderRadius: '16px', fontWeight: 700 }}
+                />
+                <Bar dataKey="ontime" name="Tepat Waktu" fill="#10b981" radius={[6, 6, 0, 0]} barSize={24} />
+                <Bar dataKey="late" name="Terlambat" fill="#f59e0b" radius={[6, 6, 0, 0]} barSize={24} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Breakdown Chart */}
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+          <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 mb-10">Distribusi Status</h3>
+          <div className="h-72 relative flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={80}
+                  outerRadius={105}
+                  paddingAngle={8}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                   contentStyle={{ backgroundColor: isDark ? '#0f172a' : '#fff', border: isDark ? '1px solid #334155' : '1px solid #e2e8f0', borderRadius: '16px', fontWeight: 700 }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total</p>
+               <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.total}</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap justify-center gap-6 mt-10">
+            {pieData.map((item) => (
+              <div key={item.name} className="flex items-center gap-2.5">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                <span className="text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">{item.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
