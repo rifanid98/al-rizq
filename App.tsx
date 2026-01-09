@@ -30,6 +30,7 @@ import {
 import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile } from './types';
 import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS } from './constants';
 import { fetchPrayerTimes, searchLocations } from './services/prayerService';
+import { syncWithCloud, shouldAutoSync } from './services/syncService';
 import { getCurrentTimeStr, calculateDelay, isLate, formatDate, isTimePassed } from './utils/helpers';
 import { Dashboard } from './components/Dashboard';
 import { Button } from './components/ui/Button';
@@ -40,7 +41,6 @@ const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 // Placeholder Client ID - user should replace this in Google Cloud Console
 // Google Client ID from environment variables
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID || "";
-console.log("Debug Google Client ID:", GOOGLE_CLIENT_ID ? (GOOGLE_CLIENT_ID.substring(0, 5) + "...") : "NOT_FOUND");
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -221,7 +221,40 @@ const App: React.FC = () => {
     if (savedHistory) setLocationHistory(JSON.parse(savedHistory));
   }, [getLocationAndSchedule]);
 
-  useEffect(() => localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(state.logs)), [state.logs]);
+  const handleSyncData = useCallback(async () => {
+    if (!state.user) return;
+
+    setState(prev => ({ ...prev, isSyncing: true }));
+    try {
+      const localLastUpdated = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_UPDATED) || '0');
+      const result = await syncWithCloud(state.logs, localLastUpdated);
+
+      if (result.action === 'pulled') {
+        setState(prev => ({ ...prev, logs: result.logs }));
+        localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(result.logs));
+        localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, result.lastUpdated.toString());
+      }
+
+      localStorage.setItem(STORAGE_KEYS.LAST_SYNC, Date.now().toString());
+    } catch (err) {
+      console.error('Sync failed:', err);
+    } finally {
+      setState(prev => ({ ...prev, isSyncing: false }));
+    }
+  }, [state.user, state.logs]);
+
+  // Auto-sync effect (once a day if logged in)
+  useEffect(() => {
+    if (state.user && shouldAutoSync()) {
+      handleSyncData();
+    }
+  }, [state.user, handleSyncData]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(state.logs));
+    localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, Date.now().toString());
+  }, [state.logs]);
+
   useEffect(() => { if (state.schedule) localStorage.setItem(STORAGE_KEYS.SCHEDULE, JSON.stringify(state.schedule)); }, [state.schedule]);
 
   const logPrayer = (prayerName: PrayerName, scheduledTime: string) => {
@@ -346,10 +379,13 @@ const App: React.FC = () => {
             <Button
               variant="ghost"
               className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2"
-              onClick={() => getLocationAndSchedule()}
-              isLoading={state.isLoading && !isSearching}
+              onClick={() => {
+                getLocationAndSchedule();
+                if (state.user) handleSyncData();
+              }}
+              isLoading={(state.isLoading || state.isSyncing) && !isSearching}
             >
-              <RefreshCw className={`w-4 h-4 ${state.isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${(state.isLoading || state.isSyncing) ? 'animate-spin' : ''}`} />
               <span className="hidden lg:inline text-xs font-bold">Sinkron</span>
             </Button>
           </div>
