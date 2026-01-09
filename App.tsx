@@ -69,7 +69,8 @@ const App: React.FC = () => {
   });
 
   const searchTimeoutRef = useRef<number | null>(null);
-  const googleBtnRef = useRef<HTMLDivElement>(null);
+  const googleBtnSidebarRef = useRef<HTMLDivElement>(null);
+  const googleBtnHeaderRef = useRef<HTMLDivElement>(null);
 
   // Update clock every minute
   useEffect(() => {
@@ -125,15 +126,20 @@ const App: React.FC = () => {
         }
       });
 
-      if (googleBtnRef.current) {
-        googleBtnRef.current.innerHTML = '';
-        (window as any).google.accounts.id.renderButton(googleBtnRef.current, {
-          type: 'icon',
-          shape: 'circle',
-          theme: 'filled_blue', // Fix for blank logo: 'filled_blue' ensures the G is visible
-          size: 'large',
-        });
-      }
+      const renderBtn = (ref: React.RefObject<HTMLDivElement>) => {
+        if (ref.current) {
+          ref.current.innerHTML = '';
+          (window as any).google.accounts.id.renderButton(ref.current, {
+            type: 'icon',
+            shape: 'circle',
+            theme: 'filled_blue',
+            size: 'large',
+          });
+        }
+      };
+
+      renderBtn(googleBtnSidebarRef);
+      renderBtn(googleBtnHeaderRef);
     }
   }, []);
 
@@ -326,7 +332,7 @@ const App: React.FC = () => {
           ) : (
             <div className="p-5 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 flex flex-col items-center gap-4">
               <p className="text-[11px] font-black uppercase text-slate-400 text-center">Cloud Sync</p>
-              <div ref={googleBtnRef} className="rounded-full shadow-md overflow-hidden transform hover:scale-110 active:scale-95 transition-all"></div>
+              <div ref={googleBtnSidebarRef} className="rounded-full shadow-md overflow-hidden transform hover:scale-110 active:scale-95 transition-all"></div>
             </div>
           )}
         </div>
@@ -365,7 +371,7 @@ const App: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <div ref={googleBtnRef} className="rounded-full overflow-hidden scale-90 origin-right"></div>
+                <div ref={googleBtnHeaderRef} className="rounded-full overflow-hidden scale-90 origin-right"></div>
               )}
             </div>
           </div>
