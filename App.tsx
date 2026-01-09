@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { 
-  MapPin, 
-  Calendar, 
-  Clock, 
-  CheckCircle, 
-  History as HistoryIcon, 
+import {
+  MapPin,
+  Calendar,
+  Clock,
+  CheckCircle,
+  History as HistoryIcon,
   LayoutDashboard,
   Bell,
   Trash2,
@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile } from './types';
 import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS } from './constants';
-import { fetchPrayerTimes, searchLocations } from './services/gemini';
+import { fetchPrayerTimes, searchLocations } from './services/prayerService';
 import { getCurrentTimeStr, calculateDelay, isLate, formatDate, isTimePassed } from './utils/helpers';
 import { Dashboard } from './components/Dashboard';
 import { Button } from './components/ui/Button';
@@ -38,7 +38,9 @@ const CACHE_KEY_SEARCH = 'al_rizq_search_cache';
 const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
 // Placeholder Client ID - user should replace this in Google Cloud Console
-const GOOGLE_CLIENT_ID = "1090124316035-placeholder.apps.googleusercontent.com"; 
+// Google Client ID from environment variables
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID || "";
+console.log("Debug Google Client ID:", GOOGLE_CLIENT_ID ? (GOOGLE_CLIENT_ID.substring(0, 5) + "...") : "NOT_FOUND");
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -61,11 +63,11 @@ const App: React.FC = () => {
   const [isSearchingSuggestions, setIsSearchingSuggestions] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [currentTime, setCurrentTime] = useState(getCurrentTimeStr());
-  
+
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     return (localStorage.getItem('al_rizq_theme') as ThemeMode) || 'system';
   });
-  
+
   const searchTimeoutRef = useRef<number | null>(null);
   const googleBtnRef = useRef<HTMLDivElement>(null);
 
@@ -107,6 +109,8 @@ const App: React.FC = () => {
     if ((window as any).google?.accounts?.id) {
       (window as any).google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
+        auto_select: false, // Ensure it asks which account to use
+        context: 'signin',
         callback: (response: any) => {
           try {
             const payload = JSON.parse(atob(response.credential.split('.')[1]));
@@ -122,9 +126,9 @@ const App: React.FC = () => {
       });
 
       if (googleBtnRef.current) {
-        googleBtnRef.current.innerHTML = ''; 
+        googleBtnRef.current.innerHTML = '';
         (window as any).google.accounts.id.renderButton(googleBtnRef.current, {
-          type: 'icon', 
+          type: 'icon',
           shape: 'circle',
           theme: 'filled_blue', // Fix for blank logo: 'filled_blue' ensures the G is visible
           size: 'large',
@@ -145,6 +149,32 @@ const App: React.FC = () => {
       document.head.appendChild(script);
     } else { initGoogle(); }
   }, [initGoogle]);
+
+  // Live Search Suggestions
+  useEffect(() => {
+    if (searchQuery.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+
+    searchTimeoutRef.current = window.setTimeout(async () => {
+      setIsSearchingSuggestions(true);
+      try {
+        const results = await searchLocations(searchQuery);
+        setSuggestions(results);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsSearchingSuggestions(false);
+      }
+    }, 500);
+
+    return () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    };
+  }, [searchQuery]);
 
   const getLocationAndSchedule = useCallback(async (manualAddress?: string) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
@@ -208,7 +238,7 @@ const App: React.FC = () => {
           <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-emerald-500/20">A</div>
           <h1 className="text-xl font-black text-slate-800 dark:text-slate-100">Al-Rizq</h1>
         </div>
-        
+
         <div className="flex lg:flex-col lg:w-full gap-1 w-full justify-around lg:justify-start flex-1">
           {['tracker', 'dashboard', 'history'].map((tab) => (
             <button key={tab} onClick={() => setActiveTab(tab as any)} className={`flex flex-col lg:flex-row items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === tab ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
@@ -234,7 +264,7 @@ const App: React.FC = () => {
           {state.user ? (
             <div className="space-y-4">
               <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800">
-                <img src={state.user.picture} alt="Avatar" className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-700 shadow-sm" />
+                <img src={state.user.picture} alt="Avatar" referrerPolicy="no-referrer" className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-700 shadow-sm" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{state.user.name}</p>
                   <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{state.user.email}</p>
@@ -246,8 +276,8 @@ const App: React.FC = () => {
             </div>
           ) : (
             <div className="p-5 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 flex flex-col items-center gap-4">
-               <p className="text-[11px] font-black uppercase text-slate-400 text-center">Cloud Sync</p>
-               <div ref={googleBtnRef} className="rounded-full shadow-md overflow-hidden transform hover:scale-110 active:scale-95 transition-all"></div>
+              <p className="text-[11px] font-black uppercase text-slate-400 text-center">Cloud Sync</p>
+              <div ref={googleBtnRef} className="rounded-full shadow-md overflow-hidden transform hover:scale-110 active:scale-95 transition-all"></div>
             </div>
           )}
         </div>
@@ -265,7 +295,7 @@ const App: React.FC = () => {
               </span>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <button onClick={() => setIsSearching(!isSearching)} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all">
               <MapPin className="w-4 h-4 text-emerald-600" />
@@ -284,6 +314,29 @@ const App: React.FC = () => {
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input type="text" placeholder="Masukkan kecamatan..." className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-slate-100 font-bold" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} autoFocus />
+
+                {suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-[60] overflow-hidden">
+                    {suggestions.map((s, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery(s);
+                          getLocationAndSchedule(s);
+                        }}
+                        className="w-full px-6 py-4 text-left text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 border-b border-slate-100 dark:border-slate-800 last:border-0 transition-colors"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {isSearchingSuggestions && (
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                    <Loader2 className="w-5 h-5 text-emerald-500 animate-spin" />
+                  </div>
+                )}
               </div>
               <Button type="submit" className="px-8 rounded-2xl" isLoading={state.isLoading}>Cari</Button>
             </form>
@@ -298,10 +351,10 @@ const App: React.FC = () => {
             </p>
             <div className="flex flex-wrap gap-2">
               {state.schedule.sources.map((source, idx) => (
-                <a 
-                  key={idx} 
-                  href={source.uri} 
-                  target="_blank" 
+                <a
+                  key={idx}
+                  href={source.uri}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all"
                 >
@@ -343,9 +396,9 @@ const App: React.FC = () => {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        <Button 
-                          className="w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg shadow-emerald-500/10" 
-                          disabled={!prayer || !isPassed} 
+                        <Button
+                          className="w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg shadow-emerald-500/10"
+                          disabled={!prayer || !isPassed}
                           onClick={() => prayer && logPrayer(name, prayer.time)}
                         >
                           {!isPassed ? <Lock className="w-4 h-4 mr-2 opacity-50" /> : null}
@@ -366,25 +419,25 @@ const App: React.FC = () => {
         {activeTab === 'dashboard' && <Dashboard logs={state.logs} />}
 
         {activeTab === 'history' && (
-           <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-             <table className="w-full text-left">
-               <thead className="bg-slate-50 dark:bg-slate-800">
-                 <tr>
-                    {['Tanggal', 'Sholat', 'Waktu', 'Status'].map(h => <th key={h} className="px-8 py-5 text-[11px] font-black uppercase text-slate-400">{h}</th>)}
-                 </tr>
-               </thead>
-               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                 {[...state.logs].reverse().map(log => (
-                   <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                     <td className="px-8 py-5 text-sm font-bold text-slate-600 dark:text-slate-400">{log.date}</td>
-                     <td className="px-8 py-5"><span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${PRAYER_COLORS[log.prayerName]}`}>{log.prayerName}</span></td>
-                     <td className="px-8 py-5 text-sm font-black text-slate-800 dark:text-slate-100">{log.actualTime} <span className="opacity-40 text-xs ml-2">({log.scheduledTime})</span></td>
-                     <td className="px-8 py-5"><span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${log.status === 'Ontime' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{log.status}</span></td>
-                   </tr>
-                 ))}
-               </tbody>
-             </table>
-           </div>
+          <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50 dark:bg-slate-800">
+                <tr>
+                  {['Tanggal', 'Sholat', 'Waktu', 'Status'].map(h => <th key={h} className="px-8 py-5 text-[11px] font-black uppercase text-slate-400">{h}</th>)}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {[...state.logs].reverse().map(log => (
+                  <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                    <td className="px-8 py-5 text-sm font-bold text-slate-600 dark:text-slate-400">{log.date}</td>
+                    <td className="px-8 py-5"><span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${PRAYER_COLORS[log.prayerName]}`}>{log.prayerName}</span></td>
+                    <td className="px-8 py-5 text-sm font-black text-slate-800 dark:text-slate-100">{log.actualTime} <span className="opacity-40 text-xs ml-2">({log.scheduledTime})</span></td>
+                    <td className="px-8 py-5"><span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${log.status === 'Ontime' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{log.status}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </main>
     </div>
