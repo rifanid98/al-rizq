@@ -241,10 +241,10 @@ const App: React.FC = () => {
   }, [getLocationAndSchedule]);
 
   const handleUpload = useCallback(async () => {
-    if (!state.user) return;
+    if (!state.user?.email) return;
     setState(prev => ({ ...prev, isSyncing: true }));
     try {
-      const timestamp = await uploadToCloud(state.logs);
+      const timestamp = await uploadToCloud(state.user.email, state.logs);
       localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, timestamp.toString());
       localStorage.setItem(STORAGE_KEYS.LAST_SYNC, timestamp.toString());
     } catch (err) {
@@ -255,14 +255,14 @@ const App: React.FC = () => {
   }, [state.user, state.logs]);
 
   const handleDownload = useCallback(async () => {
-    if (!state.user) return;
+    if (!state.user?.email) return;
     setState(prev => ({ ...prev, isSyncing: true }));
     try {
-      const result = await downloadFromCloud();
+      const result = await downloadFromCloud(state.user.email);
       if (result) {
         setState(prev => ({ ...prev, logs: result.logs }));
         localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(result.logs));
-        localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, result.lastUpdated.toString());
+        localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, result.last_updated.toString());
         localStorage.setItem(STORAGE_KEYS.LAST_SYNC, Date.now().toString());
       }
     } catch (err) {
@@ -275,9 +275,9 @@ const App: React.FC = () => {
   // Manual sync only as requested
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(state.logs));
-    // Update last updated whenever logs change
-    localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, Date.now().toString());
+    if (state.logs.length > 0 || localStorage.getItem(STORAGE_KEYS.LOGS)) {
+      localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(state.logs));
+    }
   }, [state.logs]);
 
   useEffect(() => { if (state.schedule) localStorage.setItem(STORAGE_KEYS.SCHEDULE, JSON.stringify(state.schedule)); }, [state.schedule]);
@@ -295,7 +295,12 @@ const App: React.FC = () => {
       status: isLate(scheduledTime, actualTime) ? 'Terlambat' : 'Tepat Waktu',
       delayMinutes: delay,
     };
-    setState(prev => ({ ...prev, logs: [...prev.logs, newLog] }));
+    const now = Date.now();
+    setState(prev => {
+      const newLogs = [...prev.logs, newLog];
+      localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, now.toString());
+      return { ...prev, logs: newLogs };
+    });
   };
 
   const handleResetData = useCallback(() => {

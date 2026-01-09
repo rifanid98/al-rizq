@@ -1,40 +1,55 @@
 
 import { PrayerLog } from '../types';
 import { STORAGE_KEYS } from '../constants';
-
-// SIMULASI CLOUD STORAGE (Dapat diganti dengan Firebase/Supabase nanti)
-const REMOTE_CLOUD_STORAGE_KEY = 'al_rizq_simulated_remote_db';
+import { supabase } from './supabaseClient';
 
 interface SyncPackage {
     logs: PrayerLog[];
-    lastUpdated: number;
+    last_updated: number;
 }
 
 /**
- * Push local data to "Cloud"
+ * Upload local data to Supabase
  */
-export const uploadToCloud = async (logs: PrayerLog[]): Promise<number> => {
-    // Simulasi Delay Network
-    await new Promise(res => setTimeout(res, 1000));
-
+export const uploadToCloud = async (email: string, logs: PrayerLog[]): Promise<number> => {
     const timestamp = Date.now();
-    const data: SyncPackage = { logs, lastUpdated: timestamp };
 
-    localStorage.setItem(REMOTE_CLOUD_STORAGE_KEY, JSON.stringify(data));
+    const { error } = await supabase
+        .from('user_backups')
+        .upsert({
+            email: email,
+            logs: logs,
+            last_updated: timestamp
+        }, { onConflict: 'email' });
+
+    if (error) {
+        console.error('Supabase Upload Error:', error);
+        throw new Error('Gagal mengunggah data ke cloud.');
+    }
+
     return timestamp;
 };
 
 /**
- * Pull data from "Cloud" to replace local
+ * Download data from Supabase for a specific user
  */
-export const downloadFromCloud = async (): Promise<SyncPackage | null> => {
-    // Simulasi Delay Network
-    await new Promise(res => setTimeout(res, 1000));
+export const downloadFromCloud = async (email: string): Promise<{ logs: PrayerLog[], last_updated: number } | null> => {
+    const { data, error } = await supabase
+        .from('user_backups')
+        .select('logs, last_updated')
+        .eq('email', email)
+        .single();
 
-    const remoteRaw = localStorage.getItem(REMOTE_CLOUD_STORAGE_KEY);
-    if (!remoteRaw) return null;
+    if (error) {
+        if (error.code === 'PGRST116') return null; // No data found
+        console.error('Supabase Download Error:', error);
+        throw new Error('Gagal mengunduh data dari cloud.');
+    }
 
-    return JSON.parse(remoteRaw);
+    return {
+        logs: data.logs,
+        last_updated: data.last_updated
+    };
 };
 
 export const shouldAutoSync = (): boolean => {
