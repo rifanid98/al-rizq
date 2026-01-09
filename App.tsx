@@ -239,12 +239,12 @@ const App: React.FC = () => {
           <h1 className="text-xl font-black text-slate-800 dark:text-slate-100">Al-Rizq</h1>
         </div>
 
-        <div className="flex lg:flex-col lg:w-full gap-1 w-full justify-around lg:justify-start flex-1">
+        <div className="flex lg:flex-col lg:w-full gap-1 w-full justify-around lg:justify-start">
           {['tracker', 'dashboard', 'history'].map((tab) => (
-            <button key={tab} onClick={() => setActiveTab(tab as any)} className={`flex flex-col lg:flex-row items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === tab ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-              {tab === 'tracker' && <Clock className="w-6 h-6" />}
-              {tab === 'dashboard' && <LayoutDashboard className="w-6 h-6" />}
-              {tab === 'history' && <HistoryIcon className="w-6 h-6" />}
+            <button key={tab} onClick={() => setActiveTab(tab as any)} className={`flex flex-col lg:flex-row items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-xl transition-all ${activeTab === tab ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+              {tab === 'tracker' && <Clock className="w-5 h-5 lg:w-6 lg:h-6" />}
+              {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5 lg:w-6 lg:h-6" />}
+              {tab === 'history' && <HistoryIcon className="w-5 h-5 lg:w-6 lg:h-6" />}
               <span className="text-[10px] lg:text-sm capitalize font-bold">{tab}</span>
             </button>
           ))}
@@ -285,22 +285,47 @@ const App: React.FC = () => {
 
       <main className="flex-1 p-4 lg:p-10 max-w-6xl mx-auto w-full">
         <header className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
-          <div className="flex justify-between items-start md:block">
-            <h2 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
-              {activeTab === 'tracker' ? 'Tracker Sholat' : activeTab === 'dashboard' ? 'Statistik' : 'Riwayat'}
-            </h2>
-            <div className="flex items-center gap-3 mt-2">
-              <span className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-xs font-bold text-slate-600 dark:text-slate-400 shadow-sm">
-                <Calendar className="w-3.5 h-3.5 text-emerald-600" /> {formatDate(new Date().toISOString().split('T')[0])}
-              </span>
+          <div className="flex justify-between items-center md:block">
+            <div>
+              <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
+                {activeTab === 'tracker' ? 'Tracker Sholat' : activeTab === 'dashboard' ? 'Statistik' : 'Riwayat'}
+              </h2>
+              <div className="flex items-center gap-3 mt-2">
+                <span className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-[10px] lg:text-xs font-bold text-slate-600 dark:text-slate-400 shadow-sm">
+                  <Calendar className="w-3 h-3 lg:w-3.5 lg:h-3.5 text-emerald-600" /> {formatDate(new Date().toISOString().split('T')[0])}
+                </span>
+              </div>
+            </div>
+
+            {/* Mobile-only User/Theme Controls */}
+            <div className="flex lg:hidden items-center gap-2">
+              <button
+                onClick={cycleTheme}
+                className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 dark:text-slate-400"
+              >
+                {themeMode === 'light' && <Sun className="w-5 h-5 text-amber-500" />}
+                {themeMode === 'dark' && <Moon className="w-5 h-5 text-emerald-400" />}
+                {themeMode === 'system' && <Monitor className="w-5 h-5 text-slate-400" />}
+              </button>
+
+              {state.user ? (
+                <div className="flex items-center gap-2">
+                  <img src={state.user.picture} alt="Avatar" referrerPolicy="no-referrer" className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-800" />
+                  <button onClick={handleLogout} className="p-2.5 text-rose-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                </div>
+              ) : (
+                <div ref={googleBtnRef} className="rounded-full overflow-hidden scale-90 origin-right"></div>
+              )}
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button onClick={() => setIsSearching(!isSearching)} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all">
-              <MapPin className="w-4 h-4 text-emerald-600" />
-              <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[150px]">{state.schedule?.location || 'Cari lokasi...'}</span>
-              <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform ${isSearching ? 'rotate-90' : ''}`} />
+          <div className="flex items-center gap-2 lg:gap-3">
+            <button onClick={() => setIsSearching(!isSearching)} className="flex-1 lg:flex-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden">
+              <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[120px] lg:max-w-[150px]">{state.schedule?.location || 'Cari lokasi...'}</span>
+              <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isSearching ? 'rotate-90' : ''}`} />
             </button>
             <Button variant="ghost" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900" onClick={() => getLocationAndSchedule()} isLoading={state.isLoading && !isSearching}>
               <RefreshCw className="w-4 h-4" />
