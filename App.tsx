@@ -404,44 +404,69 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 lg:gap-3 w-full md:w-auto">
-            <div className="flex gap-2 w-full md:w-auto">
+            <div className="flex flex-row items-center gap-2 w-full md:w-auto">
               <button onClick={() => setIsSearching(!isSearching)} className="flex-1 md:flex-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden min-w-0">
                 <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1">{state.schedule?.location || 'Cari lokasi...'}</span>
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1 md:max-w-[150px]">{state.schedule?.location || 'Cari lokasi...'}</span>
                 <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isSearching ? 'rotate-90' : ''}`} />
               </button>
               <Button
                 variant="ghost"
-                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5"
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0"
                 onClick={() => getLocationAndSchedule()}
                 isLoading={state.isLoading && !isSearching}
                 title="Perbarui Jadwal Sholat"
               >
                 <RefreshCw className={`w-4 h-4 ${state.isLoading ? 'animate-spin' : ''}`} />
               </Button>
+
+              {/* In Desktop, show these inline with the buttons above */}
+              {state.user && (
+                <div className="hidden md:flex items-center gap-2 lg:gap-3">
+                  <Button
+                    variant="ghost"
+                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2"
+                    onClick={handleUpload}
+                    isLoading={state.isSyncing && !state.isLoading}
+                    title="Upload Riwayat ke Cloud"
+                  >
+                    <CloudUpload className="w-4 h-4" />
+                    <span className="hidden lg:inline text-xs font-bold">Upload</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2"
+                    onClick={handleDownload}
+                    isLoading={state.isSyncing && !state.isLoading}
+                    title="Download Riwayat dari Cloud"
+                  >
+                    <CloudDownload className="w-4 h-4" />
+                    <span className="hidden lg:inline text-xs font-bold">Download</span>
+                  </Button>
+                </div>
+              )}
             </div>
 
+            {/* In Mobile, show these in a separate row below */}
             {state.user && (
-              <div className="flex gap-2 w-full md:w-auto justify-stretch">
+              <div className="flex md:hidden gap-2 w-full justify-stretch">
                 <Button
                   variant="ghost"
-                  className="flex-1 md:flex-none rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center gap-2 p-2.5"
+                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center gap-2 p-2.5"
                   onClick={handleUpload}
                   isLoading={state.isSyncing && !state.isLoading}
-                  title="Upload Riwayat ke Cloud"
                 >
                   <CloudUpload className="w-4 h-4" />
-                  <span className="text-xs font-bold md:hidden lg:inline">Upload</span>
+                  <span className="text-xs font-bold">Upload</span>
                 </Button>
                 <Button
                   variant="ghost"
-                  className="flex-1 md:flex-none rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center gap-2 p-2.5"
+                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center gap-2 p-2.5"
                   onClick={handleDownload}
                   isLoading={state.isSyncing && !state.isLoading}
-                  title="Download Riwayat dari Cloud"
                 >
                   <CloudDownload className="w-4 h-4" />
-                  <span className="text-xs font-bold md:hidden lg:inline">Download</span>
+                  <span className="text-xs font-bold">Download</span>
                 </Button>
               </div>
             )}
