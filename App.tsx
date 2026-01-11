@@ -26,7 +26,9 @@ import {
   Monitor,
   AlertCircle,
   Lock,
-  CloudDownload
+  CloudDownload,
+  ChevronLeft,
+  CalendarDays
 } from 'lucide-react';
 import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile } from './types';
 import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS } from './constants';
@@ -70,6 +72,15 @@ const App: React.FC = () => {
   const [isSearchingSuggestions, setIsSearchingSuggestions] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [currentTime, setCurrentTime] = useState(getCurrentTimeStr());
+  const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
+
+  // Late prayer reason modal state
+  const [lateModalOpen, setLateModalOpen] = useState(false);
+  const [pendingLatePrayer, setPendingLatePrayer] = useState<{ name: PrayerName; scheduledTime: string } | null>(null);
+  const [lateReason, setLateReason] = useState('');
+
+  // History date filter - empty string means show all
+  const [historyDateFilter, setHistoryDateFilter] = useState<string>('');
 
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     return (localStorage.getItem('al_rizq_theme') as ThemeMode) || 'system';
@@ -78,10 +89,18 @@ const App: React.FC = () => {
   const searchTimeoutRef = useRef<number | null>(null);
   const googleBtnSidebarRef = useRef<HTMLDivElement>(null);
   const googleBtnHeaderRef = useRef<HTMLDivElement>(null);
+  const lastDateRef = useRef(currentDate);
 
-  // Update clock every minute
+  // Update clock every minute and check for date change
   useEffect(() => {
-    const interval = setInterval(() => setCurrentTime(getCurrentTimeStr()), 30000);
+    const interval = setInterval(() => {
+      setCurrentTime(getCurrentTimeStr());
+      const today = new Date().toISOString().split('T')[0];
+      if (today !== lastDateRef.current) {
+        lastDateRef.current = today;
+        setCurrentDate(today);
+      }
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -240,6 +259,13 @@ const App: React.FC = () => {
     }
   }, [getLocationAndSchedule]);
 
+  // Refresh schedule when date changes (detected by timer)
+  useEffect(() => {
+    if (state.schedule && state.schedule.date !== currentDate) {
+      getLocationAndSchedule();
+    }
+  }, [currentDate, getLocationAndSchedule, state.schedule]);
+
   const handleUpload = useCallback(async () => {
     if (!state.user?.email) return;
     setState(prev => ({ ...prev, isSyncing: true }));
@@ -282,7 +308,22 @@ const App: React.FC = () => {
 
   useEffect(() => { if (state.schedule) localStorage.setItem(STORAGE_KEYS.SCHEDULE, JSON.stringify(state.schedule)); }, [state.schedule]);
 
-  const logPrayer = (prayerName: PrayerName, scheduledTime: string) => {
+  const handlePrayerClick = (prayerName: PrayerName, scheduledTime: string) => {
+    const actualTime = getCurrentTimeStr();
+    const late = isLate(scheduledTime, actualTime);
+
+    if (late) {
+      // Show modal for late reason
+      setPendingLatePrayer({ name: prayerName, scheduledTime });
+      setLateReason('');
+      setLateModalOpen(true);
+    } else {
+      // Log immediately if on time
+      logPrayer(prayerName, scheduledTime);
+    }
+  };
+
+  const logPrayer = (prayerName: PrayerName, scheduledTime: string, reason?: string) => {
     const today = new Date().toISOString().split('T')[0];
     const actualTime = getCurrentTimeStr();
     const delay = calculateDelay(scheduledTime, actualTime);
@@ -294,6 +335,7 @@ const App: React.FC = () => {
       actualTime,
       status: isLate(scheduledTime, actualTime) ? 'Terlambat' : 'Tepat Waktu',
       delayMinutes: delay,
+      reason: reason || undefined,
     };
     const now = Date.now();
     setState(prev => {
@@ -301,6 +343,15 @@ const App: React.FC = () => {
       localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, now.toString());
       return { ...prev, logs: newLogs };
     });
+  };
+
+  const confirmLatePrayer = () => {
+    if (pendingLatePrayer) {
+      logPrayer(pendingLatePrayer.name, pendingLatePrayer.scheduledTime, lateReason.trim() || undefined);
+      setLateModalOpen(false);
+      setPendingLatePrayer(null);
+      setLateReason('');
+    }
   };
 
   const handleResetData = useCallback(() => {
@@ -557,19 +608,27 @@ const App: React.FC = () => {
                   </div>
                   <div className="mt-auto pt-8 border-t border-slate-100 dark:border-slate-800">
                     {loggedToday ? (
-                      <div className="flex items-center justify-between text-emerald-600">
-                        <div className="flex items-center gap-3">
-                          <CheckCircle className="w-6 h-6" />
-                          <div><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pelaksanaan</p><p className="text-sm font-black text-slate-800 dark:text-slate-100">{loggedToday.actualTime}</p></div>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between text-emerald-600">
+                          <div className="flex items-center gap-3">
+                            <CheckCircle className="w-6 h-6" />
+                            <div><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pelaksanaan</p><p className="text-sm font-black text-slate-800 dark:text-slate-100">{loggedToday.actualTime}</p></div>
+                          </div>
+                          {loggedToday.status === 'Terlambat' && <span className="px-3 py-1 bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 rounded-xl text-xs font-black">+{loggedToday.delayMinutes}m</span>}
                         </div>
-                        {loggedToday.status === 'Terlambat' && <span className="px-3 py-1 bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 rounded-xl text-xs font-black">+{loggedToday.delayMinutes}m</span>}
+                        {loggedToday.reason && (
+                          <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Alasan</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-300">{loggedToday.reason}</p>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="space-y-3">
                         <Button
                           className="w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg shadow-emerald-500/10"
                           disabled={!prayer || !isPassed}
-                          onClick={() => prayer && logPrayer(name, prayer.time)}
+                          onClick={() => prayer && handlePrayerClick(name, prayer.time)}
                         >
                           {!isPassed ? <Lock className="w-4 h-4 mr-2 opacity-50" /> : null}
                           {isPassed ? "Tandai Sholat" : "Belum Waktunya"}
@@ -590,37 +649,186 @@ const App: React.FC = () => {
 
         {activeTab === 'history' && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center px-4 lg:px-0">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 px-4 lg:px-0">
               <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Log Pelaksanaan</h3>
-              <button
-                onClick={handleResetData}
-                className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl border border-rose-100 dark:border-rose-900/50 transition-all bg-white dark:bg-slate-900 shadow-sm"
-              >
-                <Trash2 className="w-4 h-4" /> Reset Data
-              </button>
+
+              <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                {/* Date Filter */}
+                <div className="flex items-center gap-2 flex-1 md:flex-none">
+                  <div className="relative flex-1 md:flex-none">
+                    <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                      type="date"
+                      value={historyDateFilter}
+                      onChange={(e) => setHistoryDateFilter(e.target.value)}
+                      className="pl-10 pr-4 py-2.5 w-full md:w-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none"
+                    />
+                  </div>
+                  {historyDateFilter && (
+                    <button
+                      onClick={() => setHistoryDateFilter('')}
+                      className="p-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                      title="Tampilkan Semua"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Quick Date Navigation */}
+                <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-1">
+                  <button
+                    onClick={() => {
+                      const d = historyDateFilter ? new Date(historyDateFilter) : new Date();
+                      d.setDate(d.getDate() - 1);
+                      setHistoryDateFilter(d.toISOString().split('T')[0]);
+                    }}
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                    title="Hari Sebelumnya"
+                  >
+                    <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                  </button>
+                  <button
+                    onClick={() => setHistoryDateFilter(new Date().toISOString().split('T')[0])}
+                    className="px-3 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg transition-colors"
+                  >
+                    Hari Ini
+                  </button>
+                  <button
+                    onClick={() => {
+                      const d = historyDateFilter ? new Date(historyDateFilter) : new Date();
+                      d.setDate(d.getDate() + 1);
+                      if (d <= new Date()) {
+                        setHistoryDateFilter(d.toISOString().split('T')[0]);
+                      }
+                    }}
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                    title="Hari Berikutnya"
+                  >
+                    <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                  </button>
+                </div>
+
+                <button
+                  onClick={handleResetData}
+                  className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl border border-rose-100 dark:border-rose-900/50 transition-all bg-white dark:bg-slate-900 shadow-sm"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span className="hidden md:inline">Reset Data</span>
+                </button>
+              </div>
             </div>
+
+            {/* Filter Status */}
+            {historyDateFilter && (
+              <div className="px-4 lg:px-0">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 rounded-xl text-emerald-700 dark:text-emerald-400">
+                  <CalendarDays className="w-4 h-4" />
+                  <span className="text-sm font-bold">
+                    Menampilkan: {new Date(historyDateFilter).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-              <table className="w-full text-left">
-                <thead className="bg-slate-50 dark:bg-slate-800">
-                  <tr>
-                    {['Tanggal', 'Sholat', 'Waktu', 'Status'].map(h => <th key={h} className="px-8 py-5 text-[11px] font-black uppercase text-slate-400">{h}</th>)}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {[...state.logs].reverse().map(log => (
-                    <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                      <td className="px-8 py-5 text-sm font-bold text-slate-600 dark:text-slate-400">{log.date}</td>
-                      <td className="px-8 py-5"><span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${PRAYER_COLORS[log.prayerName]}`}>{log.prayerName}</span></td>
-                      <td className="px-8 py-5 text-sm font-black text-slate-800 dark:text-slate-100">{log.actualTime} <span className="opacity-40 text-xs ml-2">({log.scheduledTime})</span></td>
-                      <td className="px-8 py-5"><span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${log.status === 'Ontime' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{log.status}</span></td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-slate-50 dark:bg-slate-800">
+                    <tr>
+                      {['Tanggal', 'Sholat', 'Waktu', 'Status', 'Keterlambatan', 'Alasan'].map(h => <th key={h} className="px-6 lg:px-8 py-5 text-[11px] font-black uppercase text-slate-400 whitespace-nowrap">{h}</th>)}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {[...state.logs]
+                      .filter(log => !historyDateFilter || log.date === historyDateFilter)
+                      .reverse()
+                      .map(log => (
+                        <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                          <td className="px-6 lg:px-8 py-5 text-sm font-bold text-slate-600 dark:text-slate-400 whitespace-nowrap">{log.date}</td>
+                          <td className="px-6 lg:px-8 py-5"><span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${PRAYER_COLORS[log.prayerName]}`}>{log.prayerName}</span></td>
+                          <td className="px-6 lg:px-8 py-5 text-sm font-black text-slate-800 dark:text-slate-100 whitespace-nowrap">{log.actualTime} <span className="opacity-40 text-xs ml-2">({log.scheduledTime})</span></td>
+                          <td className="px-6 lg:px-8 py-5"><span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${log.status === 'Tepat Waktu' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400'}`}>{log.status}</span></td>
+                          <td className="px-6 lg:px-8 py-5">
+                            {log.delayMinutes > 0 ? (
+                              <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-black bg-rose-100 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400">
+                                <Clock3 className="w-3 h-3" />
+                                +{log.delayMinutes} menit
+                              </span>
+                            ) : (
+                              <span className="text-sm text-slate-400">-</span>
+                            )}
+                          </td>
+                          <td className="px-6 lg:px-8 py-5 text-sm text-slate-500 dark:text-slate-400 max-w-[200px] truncate">{log.reason || '-'}</td>
+                        </tr>
+                      ))}
+                    {state.logs.filter(log => !historyDateFilter || log.date === historyDateFilter).length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="px-8 py-12 text-center text-slate-400">
+                          <div className="flex flex-col items-center gap-3">
+                            <CalendarDays className="w-12 h-12 opacity-30" />
+                            <p className="text-sm font-bold">Tidak ada data untuk tanggal ini</p>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
       </main>
+
+      {/* Late Prayer Reason Modal */}
+      {lateModalOpen && pendingLatePrayer && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in slide-in-from-bottom-4">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center">
+                <Clock3 className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">Sholat {pendingLatePrayer.name}</h3>
+                <p className="text-sm text-amber-600 dark:text-amber-400 font-bold">Terlambat dari jadwal</p>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">
+                Alasan Keterlambatan (Opsional)
+              </label>
+              <textarea
+                value={lateReason}
+                onChange={(e) => setLateReason(e.target.value)}
+                placeholder="Contoh: meeting panjang, lupa waktu, dll..."
+                className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-slate-100 font-medium resize-none"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="ghost"
+                className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-700"
+                onClick={() => {
+                  setLateModalOpen(false);
+                  setPendingLatePrayer(null);
+                  setLateReason('');
+                }}
+              >
+                Batal
+              </Button>
+              <Button
+                className="flex-1 rounded-2xl"
+                onClick={confirmLatePrayer}
+              >
+                Konfirmasi
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

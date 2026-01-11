@@ -14,6 +14,7 @@ export interface PrayerLog {
   actualTime: string;
   status: 'Tepat Waktu' | 'Terlambat' | 'Terlewat';
   delayMinutes: number;
+  reason?: string; // Optional reason for being late
 }
 
 export interface DailySchedule {
