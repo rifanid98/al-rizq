@@ -28,7 +28,8 @@ import {
   Lock,
   CloudDownload,
   ChevronLeft,
-  CalendarDays
+  CalendarDays,
+  RotateCcw
 } from 'lucide-react';
 import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile } from './types';
 import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS } from './constants';
@@ -78,6 +79,7 @@ const App: React.FC = () => {
   const [lateModalOpen, setLateModalOpen] = useState(false);
   const [pendingLatePrayer, setPendingLatePrayer] = useState<{ name: PrayerName; scheduledTime: string } | null>(null);
   const [lateReason, setLateReason] = useState('');
+  const [hasBackup, setHasBackup] = useState(!!localStorage.getItem(STORAGE_KEYS.LOGS_BACKUP));
 
   // History date filter - empty string means show all
   const [historyDateFilter, setHistoryDateFilter] = useState<string>('');
@@ -286,6 +288,10 @@ const App: React.FC = () => {
     try {
       const result = await downloadFromCloud(state.user.email);
       if (result) {
+        // Backup current logs before overwriting
+        localStorage.setItem(STORAGE_KEYS.LOGS_BACKUP, JSON.stringify(state.logs));
+        setHasBackup(true);
+
         setState(prev => ({ ...prev, logs: result.logs }));
         localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(result.logs));
         localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, result.last_updated.toString());
@@ -296,7 +302,18 @@ const App: React.FC = () => {
     } finally {
       setState(prev => ({ ...prev, isSyncing: false }));
     }
-  }, [state.user]);
+  }, [state.user, state.logs]);
+
+  const handleRevert = useCallback(() => {
+    const backup = localStorage.getItem(STORAGE_KEYS.LOGS_BACKUP);
+    if (backup && window.confirm('Apakah Anda yakin ingin membatalkan sinkronisasi terakhir dan kembali ke data sebelumnya?')) {
+      const restoredLogs = JSON.parse(backup);
+      setState(prev => ({ ...prev, logs: restoredLogs }));
+      localStorage.setItem(STORAGE_KEYS.LOGS, backup);
+      localStorage.removeItem(STORAGE_KEYS.LOGS_BACKUP);
+      setHasBackup(false);
+    }
+  }, []);
 
   // Manual sync only as requested
 
@@ -499,6 +516,17 @@ const App: React.FC = () => {
                     <CloudDownload className="w-4 h-4" />
                     <span className="hidden lg:inline text-xs font-bold">Download</span>
                   </Button>
+                  {hasBackup && (
+                    <Button
+                      variant="ghost"
+                      className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/20 flex items-center gap-2 text-rose-600 dark:text-rose-400"
+                      onClick={handleRevert}
+                      title="Batalkan Sinkronisasi & Kembali ke Data Sebelumnya"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      <span className="hidden lg:inline text-xs font-bold">Revert</span>
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
@@ -524,6 +552,16 @@ const App: React.FC = () => {
                   <CloudDownload className="w-4 h-4" />
                   <span className="text-xs font-bold">Download</span>
                 </Button>
+                {hasBackup && (
+                  <Button
+                    variant="ghost"
+                    className="flex-1 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/20 flex items-center justify-center gap-2 p-2.5 text-rose-600 dark:text-rose-400"
+                    onClick={handleRevert}
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    <span className="text-xs font-bold">Revert</span>
+                  </Button>
+                )}
               </div>
             )}
           </div>

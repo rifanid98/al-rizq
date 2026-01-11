@@ -18,4 +18,5 @@ export const STORAGE_KEYS = {
   CACHE_TIMESTAMP: 'al_rizq_cache_timestamp',
   LAST_UPDATED: 'al_rizq_last_updated',
   LAST_SYNC: 'al_rizq_last_sync',
+  LOGS_BACKUP: 'al_rizq_logs_backup',
 };
