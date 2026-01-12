@@ -608,7 +608,7 @@ const App: React.FC = () => {
                   }}
                   className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors focus:outline-none ${showPrayerBg ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
                 >
-                  <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${showPrayerBg ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+                  <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${showPrayerBg ? 'translate-x-5' : 'translate-x-1'}`} />
                 </button>
                 {showPrayerBg && showOpacitySlider && (
                   <div
