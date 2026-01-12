@@ -20,11 +20,11 @@ export const PRAYER_RAKAAT: Record<PrayerName, number> = {
 };
 
 export const PRAYER_IMAGES: Record<PrayerName, string> = {
-  Subuh: '/images/prayers/subuh.png',
-  Dzuhur: '/images/prayers/dzuhur.png',
-  Ashar: '/images/prayers/ashar.png',
-  Maghrib: '/images/prayers/maghrib.png',
-  Isya: '/images/prayers/isya.png',
+  Subuh: 'images/prayers/subuh.svg',
+  Dzuhur: 'images/prayers/dzuhur.svg',
+  Ashar: 'images/prayers/ashar.svg',
+  Maghrib: 'images/prayers/maghrib.svg',
+  Isya: 'images/prayers/isya.svg',
 };
 
 export const STORAGE_KEYS = {
