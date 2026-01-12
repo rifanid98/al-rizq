@@ -19,6 +19,14 @@ export const PRAYER_RAKAAT: Record<PrayerName, number> = {
   Isya: 4,
 };
 
+export const PRAYER_IMAGES: Record<PrayerName, string> = {
+  Subuh: '/images/prayers/subuh.png',
+  Dzuhur: '/images/prayers/dzuhur.png',
+  Ashar: '/images/prayers/ashar.png',
+  Maghrib: '/images/prayers/maghrib.png',
+  Isya: '/images/prayers/isya.png',
+};
+
 export const STORAGE_KEYS = {
   LOGS: 'al_rizq_logs',
   SCHEDULE: 'al_rizq_schedule',

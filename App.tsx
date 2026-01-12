@@ -32,7 +32,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile } from './types';
-import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS, PRAYER_RAKAAT } from './constants';
+import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS, PRAYER_RAKAAT, PRAYER_IMAGES } from './constants';
 import { fetchPrayerTimes, searchLocations } from './services/prayerService';
 import { uploadToCloud, downloadFromCloud, shouldAutoSync } from './services/syncService';
 import { getCurrentTimeStr, calculateDelay, isLate, formatDate, isTimePassed } from './utils/helpers';
@@ -89,6 +89,15 @@ const App: React.FC = () => {
   const [isForgotMarking, setIsForgotMarking] = useState(false);
   const [hasBackup, setHasBackup] = useState(!!localStorage.getItem(STORAGE_KEYS.LOGS_BACKUP));
 
+  const [showPrayerBg, setShowPrayerBg] = useState<boolean>(() => {
+    const saved = localStorage.getItem('al_rizq_show_bg');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [prayerBgOpacity, setPrayerBgOpacity] = useState<number>(() => {
+    const saved = localStorage.getItem('al_rizq_bg_opacity');
+    return saved !== null ? JSON.parse(saved) : 10;
+  });
+
   // History date filter - empty string means show all
   const [historyDateFilter, setHistoryDateFilter] = useState<string>('');
 
@@ -105,6 +114,14 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, activeTab);
   }, [activeTab]);
+
+  useEffect(() => {
+    localStorage.setItem('al_rizq_show_bg', JSON.stringify(showPrayerBg));
+  }, [showPrayerBg]);
+
+  useEffect(() => {
+    localStorage.setItem('al_rizq_bg_opacity', JSON.stringify(prayerBgOpacity));
+  }, [prayerBgOpacity]);
 
   // Update clock every minute and check for date change
   useEffect(() => {
@@ -487,6 +504,33 @@ const App: React.FC = () => {
             {themeMode === 'system' && <Monitor className="w-4 h-4 text-slate-400" />}
           </button>
 
+          {/* Compact Background Image Controls (Desktop) */}
+          <div className="flex flex-col gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">Latar Gambar</span>
+              <button
+                onClick={() => setShowPrayerBg(!showPrayerBg)}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${showPrayerBg ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
+              >
+                <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${showPrayerBg ? 'translate-x-5' : 'translate-x-1'}`} />
+              </button>
+            </div>
+            {showPrayerBg && (
+              <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-1 duration-300">
+                <input
+                  type="range"
+                  min="0"
+                  max="40"
+                  step="5"
+                  value={prayerBgOpacity}
+                  onChange={(e) => setPrayerBgOpacity(parseInt(e.target.value))}
+                  className="flex-1 h-1 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                />
+                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 w-6 text-right">{prayerBgOpacity}%</span>
+              </div>
+            )}
+          </div>
+
           {state.user ? (
             <div className="space-y-4">
               <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800">
@@ -537,6 +581,30 @@ const App: React.FC = () => {
                 {themeMode === 'dark' && <Moon className="w-5 h-5 text-emerald-400" />}
                 {themeMode === 'system' && <Monitor className="w-5 h-5 text-slate-400" />}
               </button>
+
+              {/* Compact Background Image Controls (Mobile Header) */}
+              <div className="flex items-center gap-2 p-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl relative">
+                <button
+                  onClick={() => setShowPrayerBg(!showPrayerBg)}
+                  className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors focus:outline-none ${showPrayerBg ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
+                >
+                  <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${showPrayerBg ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+                </button>
+                {showPrayerBg && (
+                  <div className="absolute top-full right-0 mt-2 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-[70] flex items-center gap-3 min-w-[120px] animate-in slide-in-from-top-2">
+                    <input
+                      type="range"
+                      min="0"
+                      max="40"
+                      step="5"
+                      value={prayerBgOpacity}
+                      onChange={(e) => setPrayerBgOpacity(parseInt(e.target.value))}
+                      className="flex-1 h-1 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                    />
+                    <span className="text-[10px] font-black text-slate-500 dark:text-slate-400">{prayerBgOpacity}%</span>
+                  </div>
+                )}
+              </div>
 
               {state.user ? (
                 <div className="flex items-center gap-3">
@@ -711,77 +779,90 @@ const App: React.FC = () => {
         )}
 
         {activeTab === 'tracker' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 animate-in fade-in duration-500">
-            {PRAYER_ORDER.map((name) => {
-              const prayer = state.schedule?.prayers.find(p => p.name === name);
-              const loggedToday = state.logs.find(l => l.date === new Date().toISOString().split('T')[0] && l.prayerName === name);
-              const isPassed = prayer ? isTimePassed(prayer.time) : false;
+          <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {PRAYER_ORDER.map((name) => {
+                const prayer = state.schedule?.prayers.find(p => p.name === name);
+                const loggedToday = state.logs.find(l => l.date === new Date().toISOString().split('T')[0] && l.prayerName === name);
+                const isPassed = prayer ? isTimePassed(prayer.time) : false;
 
-              return (
-                <div key={name} className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 flex flex-col transition-all hover:shadow-xl dark:hover:shadow-emerald-950/20 hover:border-emerald-100 dark:hover:border-emerald-900 group">
-                  <div className="flex justify-between items-start mb-4 pb-6 border-b border-slate-100 dark:border-slate-800">
-                    <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-colors ${PRAYER_COLORS[name]}`}>{name}</div>
-                    <div className="text-3xl font-black text-slate-800 dark:text-slate-100 font-arabic">{prayer?.time || '--:--'}</div>
-                  </div>
-                  <div className="pt-2">
-                    {loggedToday ? (
-                      <div className="space-y-3">
-                        <div
-                          className="flex items-center justify-between text-emerald-600 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl p-1 transition-colors"
-                          onClick={() => handleEditPrayer(loggedToday)}
-                          title="Klik untuk ubah detail"
-                        >
-                          <div className="flex items-center gap-3">
-                            <CheckCircle className="w-6 h-6" />
-                            <div>
-                              <div className="flex items-center gap-2 mb-0.5">
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pelaksanaan</p>
-                                <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${loggedToday.status === 'Tepat Waktu' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'}`}>
-                                  {loggedToday.status}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <p className="text-sm font-black text-slate-800 dark:text-slate-100">{loggedToday.actualTime}</p>
-                                {loggedToday.delayMinutes > 0 && (
-                                  <span className={`text-[10px] font-bold ${loggedToday.status === 'Tepat Waktu' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
-                                    (+{loggedToday.delayMinutes}m)
+                return (
+                  <div key={name} className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 flex flex-col transition-all hover:shadow-2xl dark:hover:shadow-emerald-950/20 hover:border-emerald-100 dark:hover:border-emerald-900 group">
+                    {/* Thematic Background Image */}
+                    {showPrayerBg && (
+                      <div
+                        className="absolute inset-0 transition-opacity duration-700 bg-cover bg-center pointer-events-none"
+                        style={{
+                          backgroundImage: `url(${PRAYER_IMAGES[name]})`,
+                          opacity: prayerBgOpacity / 100
+                        }}
+                      />
+                    )}
+
+                    <div className="relative z-10 flex justify-between items-start mb-4 pb-6 border-b border-slate-100 dark:border-slate-800">
+                      <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-colors ${PRAYER_COLORS[name]}`}>{name}</div>
+                      <div className="text-3xl font-black text-slate-800 dark:text-slate-100 font-arabic">{prayer?.time || '--:--'}</div>
+                    </div>
+                    <div className="relative z-10 pt-2">
+                      {loggedToday ? (
+                        <div className="space-y-3">
+                          <div
+                            className="flex items-center justify-between text-emerald-600 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl p-1 transition-colors"
+                            onClick={() => handleEditPrayer(loggedToday)}
+                            title="Klik untuk ubah detail"
+                          >
+                            <div className="flex items-center gap-3">
+                              <CheckCircle className="w-6 h-6" />
+                              <div>
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pelaksanaan</p>
+                                  <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${loggedToday.status === 'Tepat Waktu' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'}`}>
+                                    {loggedToday.status}
                                   </span>
-                                )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-sm font-black text-slate-800 dark:text-slate-100">{loggedToday.actualTime}</p>
+                                  {loggedToday.delayMinutes > 0 && (
+                                    <span className={`text-[10px] font-bold ${loggedToday.status === 'Tepat Waktu' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                                      (+{loggedToday.delayMinutes}m)
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
+                          {loggedToday.locationType && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{loggedToday.locationType}</span>
+                            </div>
+                          )}
+                          {loggedToday.isMasbuq && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-100 dark:border-amber-900/50">
+                              <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest">Masbuq: {loggedToday.masbuqRakaat} Rakaat</span>
+                            </div>
+                          )}
                         </div>
-                        {loggedToday.locationType && (
-                          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
-                            <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{loggedToday.locationType}</span>
-                          </div>
-                        )}
-                        {loggedToday.isMasbuq && (
-                          <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-100 dark:border-amber-900/50">
-                            <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest">Masbuq: {loggedToday.masbuqRakaat} Rakaat</span>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <Button
-                          className="w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg shadow-emerald-500/10"
-                          disabled={!prayer || !isPassed}
-                          onClick={() => prayer && handlePrayerClick(name, prayer.time)}
-                        >
-                          {!isPassed ? <Lock className="w-4 h-4 mr-2 opacity-50" /> : null}
-                          {isPassed ? "Tandai Sholat" : "Belum Waktunya"}
-                        </Button>
-                        {!isPassed && prayer && (
-                          <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Siap pada {prayer.time}</p>
-                        )}
-                      </div>
-                    )}
+                      ) : (
+                        <div className="space-y-3">
+                          <Button
+                            className="w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg shadow-emerald-500/10"
+                            disabled={!prayer || !isPassed}
+                            onClick={() => prayer && handlePrayerClick(name, prayer.time)}
+                          >
+                            {!isPassed ? <Lock className="w-4 h-4 mr-2 opacity-50" /> : null}
+                            {isPassed ? "Tandai Sholat" : "Belum Waktunya"}
+                          </Button>
+                          {!isPassed && prayer && (
+                            <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Siap pada {prayer.time}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
 
