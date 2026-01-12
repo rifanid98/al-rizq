@@ -592,7 +592,7 @@ const App: React.FC = () => {
               </button>
 
               {/* Compact Background Image Controls */}
-              <div className="flex items-center gap-2 p-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl relative">
+              <div className="flex items-center gap-2 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl relative">
                 <button
                   onClick={() => {
                     if (!showPrayerBg) {
@@ -687,7 +687,7 @@ const App: React.FC = () => {
                     title="Upload Riwayat ke Cloud"
                   >
                     <CloudUpload className="w-4 h-4" />
-                    <span className="hidden lg:inline text-xs font-bold">Upload</span>
+                    <span className="hidden md:inline text-xs font-bold">Upload</span>
                   </Button>
                   <Button
                     variant="ghost"
@@ -697,7 +697,7 @@ const App: React.FC = () => {
                     title="Download Riwayat dari Cloud"
                   >
                     <CloudDownload className="w-4 h-4" />
-                    <span className="hidden lg:inline text-xs font-bold">Download</span>
+                    <span className="hidden md:inline text-xs font-bold">Download</span>
                   </Button>
                   {hasBackup && (
                     <Button
@@ -707,7 +707,7 @@ const App: React.FC = () => {
                       title="Batalkan Sinkronisasi & Kembali ke Data Sebelumnya"
                     >
                       <RotateCcw className="w-4 h-4" />
-                      <span className="hidden lg:inline text-xs font-bold">Revert</span>
+                      <span className="hidden md:inline text-xs font-bold">Revert</span>
                     </Button>
                   )}
                 </div>
