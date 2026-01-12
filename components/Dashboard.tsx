@@ -74,6 +74,33 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Detail Masbuq Summary (Performa Ibadah) */}
+      <div className="bg-emerald-600 dark:bg-emerald-900/40 p-8 rounded-[2.5rem] shadow-xl shadow-emerald-500/10 flex flex-col md:flex-row items-center justify-between gap-8 text-white">
+        <div className="flex items-center gap-6">
+          <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+            <TrendingUp className="w-8 h-8" />
+          </div>
+          <div>
+            <h3 className="text-xl font-black tracking-tight">Performa Ibadah</h3>
+            <p className="text-emerald-100 font-medium opacity-80">Teruskan konsistensi untuk hasil yang maksimal.</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 w-full md:w-auto">
+          <div className="text-center md:text-left">
+            <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">Masjid Rate</p>
+            <p className="text-2xl font-black">{stats.total > 0 ? Math.round((stats.atMosque / stats.total) * 100) : 0}%</p>
+          </div>
+          <div className="text-center md:text-left">
+            <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">Ontime Rate</p>
+            <p className="text-2xl font-black">{stats.total > 0 ? Math.round((stats.ontime / stats.total) * 100) : 0}%</p>
+          </div>
+          <div className="text-center md:text-left col-span-2 md:col-span-1">
+            <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">Avg Delay</p>
+            <p className="text-2xl font-black">{stats.avgDelay}m</p>
+          </div>
+        </div>
+      </div>
+
       {/* Primary Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
@@ -200,32 +227,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
         </div>
       </div>
 
-      {/* Detail Masbuq Summary */}
-      <div className="bg-emerald-600 dark:bg-emerald-900/40 p-8 rounded-[2.5rem] shadow-xl shadow-emerald-500/10 flex flex-col md:flex-row items-center justify-between gap-8 text-white">
-        <div className="flex items-center gap-6">
-          <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
-            <TrendingUp className="w-8 h-8" />
-          </div>
-          <div>
-            <h3 className="text-xl font-black tracking-tight">Performa Ibadah</h3>
-            <p className="text-emerald-100 font-medium opacity-80">Teruskan konsistensi untuk hasil yang maksimal.</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 w-full md:w-auto">
-          <div className="text-center md:text-left">
-            <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">Masjid Rate</p>
-            <p className="text-2xl font-black">{stats.total > 0 ? Math.round((stats.atMosque / stats.total) * 100) : 0}%</p>
-          </div>
-          <div className="text-center md:text-left">
-            <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">Ontime Rate</p>
-            <p className="text-2xl font-black">{stats.total > 0 ? Math.round((stats.ontime / stats.total) * 100) : 0}%</p>
-          </div>
-          <div className="text-center md:text-left col-span-2 md:col-span-1">
-            <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">Avg Delay</p>
-            <p className="text-2xl font-black">{stats.avgDelay}m</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
