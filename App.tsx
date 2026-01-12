@@ -878,7 +878,7 @@ const App: React.FC = () => {
               {PRAYER_ORDER.map((name) => {
                 const prayer = state.schedule?.prayers.find(p => p.name === name);
                 const loggedToday = state.logs.find(l => l.date === currentDate && l.prayerName === name);
-                const isPassed = prayer ? (import.meta.env.DEV || isTimePassed(prayer.time, currentDate)) : false;
+                const isPassed = prayer ? isTimePassed(prayer.time, currentDate) : false;
 
                 return (
                   <div key={name} className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 flex flex-col transition-all hover:shadow-2xl dark:hover:shadow-emerald-950/20 hover:border-emerald-100 dark:hover:border-emerald-900 group">
