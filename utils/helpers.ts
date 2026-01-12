@@ -12,6 +12,11 @@ export const getLocalDateStr = () => {
   return `${year}-${month}-${day}`;
 };
 
+export const formatDateForApi = (localDateStr: string) => {
+  const [year, month, day] = localDateStr.split('-');
+  return `${day}-${month}-${year}`;
+};
+
 export const calculateDelay = (scheduled: string, actual: string): number => {
   const [sH, sM] = scheduled.split(':').map(Number);
   const [aH, aM] = actual.split(':').map(Number);
@@ -36,16 +41,25 @@ export const getStatusLabel = (status: string) => {
   }
 };
 
-export const isTimePassed = (scheduledTime: string): boolean => {
+export const isTimePassed = (scheduledTime: string, targetDateStr?: string): boolean => {
   const now = new Date();
   const [h, m] = scheduledTime.split(':').map(Number);
-  const prayerDate = new Date();
-  prayerDate.setHours(h, m, 0, 0);
+
+  // Use provided date or today's local date
+  const dateStr = targetDateStr || getLocalDateStr();
+  const [year, month, day] = dateStr.split('-').map(Number);
+
+  const prayerDate = new Date(year, month - 1, day, h, m, 0, 0);
   return now >= prayerDate;
 };
 
 export const formatDate = (dateStr: string) => {
-  return new Date(dateStr).toLocaleDateString('id-ID', {
+  if (!dateStr) return '';
+  // Split the YYYY-MM-DD and create a local date
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const d = new Date(year, month - 1, day);
+
+  return d.toLocaleDateString('id-ID', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',

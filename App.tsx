@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 
 import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile } from './types';
-import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS, PRAYER_RAKAAT, PRAYER_IMAGES } from './constants';
+import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS, PRAYER_RAKAAT, PRAYER_IMAGES, CURRENT_VERSION } from './constants';
 import { fetchPrayerTimes, searchLocations } from './services/prayerService';
 import { uploadToCloud, downloadFromCloud, shouldAutoSync } from './services/syncService';
 import { getCurrentTimeStr, calculateDelay, isLate, formatDate, isTimePassed, getLocalDateStr } from './utils/helpers';
@@ -134,14 +134,38 @@ const App: React.FC = () => {
     localStorage.setItem('al_rizq_bg_opacity', JSON.stringify(prayerBgOpacity));
   }, [prayerBgOpacity]);
 
+  // Version check/Cache busting
+  useEffect(() => {
+    const savedVersion = localStorage.getItem(STORAGE_KEYS.APP_VERSION);
+    if (savedVersion !== CURRENT_VERSION) {
+      // Clear old cache and schedule to ensure fresh start with new logic
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('al_rizq_api_cache_') || key === STORAGE_KEYS.SCHEDULE) {
+          localStorage.removeItem(key);
+        }
+      });
+      localStorage.setItem(STORAGE_KEYS.APP_VERSION, CURRENT_VERSION);
+      // Try to get fresh schedule
+      if (state.schedule) {
+        getLocationAndSchedule();
+      }
+    }
+  }, []);
+
   // Update clock every 30 seconds and check for date change at midnight
   useEffect(() => {
     const updateTimeAndDate = () => {
       setCurrentTime(getCurrentTimeStr());
       const today = getLocalDateStr();
+
+      // Critical check: if stored date is different from actual local today
       if (today !== lastDateRef.current) {
+        console.log(`Date changed from ${lastDateRef.current} to ${today}`);
         lastDateRef.current = today;
         setCurrentDate(today);
+
+        // Also clear history filter if it was set to "Today"
+        setHistoryDateFilter(today);
       }
     };
 
@@ -854,7 +878,7 @@ const App: React.FC = () => {
               {PRAYER_ORDER.map((name) => {
                 const prayer = state.schedule?.prayers.find(p => p.name === name);
                 const loggedToday = state.logs.find(l => l.date === currentDate && l.prayerName === name);
-                const isPassed = prayer ? (import.meta.env.DEV || isTimePassed(prayer.time)) : false;
+                const isPassed = prayer ? (import.meta.env.DEV || isTimePassed(prayer.time, currentDate)) : false;
 
                 return (
                   <div key={name} className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 flex flex-col transition-all hover:shadow-2xl dark:hover:shadow-emerald-950/20 hover:border-emerald-100 dark:hover:border-emerald-900 group">
