@@ -35,7 +35,7 @@ import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile } from './t
 import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS, PRAYER_RAKAAT, PRAYER_IMAGES } from './constants';
 import { fetchPrayerTimes, searchLocations } from './services/prayerService';
 import { uploadToCloud, downloadFromCloud, shouldAutoSync } from './services/syncService';
-import { getCurrentTimeStr, calculateDelay, isLate, formatDate, isTimePassed } from './utils/helpers';
+import { getCurrentTimeStr, calculateDelay, isLate, formatDate, isTimePassed, getLocalDateStr } from './utils/helpers';
 import { Dashboard } from './components/Dashboard';
 import { Button } from './components/ui/Button';
 
@@ -75,7 +75,7 @@ const App: React.FC = () => {
   const [isSearchingSuggestions, setIsSearchingSuggestions] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [currentTime, setCurrentTime] = useState(getCurrentTimeStr());
-  const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
+  const [currentDate, setCurrentDate] = useState(getLocalDateStr());
 
   // Late prayer reason modal state
   const [lateModalOpen, setLateModalOpen] = useState(false);
@@ -132,17 +132,41 @@ const App: React.FC = () => {
     localStorage.setItem('al_rizq_bg_opacity', JSON.stringify(prayerBgOpacity));
   }, [prayerBgOpacity]);
 
-  // Update clock every minute and check for date change
+  // Update clock every 30 seconds and check for date change at midnight
   useEffect(() => {
-    const interval = setInterval(() => {
+    const updateTimeAndDate = () => {
       setCurrentTime(getCurrentTimeStr());
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalDateStr();
       if (today !== lastDateRef.current) {
         lastDateRef.current = today;
         setCurrentDate(today);
       }
-    }, 30000);
-    return () => clearInterval(interval);
+    };
+
+    // Check immediately
+    updateTimeAndDate();
+
+    // Set up interval for every 30 seconds
+    const interval = setInterval(updateTimeAndDate, 30000);
+
+    // Also calculate time until next midnight for a precise update
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    const msUntilMidnight = tomorrow.getTime() - now.getTime();
+
+    const midnightTimeout = setTimeout(() => {
+      updateTimeAndDate();
+      // After midnight, re-run this effect to set a new timeout for the next day
+      // But since we have the interval, it might be redundant, 
+      // though this ensures it happens EXACTLY at midnight.
+    }, msUntilMidnight + 100); // 100ms buffer
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(midnightTimeout);
+    };
   }, []);
 
   // Theme Sync
@@ -293,7 +317,7 @@ const App: React.FC = () => {
 
     // Refresh schedule if it's a new day
     if (state.schedule) {
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = getLocalDateStr();
       if (state.schedule.date !== todayStr) {
         getLocationAndSchedule();
       }
@@ -415,7 +439,7 @@ const App: React.FC = () => {
   };
 
   const logPrayer = (prayerName: PrayerName, scheduledTime: string, reason?: string, isForgot: boolean = false, extra?: Partial<PrayerLog>) => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateStr();
     const actualTime = getCurrentTimeStr();
     const delay = calculateDelay(scheduledTime, actualTime);
 
@@ -575,7 +599,7 @@ const App: React.FC = () => {
               </h2>
               <div className="flex items-center gap-3 mt-2">
                 <span className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-[10px] lg:text-xs font-bold text-slate-600 dark:text-slate-400 shadow-sm">
-                  <Calendar className="w-3 h-3 lg:w-3.5 lg:h-3.5 text-emerald-600" /> {formatDate(new Date().toISOString().split('T')[0])}
+                  <Calendar className="w-3 h-3 lg:w-3.5 lg:h-3.5 text-emerald-600" /> {formatDate(currentDate)}
                 </span>
               </div>
             </div>
@@ -827,7 +851,7 @@ const App: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {PRAYER_ORDER.map((name) => {
                 const prayer = state.schedule?.prayers.find(p => p.name === name);
-                const loggedToday = state.logs.find(l => l.date === new Date().toISOString().split('T')[0] && l.prayerName === name);
+                const loggedToday = state.logs.find(l => l.date === currentDate && l.prayerName === name);
                 const isPassed = prayer ? isTimePassed(prayer.time) : false;
 
                 return (
@@ -944,9 +968,12 @@ const App: React.FC = () => {
                 <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-1">
                   <button
                     onClick={() => {
-                      const d = historyDateFilter ? new Date(historyDateFilter) : new Date();
+                      const d = historyDateFilter ? new Date(historyDateFilter + 'T00:00:00') : new Date();
                       d.setDate(d.getDate() - 1);
-                      setHistoryDateFilter(d.toISOString().split('T')[0]);
+                      const year = d.getFullYear();
+                      const month = String(d.getMonth() + 1).padStart(2, '0');
+                      const day = String(d.getDate()).padStart(2, '0');
+                      setHistoryDateFilter(`${year}-${month}-${day}`);
                     }}
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                     title="Hari Sebelumnya"
@@ -954,17 +981,21 @@ const App: React.FC = () => {
                     <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                   </button>
                   <button
-                    onClick={() => setHistoryDateFilter(new Date().toISOString().split('T')[0])}
+                    onClick={() => setHistoryDateFilter(currentDate)}
                     className="px-3 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg transition-colors"
                   >
                     Hari Ini
                   </button>
                   <button
                     onClick={() => {
-                      const d = historyDateFilter ? new Date(historyDateFilter) : new Date();
+                      const d = historyDateFilter ? new Date(historyDateFilter + 'T00:00:00') : new Date();
                       d.setDate(d.getDate() + 1);
-                      if (d <= new Date()) {
-                        setHistoryDateFilter(d.toISOString().split('T')[0]);
+                      const year = d.getFullYear();
+                      const month = String(d.getMonth() + 1).padStart(2, '0');
+                      const day = String(d.getDate()).padStart(2, '0');
+                      const dateStr = `${year}-${month}-${day}`;
+                      if (dateStr <= currentDate) {
+                        setHistoryDateFilter(dateStr);
                       }
                     }}
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"

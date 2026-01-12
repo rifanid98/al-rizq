@@ -1,6 +1,6 @@
 
 import { DailySchedule, PrayerName } from "../types";
-import { getCache, setCache } from "../utils/helpers";
+import { getCache, setCache, getLocalDateStr } from "../utils/helpers";
 
 /**
  * Search locations using OpenStreetMap Nominatim API (No API Key required)
@@ -31,7 +31,7 @@ export const searchLocations = async (query: string): Promise<string[]> => {
  * Fetch prayer times using Aladhan API (Method 11 for Kemenag Indonesia)
  */
 export const fetchPrayerTimes = async (location: { lat: number; lng: number } | { address: string }): Promise<DailySchedule> => {
-    const date = new Date().toISOString().split('T')[0];
+    const date = getLocalDateStr();
     const cacheKey = `prayer_${JSON.stringify(location)}_${date}`;
     const cached = getCache(cacheKey);
     if (cached) return cached;
