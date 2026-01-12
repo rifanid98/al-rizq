@@ -97,6 +97,15 @@ const App: React.FC = () => {
     const saved = localStorage.getItem('al_rizq_bg_opacity');
     return saved !== null ? JSON.parse(saved) : 10;
   });
+  const [showOpacitySlider, setShowOpacitySlider] = useState(false);
+  const sliderTimerRef = useRef<number | null>(null);
+
+  const resetSliderTimer = useCallback(() => {
+    if (sliderTimerRef.current) window.clearTimeout(sliderTimerRef.current);
+    sliderTimerRef.current = window.setTimeout(() => {
+      setShowOpacitySlider(false);
+    }, 5000);
+  }, []);
 
   // History date filter - empty string means show all
   const [historyDateFilter, setHistoryDateFilter] = useState<string>('');
@@ -558,8 +567,8 @@ const App: React.FC = () => {
       </nav>
 
       <main className="flex-1 p-4 lg:p-10 max-w-6xl mx-auto w-full">
-        <header className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
-          <div className="flex justify-between items-center md:block">
+        <header className="flex flex-col lg:flex-row lg:items-center justify-between mb-10 gap-6">
+          <div className="flex justify-between items-start w-full">
             <div>
               <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
                 {activeTab === 'tracker' ? 'Tracker Sholat' : activeTab === 'dashboard' ? 'Statistik' : 'Riwayat'}
@@ -571,54 +580,81 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Mobile-only User/Theme Controls */}
-            <div className="flex lg:hidden items-center gap-2">
+            {/* Top-Right Controls for Mobile & Tablet (lg:hidden) */}
+            <div className="flex lg:hidden items-center gap-2 shrink-0">
               <button
                 onClick={cycleTheme}
-                className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 dark:text-slate-400"
+                className="p-2 lg:p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 dark:text-slate-400"
               >
-                {themeMode === 'light' && <Sun className="w-5 h-5 text-amber-500" />}
-                {themeMode === 'dark' && <Moon className="w-5 h-5 text-emerald-400" />}
-                {themeMode === 'system' && <Monitor className="w-5 h-5 text-slate-400" />}
+                {themeMode === 'light' && <Sun className="w-4 h-4 lg:w-5 lg:h-5 text-amber-500" />}
+                {themeMode === 'dark' && <Moon className="w-4 h-4 lg:w-5 lg:h-5 text-emerald-400" />}
+                {themeMode === 'system' && <Monitor className="w-4 h-4 lg:w-5 lg:h-5 text-slate-400" />}
               </button>
 
-              {/* Compact Background Image Controls (Mobile Header) */}
+              {/* Compact Background Image Controls */}
               <div className="flex items-center gap-2 p-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl relative">
                 <button
-                  onClick={() => setShowPrayerBg(!showPrayerBg)}
+                  onClick={() => {
+                    if (!showPrayerBg) {
+                      setShowPrayerBg(true);
+                      setShowOpacitySlider(true);
+                      resetSliderTimer();
+                    } else {
+                      setShowOpacitySlider(!showOpacitySlider);
+                      if (!showOpacitySlider) resetSliderTimer();
+                    }
+                  }}
                   className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors focus:outline-none ${showPrayerBg ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
                 >
                   <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${showPrayerBg ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
                 </button>
-                {showPrayerBg && (
-                  <div className="absolute top-full right-0 mt-2 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-[70] flex items-center gap-3 min-w-[120px] animate-in slide-in-from-top-2">
-                    <input
-                      type="range"
-                      min="0"
-                      max="40"
-                      step="5"
-                      value={prayerBgOpacity}
-                      onChange={(e) => setPrayerBgOpacity(parseInt(e.target.value))}
-                      className="flex-1 h-1 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                    />
-                    <span className="text-[10px] font-black text-slate-500 dark:text-slate-400">{prayerBgOpacity}%</span>
+                {showPrayerBg && showOpacitySlider && (
+                  <div
+                    className="absolute top-full right-0 mt-3 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-[100] flex items-center gap-4 min-w-[200px] animate-in slide-in-from-top-2 duration-300"
+                    onMouseEnter={() => { if (sliderTimerRef.current) window.clearTimeout(sliderTimerRef.current); }}
+                    onMouseLeave={resetSliderTimer}
+                  >
+                    <div className="flex-1 flex flex-col gap-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Opacity</span>
+                        <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">{prayerBgOpacity}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="40"
+                        step="5"
+                        value={prayerBgOpacity}
+                        onChange={(e) => {
+                          setPrayerBgOpacity(parseInt(e.target.value));
+                          resetSliderTimer();
+                        }}
+                        className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                    <button
+                      onClick={() => setShowOpacitySlider(false)}
+                      className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
                 )}
               </div>
 
               {state.user ? (
-                <div className="flex items-center gap-3">
-                  <div className="flex flex-col items-end hidden md:flex">
-                    <p className="text-[10px] font-black text-slate-800 dark:text-slate-100">{state.user.name}</p>
-                    <span className="text-[8px] font-bold text-emerald-600 dark:text-emerald-400">Cloud Synced</span>
+                <div className="flex items-center gap-2 p-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
+                  <img src={state.user.picture} alt="Avatar" referrerPolicy="no-referrer" className="w-8 h-8 rounded-lg border border-white dark:border-slate-800" />
+                  <div className="hidden sm:flex flex-col pr-1">
+                    <p className="text-[9px] font-black text-slate-800 dark:text-slate-100 truncate max-w-[80px]">{state.user.name}</p>
+                    <span className="text-[8px] font-bold text-emerald-600 dark:text-emerald-400">Synced</span>
                   </div>
-                  <img src={state.user.picture} alt="Avatar" referrerPolicy="no-referrer" className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-800" />
-                  <button onClick={handleLogout} className="p-2.5 text-rose-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
-                    <LogOut className="w-5 h-5" />
+                  <button onClick={handleLogout} className="p-2 text-rose-500 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                    <LogOut className="w-3.5 h-3.5" />
                   </button>
                 </div>
               ) : (
-                <div ref={googleBtnHeaderRef} className="rounded-full overflow-hidden scale-90 origin-right"></div>
+                <div ref={googleBtnHeaderRef} className="rounded-full overflow-hidden scale-75 origin-right"></div>
               )}
             </div>
           </div>
@@ -678,36 +714,42 @@ const App: React.FC = () => {
               )}
             </div>
 
-            {/* In Mobile, show these in a separate row below */}
-            {state.user && (
-              <div className="flex md:hidden gap-2 w-full justify-stretch">
-                <Button
-                  variant="ghost"
-                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center gap-2 p-2.5"
-                  onClick={handleUpload}
-                  isLoading={state.isSyncing && !state.isLoading}
-                >
-                  <CloudUpload className="w-4 h-4" />
-                  <span className="text-xs font-bold">Upload</span>
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center gap-2 p-2.5"
-                  onClick={handleDownload}
-                  isLoading={state.isSyncing && !state.isLoading}
-                >
-                  <CloudDownload className="w-4 h-4" />
-                  <span className="text-xs font-bold">Download</span>
-                </Button>
-                {hasBackup && (
-                  <Button
-                    variant="ghost"
-                    className="flex-1 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/20 flex items-center justify-center gap-2 p-2.5 text-rose-600 dark:text-rose-400"
-                    onClick={handleRevert}
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    <span className="text-xs font-bold">Revert</span>
-                  </Button>
+            {/* Combined User/Sync/Revert Row for combined view (Mobile/Small Tablet) */}
+            {activeTab !== 'history' && (
+              <div className="flex md:hidden flex-col gap-3 w-full">
+
+                {/* Cloud Sync/Revert Row */}
+                {state.user && (
+                  <div className="flex gap-2 w-full">
+                    <Button
+                      variant="ghost"
+                      className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center gap-2 p-2"
+                      onClick={handleUpload}
+                      isLoading={state.isSyncing && !state.isLoading}
+                    >
+                      <CloudUpload className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-bold">Upload</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center gap-2 p-2"
+                      onClick={handleDownload}
+                      isLoading={state.isSyncing && !state.isLoading}
+                    >
+                      <CloudDownload className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-bold">Download</span>
+                    </Button>
+                    {hasBackup && (
+                      <Button
+                        variant="ghost"
+                        className="flex-1 h-10 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/20 flex items-center justify-center gap-2 p-2 text-rose-600 dark:text-rose-400"
+                        onClick={handleRevert}
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-bold">Revert</span>
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
             )}
