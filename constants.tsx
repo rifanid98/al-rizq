@@ -11,6 +11,14 @@ export const PRAYER_COLORS: Record<PrayerName, string> = {
   Isya: 'bg-indigo-100 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900',
 };
 
+export const PRAYER_RAKAAT: Record<PrayerName, number> = {
+  Subuh: 2,
+  Dzuhur: 4,
+  Ashar: 4,
+  Maghrib: 3,
+  Isya: 4,
+};
+
 export const STORAGE_KEYS = {
   LOGS: 'al_rizq_logs',
   SCHEDULE: 'al_rizq_schedule',

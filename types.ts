@@ -15,6 +15,9 @@ export interface PrayerLog {
   status: 'Tepat Waktu' | 'Terlambat' | 'Terlewat';
   delayMinutes: number;
   reason?: string; // Optional reason for being late
+  isMasbuq?: boolean;
+  masbuqRakaat?: number;
+  locationType?: 'Rumah' | 'Masjid';
 }
 
 export interface DailySchedule {

@@ -32,7 +32,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile } from './types';
-import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS } from './constants';
+import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS, PRAYER_RAKAAT } from './constants';
 import { fetchPrayerTimes, searchLocations } from './services/prayerService';
 import { uploadToCloud, downloadFromCloud, shouldAutoSync } from './services/syncService';
 import { getCurrentTimeStr, calculateDelay, isLate, formatDate, isTimePassed } from './utils/helpers';
@@ -79,6 +79,12 @@ const App: React.FC = () => {
   const [lateModalOpen, setLateModalOpen] = useState(false);
   const [pendingLatePrayer, setPendingLatePrayer] = useState<{ name: PrayerName; scheduledTime: string } | null>(null);
   const [lateReason, setLateReason] = useState('');
+  const [isMasbuq, setIsMasbuq] = useState(false);
+  const [masbuqRakaat, setMasbuqRakaat] = useState(1);
+  const [locationType, setLocationType] = useState<'Rumah' | 'Masjid'>('Masjid');
+  const [editingLogId, setEditingLogId] = useState<string | null>(null);
+  const [isLateEntry, setIsLateEntry] = useState(false);
+  const [isForgotMarking, setIsForgotMarking] = useState(false);
   const [hasBackup, setHasBackup] = useState(!!localStorage.getItem(STORAGE_KEYS.LOGS_BACKUP));
 
   // History date filter - empty string means show all
@@ -272,6 +278,13 @@ const App: React.FC = () => {
     if (!state.user?.email) return;
     setState(prev => ({ ...prev, isSyncing: true }));
     try {
+      // Backup current cloud data before overwriting
+      const result = await downloadFromCloud(state.user.email);
+      if (result && result.logs && result.logs.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.LOGS_BACKUP, JSON.stringify(result.logs));
+        setHasBackup(true);
+      }
+
       const timestamp = await uploadToCloud(state.user.email, state.logs);
       localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, timestamp.toString());
       localStorage.setItem(STORAGE_KEYS.LAST_SYNC, timestamp.toString());
@@ -333,30 +346,83 @@ const App: React.FC = () => {
       // Show modal for late reason
       setPendingLatePrayer({ name: prayerName, scheduledTime });
       setLateReason('');
+      setIsMasbuq(false);
+      setMasbuqRakaat(1);
+      setLocationType('Masjid');
+      setEditingLogId(null);
+      setIsLateEntry(true);
+      setIsForgotMarking(false);
       setLateModalOpen(true);
     } else {
       // Log immediately if on time
       logPrayer(prayerName, scheduledTime);
+      // But open the detail modal anyway to allow adding optional info
+      setPendingLatePrayer({ name: prayerName, scheduledTime });
+      setLateReason('');
+      setIsMasbuq(false);
+      setMasbuqRakaat(1);
+      setLocationType('Masjid');
+      setEditingLogId(null);
+      setIsLateEntry(false);
+      setIsForgotMarking(false);
+      setLateModalOpen(true);
     }
   };
 
-  const logPrayer = (prayerName: PrayerName, scheduledTime: string, reason?: string) => {
+  const handleEditPrayer = (log: PrayerLog) => {
+    setPendingLatePrayer({ name: log.prayerName, scheduledTime: log.scheduledTime });
+    setLateReason(log.reason?.replace('(Lupa menandai) ', '') || '');
+    setIsMasbuq(log.isMasbuq || false);
+    setMasbuqRakaat(log.masbuqRakaat || 1);
+    setLocationType(log.locationType || 'Masjid');
+    setEditingLogId(log.id);
+    setIsLateEntry(log.status === 'Terlambat');
+    setIsForgotMarking(log.reason?.includes('(Lupa menandai)') || false);
+    setLateModalOpen(true);
+  };
+
+  const logPrayer = (prayerName: PrayerName, scheduledTime: string, reason?: string, isForgot: boolean = false, extra?: Partial<PrayerLog>) => {
     const today = new Date().toISOString().split('T')[0];
     const actualTime = getCurrentTimeStr();
     const delay = calculateDelay(scheduledTime, actualTime);
-    const newLog: PrayerLog = {
-      id: crypto.randomUUID(),
-      date: today,
-      prayerName,
-      scheduledTime,
-      actualTime,
-      status: isLate(scheduledTime, actualTime) ? 'Terlambat' : 'Tepat Waktu',
-      delayMinutes: delay,
-      reason: reason || undefined,
-    };
+
+    let status: PrayerLog['status'] = 'Tepat Waktu';
+    if (!isForgot && isLate(scheduledTime, actualTime)) {
+      status = 'Terlambat';
+    }
+
     const now = Date.now();
     setState(prev => {
-      const newLogs = [...prev.logs, newLog];
+      // Find if we are updating an existing entry by ID or by daily name
+      const targetId = extra?.id || editingLogId;
+      const updateIdx = targetId ? prev.logs.findIndex(l => l.id === targetId) : -1;
+      const existingDailyIdx = prev.logs.findIndex(l => l.date === today && l.prayerName === prayerName && !targetId);
+
+      const targetIdx = updateIdx !== -1 ? updateIdx : existingDailyIdx;
+      const existingLog = targetIdx !== -1 ? prev.logs[targetIdx] : null;
+
+      const logData: PrayerLog = {
+        id: (targetId || crypto.randomUUID()),
+        date: existingLog ? existingLog.date : today,
+        prayerName,
+        scheduledTime,
+        actualTime: existingLog ? existingLog.actualTime : (extra?.actualTime || actualTime),
+        status: existingLog ? existingLog.status : status,
+        delayMinutes: existingLog ? existingLog.delayMinutes : delay,
+        reason: isForgot ? (reason ? `(Lupa menandai) ${reason}` : 'Lupa menandai') : (reason || undefined),
+        isMasbuq: isMasbuq,
+        masbuqRakaat: isMasbuq ? masbuqRakaat : undefined,
+        locationType: locationType,
+        ...extra
+      };
+
+      let newLogs = [...prev.logs];
+      if (targetIdx !== -1) {
+        newLogs[targetIdx] = logData;
+      } else {
+        newLogs.push(logData);
+      }
+
       localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, now.toString());
       return { ...prev, logs: newLogs };
     });
@@ -364,10 +430,16 @@ const App: React.FC = () => {
 
   const confirmLatePrayer = () => {
     if (pendingLatePrayer) {
-      logPrayer(pendingLatePrayer.name, pendingLatePrayer.scheduledTime, lateReason.trim() || undefined);
+      logPrayer(pendingLatePrayer.name, pendingLatePrayer.scheduledTime, lateReason.trim() || undefined, isForgotMarking);
       setLateModalOpen(false);
       setPendingLatePrayer(null);
       setLateReason('');
+      setIsMasbuq(false);
+      setMasbuqRakaat(1);
+      setLocationType('Masjid');
+      setEditingLogId(null);
+      setIsLateEntry(false);
+      setIsForgotMarking(false);
     }
   };
 
@@ -640,24 +712,47 @@ const App: React.FC = () => {
 
               return (
                 <div key={name} className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 flex flex-col transition-all hover:shadow-xl dark:hover:shadow-emerald-950/20 hover:border-emerald-100 dark:hover:border-emerald-900 group">
-                  <div className="flex justify-between items-start mb-6">
+                  <div className="flex justify-between items-start mb-4 pb-6 border-b border-slate-100 dark:border-slate-800">
                     <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-colors ${PRAYER_COLORS[name]}`}>{name}</div>
                     <div className="text-3xl font-black text-slate-800 dark:text-slate-100 font-arabic">{prayer?.time || '--:--'}</div>
                   </div>
-                  <div className="mt-auto pt-8 border-t border-slate-100 dark:border-slate-800">
+                  <div className="pt-2">
                     {loggedToday ? (
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between text-emerald-600">
+                        <div
+                          className="flex items-center justify-between text-emerald-600 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl p-1 transition-colors"
+                          onClick={() => handleEditPrayer(loggedToday)}
+                          title="Klik untuk ubah detail"
+                        >
                           <div className="flex items-center gap-3">
                             <CheckCircle className="w-6 h-6" />
-                            <div><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pelaksanaan</p><p className="text-sm font-black text-slate-800 dark:text-slate-100">{loggedToday.actualTime}</p></div>
+                            <div>
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pelaksanaan</p>
+                                <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${loggedToday.status === 'Tepat Waktu' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'}`}>
+                                  {loggedToday.status}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-black text-slate-800 dark:text-slate-100">{loggedToday.actualTime}</p>
+                                {loggedToday.delayMinutes > 0 && (
+                                  <span className={`text-[10px] font-bold ${loggedToday.status === 'Tepat Waktu' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                                    (+{loggedToday.delayMinutes}m)
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          {loggedToday.status === 'Terlambat' && <span className="px-3 py-1 bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 rounded-xl text-xs font-black">+{loggedToday.delayMinutes}m</span>}
                         </div>
-                        {loggedToday.reason && (
-                          <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Alasan</p>
-                            <p className="text-sm text-slate-600 dark:text-slate-300">{loggedToday.reason}</p>
+                        {loggedToday.locationType && (
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                            <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{loggedToday.locationType}</span>
+                          </div>
+                        )}
+                        {loggedToday.isMasbuq && (
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-100 dark:border-amber-900/50">
+                            <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest">Masbuq: {loggedToday.masbuqRakaat} Rakaat</span>
                           </div>
                         )}
                       </div>
@@ -774,7 +869,7 @@ const App: React.FC = () => {
                 <table className="w-full text-left">
                   <thead className="bg-slate-50 dark:bg-slate-800">
                     <tr>
-                      {['Tanggal', 'Sholat', 'Waktu', 'Status', 'Keterlambatan', 'Alasan'].map(h => <th key={h} className="px-6 lg:px-8 py-5 text-[11px] font-black uppercase text-slate-400 whitespace-nowrap">{h}</th>)}
+                      {['Tanggal', 'Sholat', 'Waktu', 'Status', 'Lokasi', 'Masbuq', 'Alasan'].map(h => <th key={h} className="px-6 lg:px-8 py-5 text-[11px] font-black uppercase text-slate-400 whitespace-nowrap">{h}</th>)}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -782,19 +877,31 @@ const App: React.FC = () => {
                       .filter(log => !historyDateFilter || log.date === historyDateFilter)
                       .reverse()
                       .map(log => (
-                        <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                        <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer" onClick={() => handleEditPrayer(log)}>
                           <td className="px-6 lg:px-8 py-5 text-sm font-bold text-slate-600 dark:text-slate-400 whitespace-nowrap">{log.date}</td>
                           <td className="px-6 lg:px-8 py-5"><span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${PRAYER_COLORS[log.prayerName]}`}>{log.prayerName}</span></td>
-                          <td className="px-6 lg:px-8 py-5 text-sm font-black text-slate-800 dark:text-slate-100 whitespace-nowrap">{log.actualTime} <span className="opacity-40 text-xs ml-2">({log.scheduledTime})</span></td>
+                          <td className="px-6 lg:px-8 py-5 text-sm font-black text-slate-800 dark:text-slate-100 whitespace-nowrap">
+                            {log.actualTime}
+                            {log.delayMinutes > 0 && (
+                              <span className={`text-[10px] ml-2 font-bold ${log.status === 'Tepat Waktu' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                                +{log.delayMinutes}m
+                              </span>
+                            )}
+                            <span className="opacity-30 text-[10px] font-bold ml-2">({log.scheduledTime})</span>
+                          </td>
                           <td className="px-6 lg:px-8 py-5"><span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${log.status === 'Tepat Waktu' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400'}`}>{log.status}</span></td>
                           <td className="px-6 lg:px-8 py-5">
-                            {log.delayMinutes > 0 ? (
-                              <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-black bg-rose-100 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400">
-                                <Clock3 className="w-3 h-3" />
-                                +{log.delayMinutes} menit
-                              </span>
+                            {log.locationType ? (
+                              <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.locationType}</span>
                             ) : (
-                              <span className="text-sm text-slate-400">-</span>
+                              <span className="text-sm text-slate-300">-</span>
+                            )}
+                          </td>
+                          <td className="px-6 lg:px-8 py-5">
+                            {log.isMasbuq ? (
+                              <span className="px-2 py-1 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 rounded-lg text-[10px] font-black uppercase whitespace-nowrap">Masbuq ({log.masbuqRakaat})</span>
+                            ) : (
+                              <span className="text-sm text-slate-300">-</span>
                             )}
                           </td>
                           <td className="px-6 lg:px-8 py-5 text-sm text-slate-500 dark:text-slate-400 max-w-[200px] truncate">{log.reason || '-'}</td>
@@ -802,7 +909,7 @@ const App: React.FC = () => {
                       ))}
                     {state.logs.filter(log => !historyDateFilter || log.date === historyDateFilter).length === 0 && (
                       <tr>
-                        <td colSpan={6} className="px-8 py-12 text-center text-slate-400">
+                        <td colSpan={7} className="px-8 py-12 text-center text-slate-400">
                           <div className="flex flex-col items-center gap-3">
                             <CalendarDays className="w-12 h-12 opacity-30" />
                             <p className="text-sm font-bold">Tidak ada data untuk tanggal ini</p>
@@ -827,42 +934,113 @@ const App: React.FC = () => {
                 <Clock3 className="w-6 h-6 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">Sholat {pendingLatePrayer.name}</h3>
-                <p className="text-sm text-amber-600 dark:text-amber-400 font-bold">Terlambat dari jadwal</p>
+                <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">Konfirmasi Sholat {pendingLatePrayer.name}</h3>
+                <p className="text-sm text-slate-500 font-medium">Waktu saat ini melewati jadwal ({pendingLatePrayer.scheduledTime})</p>
               </div>
             </div>
 
-            <div className="mb-6">
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">
-                Alasan Keterlambatan (Opsional)
-              </label>
-              <textarea
-                value={lateReason}
-                onChange={(e) => setLateReason(e.target.value)}
-                placeholder="Contoh: meeting panjang, lupa waktu, dll..."
-                className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-slate-100 font-medium resize-none"
-                rows={3}
-              />
-            </div>
+            <div className="space-y-6">
+              <div className="flex gap-4">
+                <div className="flex-1 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Lokasi</p>
+                  <div className="flex gap-1 p-1 bg-slate-200/50 dark:bg-slate-900 rounded-xl">
+                    <button
+                      onClick={() => setLocationType('Masjid')}
+                      className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${locationType === 'Masjid' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
+                    >
+                      Masjid
+                    </button>
+                    <button
+                      onClick={() => setLocationType('Rumah')}
+                      className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${locationType === 'Rumah' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
+                    >
+                      Rumah
+                    </button>
+                  </div>
+                </div>
 
-            <div className="flex gap-3">
-              <Button
-                variant="ghost"
-                className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-700"
-                onClick={() => {
-                  setLateModalOpen(false);
-                  setPendingLatePrayer(null);
-                  setLateReason('');
-                }}
-              >
-                Batal
-              </Button>
-              <Button
-                className="flex-1 rounded-2xl"
-                onClick={confirmLatePrayer}
-              >
-                Konfirmasi
-              </Button>
+                <div className="flex-1 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Masbuq?</p>
+                  <button
+                    onClick={() => setIsMasbuq(!isMasbuq)}
+                    className={`w-full py-1.5 rounded-lg text-[10px] font-black uppercase transition-all border-2 ${isMasbuq ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-500 text-amber-700 dark:text-amber-400' : 'bg-white dark:bg-slate-900 border-transparent text-slate-500'}`}
+                  >
+                    {isMasbuq ? 'Ya' : 'Tidak'}
+                  </button>
+                </div>
+              </div>
+
+              {isMasbuq && (
+                <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-2xl border border-amber-200 dark:border-amber-900 animate-in zoom-in-95 duration-200">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-400 mb-3 text-center">Berapa rakaat {isMasbuq ? "(Masbuq)" : ""} yang tertinggal?</p>
+                  <div className="flex justify-center gap-2">
+                    {Array.from({ length: PRAYER_RAKAAT[pendingLatePrayer.name] }, (_, i) => i + 1).map(r => (
+                      <button
+                        key={r}
+                        onClick={() => setMasbuqRakaat(r)}
+                        className={`w-10 h-10 rounded-full font-black text-sm flex items-center justify-center transition-all ${masbuqRakaat === r ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30' : 'bg-white dark:bg-slate-800 text-slate-400 hover:text-amber-500'}`}
+                      >
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {isLateEntry && !editingLogId && (
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Tandai Sebagai</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setIsForgotMarking(false)}
+                      className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all group ${!isForgotMarking ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-500 shadow-md shadow-amber-500/10' : 'bg-white dark:bg-slate-900 border-transparent text-slate-400'}`}
+                    >
+                      <Clock className={`w-6 h-6 mb-2 transition-transform ${!isForgotMarking ? 'text-amber-600 scale-110' : 'text-slate-400 group-hover:scale-105'}`} />
+                      <span className={`text-[10px] font-black uppercase tracking-wider ${!isForgotMarking ? 'text-amber-800 dark:text-amber-400' : 'text-slate-500'}`}>Memang Telat</span>
+                    </button>
+                    <button
+                      onClick={() => setIsForgotMarking(true)}
+                      className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all group ${isForgotMarking ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-500 shadow-md shadow-emerald-500/10' : 'bg-white dark:bg-slate-900 border-transparent text-slate-400'}`}
+                    >
+                      <CheckCircle className={`w-6 h-6 mb-2 transition-transform ${isForgotMarking ? 'text-emerald-600 scale-110' : 'text-slate-400 group-hover:scale-105'}`} />
+                      <span className={`text-[10px] font-black uppercase tracking-wider ${isForgotMarking ? 'text-emerald-800 dark:text-emerald-400' : 'text-slate-500'}`}>Lupa Menandai</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">
+                  Catatan Tambahan (Opsional)
+                </label>
+                <textarea
+                  value={lateReason}
+                  onChange={(e) => setLateReason(e.target.value)}
+                  placeholder="Contoh: meeting panjang, dll..."
+                  className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-slate-100 font-medium resize-none shadow-inner"
+                  rows={2}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button
+                  variant="ghost"
+                  className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-700 h-14 font-bold text-slate-500"
+                  onClick={() => {
+                    setLateModalOpen(false);
+                    setPendingLatePrayer(null);
+                    setLateReason('');
+                  }}
+                >
+                  Batal
+                </Button>
+                <Button
+                  className="flex-1 rounded-2xl h-14 font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl shadow-emerald-500/20"
+                  onClick={confirmLatePrayer}
+                >
+                  Simpan
+                </Button>
+              </div>
             </div>
           </div>
         </div>
