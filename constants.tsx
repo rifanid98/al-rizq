@@ -27,4 +27,5 @@ export const STORAGE_KEYS = {
   LAST_UPDATED: 'al_rizq_last_updated',
   LAST_SYNC: 'al_rizq_last_sync',
   LOGS_BACKUP: 'al_rizq_logs_backup',
+  ACTIVE_TAB: 'al_rizq_active_tab',
 };

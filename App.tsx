@@ -65,7 +65,9 @@ const App: React.FC = () => {
     };
   });
 
-  const [activeTab, setActiveTab] = useState<'tracker' | 'dashboard' | 'history'>('tracker');
+  const [activeTab, setActiveTab] = useState<'tracker' | 'dashboard' | 'history'>(() => {
+    return (localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) as any) || 'tracker';
+  });
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -98,6 +100,11 @@ const App: React.FC = () => {
   const googleBtnSidebarRef = useRef<HTMLDivElement>(null);
   const googleBtnHeaderRef = useRef<HTMLDivElement>(null);
   const lastDateRef = useRef(currentDate);
+
+  // Persist active tab
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, activeTab);
+  }, [activeTab]);
 
   // Update clock every minute and check for date change
   useEffect(() => {
