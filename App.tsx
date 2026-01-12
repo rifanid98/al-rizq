@@ -29,8 +29,10 @@ import {
   CloudDownload,
   ChevronLeft,
   CalendarDays,
-  RotateCcw
+  RotateCcw,
+  Home
 } from 'lucide-react';
+
 import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile } from './types';
 import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS, PRAYER_RAKAAT, PRAYER_IMAGES } from './constants';
 import { fetchPrayerTimes, searchLocations } from './services/prayerService';
@@ -852,7 +854,7 @@ const App: React.FC = () => {
               {PRAYER_ORDER.map((name) => {
                 const prayer = state.schedule?.prayers.find(p => p.name === name);
                 const loggedToday = state.logs.find(l => l.date === currentDate && l.prayerName === name);
-                const isPassed = prayer ? isTimePassed(prayer.time) : false;
+                const isPassed = prayer ? (import.meta.env.DEV || isTimePassed(prayer.time)) : false;
 
                 return (
                   <div key={name} className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 flex flex-col transition-all hover:shadow-2xl dark:hover:shadow-emerald-950/20 hover:border-emerald-100 dark:hover:border-emerald-900 group">
@@ -875,7 +877,7 @@ const App: React.FC = () => {
                       {loggedToday ? (
                         <div className="space-y-3">
                           <div
-                            className="flex items-center justify-between text-emerald-600 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl p-1 transition-colors"
+                            className="relative overflow-hidden flex items-center justify-between text-emerald-600 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl p-1 transition-colors"
                             onClick={() => handleEditPrayer(loggedToday)}
                             title="Klik untuk ubah detail"
                           >
@@ -898,13 +900,22 @@ const App: React.FC = () => {
                                 </div>
                               </div>
                             </div>
+                            {loggedToday.locationType === 'Masjid' ? (
+                              <div className="absolute -right-8 top-1/2 -translate-y-1/2 w-40 h-40 pointer-events-none opacity-[0.06] dark:opacity-[0.12] dark:invert">
+                                <img
+                                  src="/assets/mosque_watermark.png"
+                                  alt="Masjid"
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700 text-slate-400" title="Dilaksanakan di Rumah">
+                                  <Home className="w-4 h-4" />
+                                </div>
+                              </div>
+                            )}
                           </div>
-                          {loggedToday.locationType && (
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
-                              <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{loggedToday.locationType}</span>
-                            </div>
-                          )}
                           {loggedToday.isMasbuq && (
                             <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-100 dark:border-amber-900/50">
                               <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest">Masbuq: {loggedToday.masbuqRakaat} Rakaat</span>
