@@ -600,8 +600,10 @@ const App: React.FC = () => {
                       setShowOpacitySlider(true);
                       resetSliderTimer();
                     } else {
-                      setShowOpacitySlider(!showOpacitySlider);
-                      if (!showOpacitySlider) resetSliderTimer();
+                      // If it's on, turn it off and hide the slider
+                      setShowPrayerBg(false);
+                      setShowOpacitySlider(false);
+                      if (sliderTimerRef.current) window.clearTimeout(sliderTimerRef.current);
                     }
                   }}
                   className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors focus:outline-none ${showPrayerBg ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
