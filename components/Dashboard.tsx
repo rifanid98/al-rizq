@@ -1,5 +1,4 @@
-
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import {
   BarChart,
   Bar,
@@ -13,7 +12,7 @@ import {
   Cell
 } from 'recharts';
 import { PrayerLog } from '../types';
-import { CheckCircle2, Clock, MapPin, AlertCircle, TrendingUp } from 'lucide-react';
+import { CheckCircle2, Clock, MapPin, AlertCircle, TrendingUp, ChevronDown } from 'lucide-react';
 
 interface DashboardProps {
   logs: PrayerLog[];
@@ -21,6 +20,46 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
   const isDark = document.documentElement.classList.contains('dark');
+  const performanceRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = document.documentElement.clientHeight;
+      const isScrollable = scrollHeight > clientHeight + 100;
+
+      if (!bottomRef.current) {
+        setShowScrollBtn(false);
+        return;
+      }
+
+      const rect = bottomRef.current.getBoundingClientRect();
+      // Hide button when the bottom of the page is visible within viewport
+      const hasReachedBottom = rect.top < window.innerHeight + 100;
+
+      setShowScrollBtn(isScrollable && !hasReachedBottom);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
+
+    const timer = setTimeout(handleScroll, 200);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+      clearTimeout(timer);
+    };
+  }, [logs]);
+
+  const scrollToBottom = () => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth'
+    });
+  };
 
   const stats = useMemo(() => {
     const total = logs.length;
@@ -73,9 +112,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="flex flex-col gap-8 animate-in fade-in duration-500">
+      {/* Floating Scroll CTA (Visible based on scroll) */}
+      <button
+        onClick={scrollToBottom}
+        title="Scroll ke Bagian Bawah"
+        className={`fixed right-6 lg:right-10 z-[60] flex items-center justify-center w-14 h-14 bg-emerald-600 dark:bg-emerald-500 text-white rounded-full shadow-2xl shadow-emerald-500/40 animate-in slide-in-from-bottom-8 duration-500 hover:scale-110 active:scale-95 transition-all group ${showScrollBtn ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-12 pointer-events-none'
+          } ${
+          // Tablet/Mobile: Above bottom nav
+          // Desktop: Bottom-10
+          'bottom-28 lg:bottom-10'
+          }`}
+      >
+        <ChevronDown className="w-8 h-8 group-hover:translate-y-0.5 transition-transform" />
+        <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full border-2 border-white dark:border-slate-900 animate-pulse" />
+      </button>
+
       {/* Detail Masbuq Summary (Performa Ibadah) */}
-      <div className="bg-emerald-600 dark:bg-emerald-900/40 p-8 rounded-[2.5rem] shadow-xl shadow-emerald-500/10 flex flex-col md:flex-row items-center justify-between gap-8 text-white">
+      <div
+        ref={performanceRef}
+        className="order-last md:order-first bg-emerald-600 dark:bg-emerald-900/40 p-8 rounded-[2.5rem] shadow-xl shadow-emerald-500/10 flex flex-col md:flex-row items-center justify-between gap-8 text-white"
+      >
         <div className="flex items-center gap-6">
           <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
             <TrendingUp className="w-8 h-8" />
@@ -227,6 +284,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
         </div>
       </div>
 
+      {/* Sentinel for bottom detection */}
+      <div ref={bottomRef} className="h-1" />
     </div>
   );
 };
