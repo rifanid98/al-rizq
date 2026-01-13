@@ -90,6 +90,9 @@ const App: React.FC = () => {
   const [isLateEntry, setIsLateEntry] = useState(false);
   const [isForgotMarking, setIsForgotMarking] = useState(false);
   const [hasBackup, setHasBackup] = useState(!!localStorage.getItem(STORAGE_KEYS.LOGS_BACKUP));
+  const [backupSource, setBackupSource] = useState<'upload' | 'download' | null>(() => {
+    return (localStorage.getItem('al_rizq_backup_source') as 'upload' | 'download') || null;
+  });
 
   const [showPrayerBg, setShowPrayerBg] = useState<boolean>(() => {
     const saved = localStorage.getItem('al_rizq_show_bg');
@@ -361,11 +364,13 @@ const App: React.FC = () => {
     if (!state.user?.email) return;
     setState(prev => ({ ...prev, isSyncing: true }));
     try {
-      // Backup current cloud data before overwriting
+      // Backup current CLOUD data before overwriting
       const result = await downloadFromCloud(state.user.email);
       if (result && result.logs && result.logs.length > 0) {
         localStorage.setItem(STORAGE_KEYS.LOGS_BACKUP, JSON.stringify(result.logs));
+        localStorage.setItem('al_rizq_backup_source', 'upload');
         setHasBackup(true);
+        setBackupSource('upload');
       }
 
       const timestamp = await uploadToCloud(state.user.email, state.logs);
@@ -386,7 +391,9 @@ const App: React.FC = () => {
       if (result) {
         // Backup current logs before overwriting
         localStorage.setItem(STORAGE_KEYS.LOGS_BACKUP, JSON.stringify(state.logs));
+        localStorage.setItem('al_rizq_backup_source', 'download');
         setHasBackup(true);
+        setBackupSource('download');
 
         setState(prev => ({ ...prev, logs: result.logs }));
         localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(result.logs));
@@ -400,16 +407,47 @@ const App: React.FC = () => {
     }
   }, [state.user, state.logs]);
 
-  const handleRevert = useCallback(() => {
+  const handleRevert = useCallback(async () => {
     const backup = localStorage.getItem(STORAGE_KEYS.LOGS_BACKUP);
-    if (backup && window.confirm('Apakah Anda yakin ingin membatalkan sinkronisasi terakhir dan kembali ke data sebelumnya?')) {
+    const source = backupSource;
+
+    if (!backup) return;
+
+    const confirmMessage = source === 'upload'
+      ? 'Membatalkan upload akan mengembalikan data cloud ke kondisi sebelum upload. Lanjutkan?'
+      : 'Membatalkan download akan mengembalikan data lokal ke kondisi sebelum download. Lanjutkan?';
+
+    if (window.confirm(confirmMessage)) {
       const restoredLogs = JSON.parse(backup);
-      setState(prev => ({ ...prev, logs: restoredLogs }));
-      localStorage.setItem(STORAGE_KEYS.LOGS, backup);
+
+      if (source === 'upload') {
+        // Restore cloud data - re-upload the backed up cloud data
+        if (state.user?.email) {
+          setState(prev => ({ ...prev, isSyncing: true }));
+          try {
+            await uploadToCloud(state.user.email, restoredLogs);
+            console.log('Cloud data restored successfully');
+          } catch (err) {
+            console.error('Failed to restore cloud data:', err);
+            alert('Gagal mengembalikan data cloud. Silakan coba lagi.');
+            setState(prev => ({ ...prev, isSyncing: false }));
+            return;
+          } finally {
+            setState(prev => ({ ...prev, isSyncing: false }));
+          }
+        }
+      } else {
+        // Restore local data
+        setState(prev => ({ ...prev, logs: restoredLogs }));
+        localStorage.setItem(STORAGE_KEYS.LOGS, backup);
+      }
+
       localStorage.removeItem(STORAGE_KEYS.LOGS_BACKUP);
+      localStorage.removeItem('al_rizq_backup_source');
       setHasBackup(false);
+      setBackupSource(null);
     }
-  }, []);
+  }, [backupSource, state.user]);
 
   // Manual sync only as requested
 
