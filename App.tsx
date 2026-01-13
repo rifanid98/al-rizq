@@ -927,7 +927,7 @@ const App: React.FC = () => {
                             {loggedToday.locationType === 'Masjid' ? (
                               <div className="absolute -right-8 top-1/2 -translate-y-1/2 w-40 h-40 pointer-events-none opacity-[0.06] dark:opacity-[0.12] dark:invert">
                                 <img
-                                  src={`${import.meta.env.BASE_URL}assets/mosque_watermark.png`}
+                                  src="assets/mosque_watermark.png"
                                   alt="Masjid"
                                   className="w-full h-full object-contain"
                                 />
