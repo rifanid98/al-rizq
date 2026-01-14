@@ -18,6 +18,7 @@ export interface PrayerLog {
   isMasbuq?: boolean;
   masbuqRakaat?: number;
   locationType?: 'Rumah' | 'Masjid';
+  executionType?: 'Jamaah' | 'Munfarid';
 }
 
 export interface DailySchedule {

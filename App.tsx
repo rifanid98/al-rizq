@@ -30,7 +30,8 @@ import {
   ChevronLeft,
   CalendarDays,
   RotateCcw,
-  Home
+  Home,
+  Users
 } from 'lucide-react';
 
 import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile } from './types';
@@ -86,6 +87,7 @@ const App: React.FC = () => {
   const [isMasbuq, setIsMasbuq] = useState(false);
   const [masbuqRakaat, setMasbuqRakaat] = useState(1);
   const [locationType, setLocationType] = useState<'Rumah' | 'Masjid'>('Masjid');
+  const [executionType, setExecutionType] = useState<'Jamaah' | 'Munfarid'>('Jamaah');
   const [editingLogId, setEditingLogId] = useState<string | null>(null);
   const [isLateEntry, setIsLateEntry] = useState(false);
   const [isForgotMarking, setIsForgotMarking] = useState(false);
@@ -469,7 +471,8 @@ const App: React.FC = () => {
       setLateReason('');
       setIsMasbuq(false);
       setMasbuqRakaat(1);
-      setLocationType('Masjid');
+      setLocationType('Rumah'); // Default to Rumah for late prayers
+      setExecutionType('Munfarid'); // Default to Munfarid for late prayers (often the case)
       setEditingLogId(null);
       setIsLateEntry(true);
       setIsForgotMarking(false);
@@ -483,6 +486,7 @@ const App: React.FC = () => {
       setIsMasbuq(false);
       setMasbuqRakaat(1);
       setLocationType('Masjid');
+      setExecutionType('Jamaah');
       setEditingLogId(null);
       setIsLateEntry(false);
       setIsForgotMarking(false);
@@ -496,6 +500,7 @@ const App: React.FC = () => {
     setIsMasbuq(log.isMasbuq || false);
     setMasbuqRakaat(log.masbuqRakaat || 1);
     setLocationType(log.locationType || 'Masjid');
+    setExecutionType(log.executionType || 'Jamaah');
     setEditingLogId(log.id);
     setIsLateEntry(log.status === 'Terlambat');
     setIsForgotMarking(log.reason?.includes('(Lupa menandai)') || false);
@@ -534,6 +539,7 @@ const App: React.FC = () => {
         isMasbuq: isMasbuq,
         masbuqRakaat: isMasbuq ? masbuqRakaat : undefined,
         locationType: locationType,
+        executionType: executionType,
         ...extra
       };
 
@@ -558,6 +564,7 @@ const App: React.FC = () => {
       setIsMasbuq(false);
       setMasbuqRakaat(1);
       setLocationType('Masjid');
+      setExecutionType('Jamaah');
       setEditingLogId(null);
       setIsLateEntry(false);
       setIsForgotMarking(false);
@@ -978,11 +985,19 @@ const App: React.FC = () => {
                               </div>
                             )}
                           </div>
-                          {loggedToday.isMasbuq && (
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-100 dark:border-amber-900/50">
-                              <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest">Masbuq: {loggedToday.masbuqRakaat} Rakaat</span>
-                            </div>
-                          )}
+                          <div className="flex gap-2">
+                            {loggedToday.isMasbuq && (
+                              <div className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-100 dark:border-amber-900/50">
+                                <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest">Masbuq: {loggedToday.masbuqRakaat}</span>
+                              </div>
+                            )}
+                            {loggedToday.executionType && (
+                              <div className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                                {loggedToday.executionType === 'Jamaah' ? <Users className="w-3 h-3 text-emerald-600" /> : <User className="w-3 h-3 text-slate-400" />}
+                                <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">{loggedToday.executionType}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       ) : (
                         <div className="space-y-3">
@@ -1105,7 +1120,7 @@ const App: React.FC = () => {
                 <table className="w-full text-left">
                   <thead className="bg-slate-50 dark:bg-slate-800">
                     <tr>
-                      {['Tanggal', 'Sholat', 'Waktu', 'Status', 'Lokasi', 'Masbuq', 'Alasan'].map(h => <th key={h} className="px-6 lg:px-8 py-5 text-[11px] font-black uppercase text-slate-400 whitespace-nowrap">{h}</th>)}
+                      {['Tanggal', 'Sholat', 'Waktu', 'Status', 'Lokasi', 'Pelaksanaan', 'Masbuq', 'Alasan'].map(h => <th key={h} className="px-6 lg:px-8 py-5 text-[11px] font-black uppercase text-slate-400 whitespace-nowrap">{h}</th>)}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1134,6 +1149,16 @@ const App: React.FC = () => {
                             )}
                           </td>
                           <td className="px-6 lg:px-8 py-5">
+                            {log.executionType ? (
+                              <div className="flex items-center gap-1.5">
+                                {log.executionType === 'Jamaah' ? <Users className="w-3 h-3 text-emerald-600" /> : <User className="w-3 h-3 text-slate-400" />}
+                                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.executionType}</span>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-slate-300">-</span>
+                            )}
+                          </td>
+                          <td className="px-6 lg:px-8 py-5">
                             {log.isMasbuq ? (
                               <span className="px-2 py-1 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 rounded-lg text-[10px] font-black uppercase whitespace-nowrap">Masbuq ({log.masbuqRakaat})</span>
                             ) : (
@@ -1145,7 +1170,7 @@ const App: React.FC = () => {
                       ))}
                     {state.logs.filter(log => !historyDateFilter || log.date === historyDateFilter).length === 0 && (
                       <tr>
-                        <td colSpan={7} className="px-8 py-12 text-center text-slate-400">
+                        <td colSpan={8} className="px-8 py-12 text-center text-slate-400">
                           <div className="flex flex-col items-center gap-3">
                             <CalendarDays className="w-12 h-12 opacity-30" />
                             <p className="text-sm font-bold">Tidak ada data untuk tanggal ini</p>
@@ -1181,7 +1206,10 @@ const App: React.FC = () => {
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Lokasi</p>
                   <div className="flex gap-1 p-1 bg-slate-200/50 dark:bg-slate-900 rounded-xl">
                     <button
-                      onClick={() => setLocationType('Masjid')}
+                      onClick={() => {
+                        setLocationType('Masjid');
+                        setExecutionType('Jamaah');
+                      }}
                       className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${locationType === 'Masjid' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
                     >
                       Masjid
@@ -1191,6 +1219,24 @@ const App: React.FC = () => {
                       className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${locationType === 'Rumah' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
                     >
                       Rumah
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex-1 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Pelaksanaan</p>
+                  <div className="flex gap-1 p-1 bg-slate-200/50 dark:bg-slate-900 rounded-xl">
+                    <button
+                      onClick={() => setExecutionType('Jamaah')}
+                      className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${executionType === 'Jamaah' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
+                    >
+                      Jama'ah
+                    </button>
+                    <button
+                      onClick={() => setExecutionType('Munfarid')}
+                      className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${executionType === 'Munfarid' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
+                    >
+                      Munfarid
                     </button>
                   </div>
                 </div>
@@ -1228,7 +1274,11 @@ const App: React.FC = () => {
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Tandai Sebagai</p>
                   <div className="grid grid-cols-2 gap-3">
                     <button
-                      onClick={() => setIsForgotMarking(false)}
+                      onClick={() => {
+                        setIsForgotMarking(false);
+                        setLocationType('Rumah');
+                        setExecutionType('Munfarid');
+                      }}
                       className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all group ${!isForgotMarking ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-500 shadow-md shadow-amber-500/10' : 'bg-white dark:bg-slate-900 border-transparent text-slate-400'}`}
                     >
                       <Clock className={`w-6 h-6 mb-2 transition-transform ${!isForgotMarking ? 'text-amber-600 scale-110' : 'text-slate-400 group-hover:scale-105'}`} />
