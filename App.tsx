@@ -31,7 +31,9 @@ import {
   CalendarDays,
   RotateCcw,
   Home,
-  Users
+  Users,
+  CloudRain,
+  SunMedium
 } from 'lucide-react';
 
 import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile } from './types';
@@ -88,6 +90,7 @@ const App: React.FC = () => {
   const [masbuqRakaat, setMasbuqRakaat] = useState(1);
   const [locationType, setLocationType] = useState<'Rumah' | 'Masjid'>('Masjid');
   const [executionType, setExecutionType] = useState<'Jamaah' | 'Munfarid'>('Jamaah');
+  const [weatherCondition, setWeatherCondition] = useState<'Cerah' | 'Hujan'>('Cerah');
   const [editingLogId, setEditingLogId] = useState<string | null>(null);
   const [isLateEntry, setIsLateEntry] = useState(false);
   const [isForgotMarking, setIsForgotMarking] = useState(false);
@@ -105,6 +108,7 @@ const App: React.FC = () => {
     return saved !== null ? JSON.parse(saved) : 10;
   });
   const [showOpacitySlider, setShowOpacitySlider] = useState(false);
+  const [showMasbuqPicker, setShowMasbuqPicker] = useState(false);
   const sliderTimerRef = useRef<number | null>(null);
 
   const resetSliderTimer = useCallback(() => {
@@ -473,9 +477,11 @@ const App: React.FC = () => {
       setMasbuqRakaat(1);
       setLocationType('Rumah'); // Default to Rumah for late prayers
       setExecutionType('Munfarid'); // Default to Munfarid for late prayers (often the case)
+      setWeatherCondition('Hujan'); // Default to Hujan for late prayers (as user said Bogor is always rainy)
       setEditingLogId(null);
       setIsLateEntry(true);
       setIsForgotMarking(false);
+      setShowMasbuqPicker(false);
       setLateModalOpen(true);
     } else {
       // Log immediately if on time
@@ -487,9 +493,11 @@ const App: React.FC = () => {
       setMasbuqRakaat(1);
       setLocationType('Masjid');
       setExecutionType('Jamaah');
+      setWeatherCondition('Cerah');
       setEditingLogId(null);
       setIsLateEntry(false);
       setIsForgotMarking(false);
+      setShowMasbuqPicker(false);
       setLateModalOpen(true);
     }
   };
@@ -501,9 +509,11 @@ const App: React.FC = () => {
     setMasbuqRakaat(log.masbuqRakaat || 1);
     setLocationType(log.locationType || 'Masjid');
     setExecutionType(log.executionType || 'Jamaah');
+    setWeatherCondition(log.weatherCondition || 'Cerah');
     setEditingLogId(log.id);
     setIsLateEntry(log.status === 'Terlambat');
     setIsForgotMarking(log.reason?.includes('(Lupa menandai)') || false);
+    setShowMasbuqPicker(log.isMasbuq || false);
     setLateModalOpen(true);
   };
 
@@ -540,6 +550,7 @@ const App: React.FC = () => {
         masbuqRakaat: isMasbuq ? masbuqRakaat : undefined,
         locationType: locationType,
         executionType: executionType,
+        weatherCondition: weatherCondition,
         ...extra
       };
 
@@ -565,9 +576,11 @@ const App: React.FC = () => {
       setMasbuqRakaat(1);
       setLocationType('Masjid');
       setExecutionType('Jamaah');
+      setWeatherCondition('Cerah');
       setEditingLogId(null);
       setIsLateEntry(false);
       setIsForgotMarking(false);
+      setShowMasbuqPicker(false);
     }
   };
 
@@ -997,6 +1010,12 @@ const App: React.FC = () => {
                                 <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">{loggedToday.executionType}</span>
                               </div>
                             )}
+                            {loggedToday.weatherCondition && (
+                              <div className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                                {loggedToday.weatherCondition === 'Hujan' ? <CloudRain className="w-3 h-3 text-blue-500" /> : <SunMedium className="w-3 h-3 text-amber-500" />}
+                                <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">{loggedToday.weatherCondition}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       ) : (
@@ -1120,7 +1139,7 @@ const App: React.FC = () => {
                 <table className="w-full text-left">
                   <thead className="bg-slate-50 dark:bg-slate-800">
                     <tr>
-                      {['Tanggal', 'Sholat', 'Waktu', 'Status', 'Lokasi', 'Pelaksanaan', 'Masbuq', 'Alasan'].map(h => <th key={h} className="px-6 lg:px-8 py-5 text-[11px] font-black uppercase text-slate-400 whitespace-nowrap">{h}</th>)}
+                      {['Tanggal', 'Sholat', 'Waktu', 'Status', 'Lokasi', 'Pelaksanaan', 'Cuaca', 'Masbuq', 'Alasan'].map(h => <th key={h} className="px-6 lg:px-8 py-5 text-[11px] font-black uppercase text-slate-400 whitespace-nowrap">{h}</th>)}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1159,6 +1178,16 @@ const App: React.FC = () => {
                             )}
                           </td>
                           <td className="px-6 lg:px-8 py-5">
+                            {log.weatherCondition ? (
+                              <div className="flex items-center gap-1.5">
+                                {log.weatherCondition === 'Hujan' ? <CloudRain className="w-3 h-3 text-blue-500" /> : <SunMedium className="w-3 h-3 text-amber-500" />}
+                                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.weatherCondition}</span>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-slate-300">-</span>
+                            )}
+                          </td>
+                          <td className="px-6 lg:px-8 py-5">
                             {log.isMasbuq ? (
                               <span className="px-2 py-1 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 rounded-lg text-[10px] font-black uppercase whitespace-nowrap">Masbuq ({log.masbuqRakaat})</span>
                             ) : (
@@ -1170,7 +1199,7 @@ const App: React.FC = () => {
                       ))}
                     {state.logs.filter(log => !historyDateFilter || log.date === historyDateFilter).length === 0 && (
                       <tr>
-                        <td colSpan={8} className="px-8 py-12 text-center text-slate-400">
+                        <td colSpan={9} className="px-8 py-12 text-center text-slate-400">
                           <div className="flex flex-col items-center gap-3">
                             <CalendarDays className="w-12 h-12 opacity-30" />
                             <p className="text-sm font-bold">Tidak ada data untuk tanggal ini</p>
@@ -1201,8 +1230,8 @@ const App: React.FC = () => {
             </div>
 
             <div className="space-y-6">
-              <div className="flex gap-4">
-                <div className="flex-1 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Lokasi</p>
                   <div className="flex gap-1 p-1 bg-slate-200/50 dark:bg-slate-900 rounded-xl">
                     <button
@@ -1223,7 +1252,7 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex-1 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Pelaksanaan</p>
                   <div className="flex gap-1 p-1 bg-slate-200/50 dark:bg-slate-900 rounded-xl">
                     <button
@@ -1241,25 +1270,66 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex-1 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Masbuq?</p>
+                <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Masbuq?</p>
+                    {isMasbuq && !showMasbuqPicker && (
+                      <button
+                        onClick={() => setShowMasbuqPicker(true)}
+                        className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-tight hover:underline"
+                      >
+                        {masbuqRakaat} &nbsp;Rakaat
+                      </button>
+                    )}
+                  </div>
                   <button
-                    onClick={() => setIsMasbuq(!isMasbuq)}
+                    onClick={() => {
+                      const newVal = !isMasbuq;
+                      setIsMasbuq(newVal);
+                      setShowMasbuqPicker(newVal);
+                    }}
                     className={`w-full py-1.5 rounded-lg text-[10px] font-black uppercase transition-all border-2 ${isMasbuq ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-500 text-amber-700 dark:text-amber-400' : 'bg-white dark:bg-slate-900 border-transparent text-slate-500'}`}
                   >
                     {isMasbuq ? 'Ya' : 'Tidak'}
                   </button>
                 </div>
+
+                <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Cuaca</p>
+                  <div className="flex gap-1 p-1 bg-slate-200/50 dark:bg-slate-900 rounded-xl">
+                    <button
+                      onClick={() => setWeatherCondition('Cerah')}
+                      className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${weatherCondition === 'Cerah' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
+                    >
+                      Cerah
+                    </button>
+                    <button
+                      onClick={() => setWeatherCondition('Hujan')}
+                      className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${weatherCondition === 'Hujan' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
+                    >
+                      Hujan
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              {isMasbuq && (
-                <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-2xl border border-amber-200 dark:border-amber-900 animate-in zoom-in-95 duration-200">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-400 mb-3 text-center">Berapa rakaat {isMasbuq ? "(Masbuq)" : ""} yang tertinggal?</p>
+              {isMasbuq && showMasbuqPicker && (
+                <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-2xl border border-amber-200 dark:border-amber-900 animate-in zoom-in-95 duration-200 relative">
+                  <button
+                    onClick={() => setShowMasbuqPicker(false)}
+                    className="absolute top-2 right-2 p-1 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg text-amber-700 dark:text-amber-400 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-400 mb-3 text-center">Berapa rakaat yang tertinggal?</p>
                   <div className="flex justify-center gap-2">
                     {Array.from({ length: PRAYER_RAKAAT[pendingLatePrayer.name] }, (_, i) => i + 1).map(r => (
                       <button
                         key={r}
-                        onClick={() => setMasbuqRakaat(r)}
+                        onClick={() => {
+                          setMasbuqRakaat(r);
+                          setTimeout(() => setShowMasbuqPicker(false), 300);
+                        }}
                         className={`w-10 h-10 rounded-full font-black text-sm flex items-center justify-center transition-all ${masbuqRakaat === r ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30' : 'bg-white dark:bg-slate-800 text-slate-400 hover:text-amber-500'}`}
                       >
                         {r}
@@ -1278,6 +1348,7 @@ const App: React.FC = () => {
                         setIsForgotMarking(false);
                         setLocationType('Rumah');
                         setExecutionType('Munfarid');
+                        setWeatherCondition('Hujan');
                       }}
                       className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all group ${!isForgotMarking ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-500 shadow-md shadow-amber-500/10' : 'bg-white dark:bg-slate-900 border-transparent text-slate-400'}`}
                     >
