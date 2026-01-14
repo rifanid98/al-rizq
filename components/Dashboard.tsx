@@ -125,7 +125,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
           }`}
       >
         <ChevronDown className="w-8 h-8 group-hover:translate-y-0.5 transition-transform" />
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full border-2 border-white dark:border-slate-900 animate-pulse" />
       </button>
 
       {/* Detail Masbuq Summary (Performa Ibadah) */}
