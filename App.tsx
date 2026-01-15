@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   MapPin,
   Calendar,
@@ -120,10 +120,22 @@ const App: React.FC = () => {
 
   // History date filter - empty string means show all
   const [historyDateFilter, setHistoryDateFilter] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
+
 
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     return (localStorage.getItem('al_rizq_theme') as ThemeMode) || 'system';
   });
+
+  const filteredHistoryLogs = useMemo(() => {
+    return [...state.logs]
+      .filter(log => !historyDateFilter || log.date === historyDateFilter)
+      .reverse();
+  }, [state.logs, historyDateFilter]);
+
+  const totalPages = Math.ceil(filteredHistoryLogs.length / ITEMS_PER_PAGE);
+  const currentHistoryLogs = filteredHistoryLogs.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const searchTimeoutRef = useRef<number | null>(null);
   const googleBtnSidebarRef = useRef<HTMLDivElement>(null);
@@ -1054,15 +1066,24 @@ const App: React.FC = () => {
                   <div className="relative flex-1 md:flex-none">
                     <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
-                      type="date"
+                      type={historyDateFilter ? 'date' : 'text'}
+                      onFocus={(e) => e.target.type = 'date'}
+                      onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }}
+                      placeholder="Pilih Tanggal"
                       value={historyDateFilter}
-                      onChange={(e) => setHistoryDateFilter(e.target.value)}
-                      className="pl-10 pr-4 py-2.5 w-full md:w-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none"
+                      onChange={(e) => {
+                        setHistoryDateFilter(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                      className="pl-10 pr-4 py-2.5 w-full md:w-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-slate-400 font-sans"
                     />
                   </div>
                   {historyDateFilter && (
                     <button
-                      onClick={() => setHistoryDateFilter('')}
+                      onClick={() => {
+                        setHistoryDateFilter('');
+                        setCurrentPage(1);
+                      }}
                       className="p-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
                       title="Tampilkan Semua"
                     >
@@ -1081,6 +1102,7 @@ const App: React.FC = () => {
                       const month = String(d.getMonth() + 1).padStart(2, '0');
                       const day = String(d.getDate()).padStart(2, '0');
                       setHistoryDateFilter(`${year}-${month}-${day}`);
+                      setCurrentPage(1);
                     }}
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                     title="Hari Sebelumnya"
@@ -1088,7 +1110,10 @@ const App: React.FC = () => {
                     <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                   </button>
                   <button
-                    onClick={() => setHistoryDateFilter(currentDate)}
+                    onClick={() => {
+                      setHistoryDateFilter(currentDate);
+                      setCurrentPage(1);
+                    }}
                     className="px-3 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg transition-colors"
                   >
                     Hari Ini
@@ -1103,6 +1128,7 @@ const App: React.FC = () => {
                       const dateStr = `${year}-${month}-${day}`;
                       if (dateStr <= currentDate) {
                         setHistoryDateFilter(dateStr);
+                        setCurrentPage(1);
                       }
                     }}
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
@@ -1143,61 +1169,58 @@ const App: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {[...state.logs]
-                      .filter(log => !historyDateFilter || log.date === historyDateFilter)
-                      .reverse()
-                      .map(log => (
-                        <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer" onClick={() => handleEditPrayer(log)}>
-                          <td className="px-6 lg:px-8 py-5 text-sm font-bold text-slate-600 dark:text-slate-400 whitespace-nowrap">{log.date}</td>
-                          <td className="px-6 lg:px-8 py-5"><span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${PRAYER_COLORS[log.prayerName]}`}>{log.prayerName}</span></td>
-                          <td className="px-6 lg:px-8 py-5 text-sm font-black text-slate-800 dark:text-slate-100 whitespace-nowrap">
-                            {log.actualTime}
-                            {log.delayMinutes > 0 && (
-                              <span className={`text-[10px] ml-2 font-bold ${log.status === 'Tepat Waktu' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
-                                +{log.delayMinutes}m
-                              </span>
-                            )}
-                            <span className="opacity-30 text-[10px] font-bold ml-2">({log.scheduledTime})</span>
-                          </td>
-                          <td className="px-6 lg:px-8 py-5"><span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${log.status === 'Tepat Waktu' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400'}`}>{log.status}</span></td>
-                          <td className="px-6 lg:px-8 py-5">
-                            {log.locationType ? (
-                              <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.locationType}</span>
-                            ) : (
-                              <span className="text-sm text-slate-300">-</span>
-                            )}
-                          </td>
-                          <td className="px-6 lg:px-8 py-5">
-                            {log.executionType ? (
-                              <div className="flex items-center gap-1.5">
-                                {log.executionType === 'Jamaah' ? <Users className="w-3 h-3 text-emerald-600" /> : <User className="w-3 h-3 text-slate-400" />}
-                                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.executionType}</span>
-                              </div>
-                            ) : (
-                              <span className="text-sm text-slate-300">-</span>
-                            )}
-                          </td>
-                          <td className="px-6 lg:px-8 py-5">
-                            {log.weatherCondition ? (
-                              <div className="flex items-center gap-1.5">
-                                {log.weatherCondition === 'Hujan' ? <CloudRain className="w-3 h-3 text-blue-500" /> : <SunMedium className="w-3 h-3 text-amber-500" />}
-                                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.weatherCondition}</span>
-                              </div>
-                            ) : (
-                              <span className="text-sm text-slate-300">-</span>
-                            )}
-                          </td>
-                          <td className="px-6 lg:px-8 py-5">
-                            {log.isMasbuq ? (
-                              <span className="px-2 py-1 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 rounded-lg text-[10px] font-black uppercase whitespace-nowrap">Masbuq ({log.masbuqRakaat})</span>
-                            ) : (
-                              <span className="text-sm text-slate-300">-</span>
-                            )}
-                          </td>
-                          <td className="px-6 lg:px-8 py-5 text-sm text-slate-500 dark:text-slate-400 max-w-[200px] truncate">{log.reason || '-'}</td>
-                        </tr>
-                      ))}
-                    {state.logs.filter(log => !historyDateFilter || log.date === historyDateFilter).length === 0 && (
+                    {currentHistoryLogs.map(log => (
+                      <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer" onClick={() => handleEditPrayer(log)}>
+                        <td className="px-6 lg:px-8 py-5 text-sm font-bold text-slate-600 dark:text-slate-400 whitespace-nowrap">{log.date}</td>
+                        <td className="px-6 lg:px-8 py-5"><span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${PRAYER_COLORS[log.prayerName]}`}>{log.prayerName}</span></td>
+                        <td className="px-6 lg:px-8 py-5 text-sm font-black text-slate-800 dark:text-slate-100 whitespace-nowrap">
+                          {log.actualTime}
+                          {log.delayMinutes > 0 && (
+                            <span className={`text-[10px] ml-2 font-bold ${log.status === 'Tepat Waktu' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                              +{log.delayMinutes}m
+                            </span>
+                          )}
+                          <span className="opacity-30 text-[10px] font-bold ml-2">({log.scheduledTime})</span>
+                        </td>
+                        <td className="px-6 lg:px-8 py-5"><span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${log.status === 'Tepat Waktu' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400'}`}>{log.status}</span></td>
+                        <td className="px-6 lg:px-8 py-5">
+                          {log.locationType ? (
+                            <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.locationType}</span>
+                          ) : (
+                            <span className="text-sm text-slate-300">-</span>
+                          )}
+                        </td>
+                        <td className="px-6 lg:px-8 py-5">
+                          {log.executionType ? (
+                            <div className="flex items-center gap-1.5">
+                              {log.executionType === 'Jamaah' ? <Users className="w-3 h-3 text-emerald-600" /> : <User className="w-3 h-3 text-slate-400" />}
+                              <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.executionType}</span>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-slate-300">-</span>
+                          )}
+                        </td>
+                        <td className="px-6 lg:px-8 py-5">
+                          {log.weatherCondition ? (
+                            <div className="flex items-center gap-1.5">
+                              {log.weatherCondition === 'Hujan' ? <CloudRain className="w-3 h-3 text-blue-500" /> : <SunMedium className="w-3 h-3 text-amber-500" />}
+                              <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.weatherCondition}</span>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-slate-300">-</span>
+                          )}
+                        </td>
+                        <td className="px-6 lg:px-8 py-5">
+                          {log.isMasbuq ? (
+                            <span className="px-2 py-1 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 rounded-lg text-[10px] font-black uppercase whitespace-nowrap">Masbuq ({log.masbuqRakaat})</span>
+                          ) : (
+                            <span className="text-sm text-slate-300">-</span>
+                          )}
+                        </td>
+                        <td className="px-6 lg:px-8 py-5 text-sm text-slate-500 dark:text-slate-400 max-w-[200px] truncate">{log.reason || '-'}</td>
+                      </tr>
+                    ))}
+                    {currentHistoryLogs.length === 0 && (
                       <tr>
                         <td colSpan={9} className="px-8 py-12 text-center text-slate-400">
                           <div className="flex flex-col items-center gap-3">
@@ -1210,6 +1233,32 @@ const App: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    Prev
+                  </button>
+
+                  <span className="text-xs font-bold text-slate-500">
+                    Hal {currentPage} dari {totalPages}
+                  </span>
+
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all"
+                  >
+                    Next
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
