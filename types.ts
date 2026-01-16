@@ -39,6 +39,13 @@ export interface UserProfile {
   picture: string;
 }
 
+export interface AppSettings {
+  theme: 'light' | 'dark' | 'system';
+  locationHistory: string[];
+  showPrayerBg: boolean;
+  prayerBgOpacity: number;
+}
+
 export interface AppState {
   logs: PrayerLog[];
   schedule: DailySchedule | null;
@@ -47,4 +54,5 @@ export interface AppState {
   error: string | null;
   user: UserProfile | null;
   isSyncing: boolean;
+  settings: AppSettings;
 }

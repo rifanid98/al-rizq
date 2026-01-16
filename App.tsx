@@ -37,7 +37,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 
-import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile } from './types';
+import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile, AppSettings } from './types';
 import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS, PRAYER_RAKAAT, PRAYER_IMAGES, CURRENT_VERSION } from './constants';
 import { fetchPrayerTimes, searchLocations } from './services/prayerService';
 import { uploadToCloud, downloadFromCloud, shouldAutoSync } from './services/syncService';
@@ -60,6 +60,10 @@ const App: React.FC = () => {
     const savedLogs = localStorage.getItem(STORAGE_KEYS.LOGS);
     const savedSchedule = localStorage.getItem(STORAGE_KEYS.SCHEDULE);
     const savedUser = localStorage.getItem('al_rizq_user');
+    const savedLocationHistory = localStorage.getItem(STORAGE_KEYS.LOCATION_HISTORY);
+    const savedTheme = localStorage.getItem('al_rizq_theme') as any;
+    const savedShowBg = localStorage.getItem('al_rizq_show_bg');
+    const savedBgOpacity = localStorage.getItem('al_rizq_bg_opacity');
 
     return {
       logs: savedLogs ? JSON.parse(savedLogs) : [],
@@ -68,7 +72,13 @@ const App: React.FC = () => {
       isLoading: false,
       error: null,
       user: savedUser ? JSON.parse(savedUser) : null,
-      isSyncing: false
+      isSyncing: false,
+      settings: {
+        theme: savedTheme || 'system',
+        locationHistory: savedLocationHistory ? JSON.parse(savedLocationHistory) : [],
+        showPrayerBg: savedShowBg !== null ? JSON.parse(savedShowBg) : true,
+        prayerBgOpacity: savedBgOpacity !== null ? JSON.parse(savedBgOpacity) : 10
+      }
     };
   });
 
@@ -288,16 +298,22 @@ const App: React.FC = () => {
 
             // Sync Logic: Check for cloud data after login
             const result = await downloadFromCloud(userData.email);
-            if (result && result.logs && result.logs.length > 0) {
+            if (result && (result.logs?.length > 0 || result.settings)) {
               setState(prev => {
-                if (prev.logs.length === 0) {
+                const logsExist = prev.logs.length > 0;
+                if (!logsExist) {
                   // Direct replace if local is empty
-                  localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(result.logs));
+                  if (result.logs) {
+                    localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(result.logs));
+                    setState(p => ({ ...p, logs: result.logs }));
+                  }
+                  if (result.settings) restoreSettings(result.settings);
                   localStorage.setItem(STORAGE_KEYS.LAST_SYNC, result.last_updated.toString());
-                  return { ...prev, logs: result.logs, isSyncing: false };
+                  return { ...prev, isSyncing: false };
                 } else {
                   // Confirm if local exist
                   setPendingCloudLogs(result.logs);
+                  setPendingCloudSettings(result.settings || null);
                   setPendingLastUpdated(result.last_updated);
                   setSyncConfirmOpen(true);
                   return { ...prev, isSyncing: false };
@@ -436,6 +452,28 @@ const App: React.FC = () => {
     }
   }, [getLocationAndSchedule]);
 
+  const getCurrentSettings = useCallback((): AppSettings => ({
+    theme: themeMode,
+    locationHistory: locationHistory,
+    showPrayerBg: showPrayerBg,
+    prayerBgOpacity: prayerBgOpacity
+  }), [themeMode, locationHistory, showPrayerBg, prayerBgOpacity]);
+
+  const restoreSettings = useCallback((s: AppSettings) => {
+    if (s.theme) setThemeMode(s.theme);
+    if (s.locationHistory) setLocationHistory(s.locationHistory);
+    if (s.showPrayerBg !== undefined) setShowPrayerBg(s.showPrayerBg);
+    if (s.prayerBgOpacity !== undefined) setPrayerBgOpacity(s.prayerBgOpacity);
+
+    // Also update localStorage for immediate persistence
+    if (s.theme) localStorage.setItem('al_rizq_theme', s.theme);
+    if (s.locationHistory) localStorage.setItem(STORAGE_KEYS.LOCATION_HISTORY, JSON.stringify(s.locationHistory));
+    if (s.showPrayerBg !== undefined) localStorage.setItem('al_rizq_show_bg', JSON.stringify(s.showPrayerBg));
+    if (s.prayerBgOpacity !== undefined) localStorage.setItem('al_rizq_bg_opacity', JSON.stringify(s.prayerBgOpacity));
+  }, []);
+
+  const [pendingCloudSettings, setPendingCloudSettings] = useState<AppSettings | null>(null);
+
   // Refresh schedule when date changes (detected by timer)
   useEffect(() => {
     if (state.schedule && state.schedule.date !== currentDate) {
@@ -456,7 +494,7 @@ const App: React.FC = () => {
         setBackupSource('upload');
       }
 
-      const timestamp = await uploadToCloud(state.user.email, state.logs);
+      const timestamp = await uploadToCloud(state.user.email, state.logs, getCurrentSettings());
       localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, timestamp.toString());
       localStorage.setItem(STORAGE_KEYS.LAST_SYNC, timestamp.toString());
     } catch (err) {
@@ -479,6 +517,7 @@ const App: React.FC = () => {
         setBackupSource('download');
 
         setState(prev => ({ ...prev, logs: result.logs }));
+        if (result.settings) restoreSettings(result.settings);
         localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(result.logs));
         localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, result.last_updated.toString());
         localStorage.setItem(STORAGE_KEYS.LAST_SYNC, Date.now().toString());
@@ -533,25 +572,36 @@ const App: React.FC = () => {
   }, [backupSource, state.user]);
 
   const confirmCloudReplace = () => {
-    if (pendingCloudLogs && pendingLastUpdated) {
+    if (pendingCloudLogs || pendingCloudSettings) {
       // Backup current logs before overwriting
       localStorage.setItem(STORAGE_KEYS.LOGS_BACKUP, JSON.stringify(state.logs));
       localStorage.setItem('al_rizq_backup_source', 'download');
       setHasBackup(true);
       setBackupSource('download');
 
-      setState(prev => ({ ...prev, logs: pendingCloudLogs }));
-      localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(pendingCloudLogs));
-      localStorage.setItem(STORAGE_KEYS.LAST_SYNC, pendingLastUpdated.toString());
+      if (pendingCloudLogs) {
+        setState(prev => ({ ...prev, logs: pendingCloudLogs }));
+        localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(pendingCloudLogs));
+      }
+
+      if (pendingCloudSettings) {
+        restoreSettings(pendingCloudSettings);
+      }
+
+      if (pendingLastUpdated) {
+        localStorage.setItem(STORAGE_KEYS.LAST_SYNC, pendingLastUpdated.toString());
+      }
     }
     setSyncConfirmOpen(false);
     setPendingCloudLogs(null);
+    setPendingCloudSettings(null);
     setPendingLastUpdated(null);
   };
 
   const keepLocalData = () => {
     setSyncConfirmOpen(false);
     setPendingCloudLogs(null);
+    setPendingCloudSettings(null);
     setPendingLastUpdated(null);
   };
 

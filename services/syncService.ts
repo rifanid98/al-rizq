@@ -1,17 +1,11 @@
-
-import { PrayerLog } from '../types';
+import { PrayerLog, AppSettings } from '../types';
 import { STORAGE_KEYS } from '../constants';
 import { supabase } from './supabaseClient';
-
-interface SyncPackage {
-    logs: PrayerLog[];
-    last_updated: number;
-}
 
 /**
  * Upload local data to Supabase
  */
-export const uploadToCloud = async (email: string, logs: PrayerLog[]): Promise<number> => {
+export const uploadToCloud = async (email: string, logs: PrayerLog[], settings?: AppSettings): Promise<number> => {
     const timestamp = Date.now();
 
     const { error } = await supabase
@@ -19,6 +13,7 @@ export const uploadToCloud = async (email: string, logs: PrayerLog[]): Promise<n
         .upsert({
             email: email,
             logs: logs,
+            settings: settings,
             last_updated: timestamp
         }, { onConflict: 'email' });
 
@@ -33,10 +28,10 @@ export const uploadToCloud = async (email: string, logs: PrayerLog[]): Promise<n
 /**
  * Download data from Supabase for a specific user
  */
-export const downloadFromCloud = async (email: string): Promise<{ logs: PrayerLog[], last_updated: number } | null> => {
+export const downloadFromCloud = async (email: string): Promise<{ logs: PrayerLog[], settings?: AppSettings, last_updated: number } | null> => {
     const { data, error } = await supabase
         .from('user_backups')
-        .select('logs, last_updated')
+        .select('logs, settings, last_updated')
         .eq('email', email)
         .single();
 
@@ -48,6 +43,7 @@ export const downloadFromCloud = async (email: string): Promise<{ logs: PrayerLo
 
     return {
         logs: data.logs,
+        settings: data.settings,
         last_updated: data.last_updated
     };
 };
