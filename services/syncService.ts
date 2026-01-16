@@ -4,6 +4,8 @@ import { supabase } from './supabaseClient';
 
 /**
  * Upload local data to Supabase
+ * We wrap both logs and settings into the existing 'logs' column 
+ * since adding a new column 'settings' might require manual DB migration.
  */
 export const uploadToCloud = async (email: string, logs: PrayerLog[], settings?: AppSettings): Promise<number> => {
     const timestamp = Date.now();
@@ -12,8 +14,7 @@ export const uploadToCloud = async (email: string, logs: PrayerLog[], settings?:
         .from('user_backups')
         .upsert({
             email: email,
-            logs: logs,
-            settings: settings,
+            logs: { logs, settings }, // Wrap into the existing 'logs' column
             last_updated: timestamp
         }, { onConflict: 'email' });
 
@@ -31,7 +32,7 @@ export const uploadToCloud = async (email: string, logs: PrayerLog[], settings?:
 export const downloadFromCloud = async (email: string): Promise<{ logs: PrayerLog[], settings?: AppSettings, last_updated: number } | null> => {
     const { data, error } = await supabase
         .from('user_backups')
-        .select('logs, settings, last_updated')
+        .select('logs, last_updated')
         .eq('email', email)
         .single();
 
@@ -41,9 +42,22 @@ export const downloadFromCloud = async (email: string): Promise<{ logs: PrayerLo
         throw new Error('Gagal mengunduh data dari cloud.');
     }
 
+    // Backward compatibility check
+    let logs: PrayerLog[] = [];
+    let settings: AppSettings | undefined = undefined;
+
+    if (Array.isArray(data.logs)) {
+        // Old format: logs is just an array
+        logs = data.logs;
+    } else if (data.logs && typeof data.logs === 'object') {
+        // New format: logs is { logs, settings }
+        logs = data.logs.logs || [];
+        settings = data.logs.settings;
+    }
+
     return {
-        logs: data.logs,
-        settings: data.settings,
+        logs,
+        settings,
         last_updated: data.last_updated
     };
 };
