@@ -634,8 +634,11 @@ const App: React.FC = () => {
 
   const confirmLatePrayer = () => {
     if (pendingLatePrayer) {
-      // Trigger gamification for ALL scenarios during development
-      setShowCelebration(true);
+      // Trigger gamification ONLY for perfect scenarios in production
+      const isPerfectPrayer = !isFlashbackMode && !isLateEntry && locationType === 'Masjid' && !isMasbuq && !isForgotMarking && !editingLogId;
+      if (isPerfectPrayer) {
+        setShowCelebration(true);
+      }
 
       logPrayer(pendingLatePrayer.name, pendingLatePrayer.scheduledTime, lateReason.trim() || undefined, isForgotMarking, { date: selectedDate });
       setLateModalOpen(false);
