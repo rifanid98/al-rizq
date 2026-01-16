@@ -271,11 +271,33 @@ const App: React.FC = () => {
 
   // Fix: Added handleLogout to clear user session and storage
   const handleLogout = useCallback(() => {
-    setState(prev => ({ ...prev, user: null }));
-    localStorage.removeItem('al_rizq_user');
+    // 1. Clear State
+    setState(prev => ({
+      ...prev,
+      logs: [],
+      user: null,
+      isSyncing: false
+    }));
+
+    // 2. Clear Personal LocalStorage
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('al_rizq_') && key !== 'al_rizq_theme') {
+        localStorage.removeItem(key);
+      }
+    });
+
+    // 3. Reset internal states
+    setLocationHistory([]);
+    setHasBackup(false);
+    setBackupSource(null);
+
+    // 4. Google Session
     if ((window as any).google?.accounts?.id) {
       (window as any).google.accounts.id.disableAutoSelect();
     }
+
+    // Optional: hard reload for absolute clean start
+    // window.location.reload(); 
   }, []);
 
   // Google Login Init
