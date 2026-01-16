@@ -1399,18 +1399,22 @@ const App: React.FC = () => {
       {/* Late Prayer Reason Modal */}
       {lateModalOpen && pendingLatePrayer && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in slide-in-from-bottom-4">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center">
-                <Clock3 className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-              </div>
-              <div>
-                <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">Konfirmasi Sholat {pendingLatePrayer.name}</h3>
-                <p className="text-sm text-slate-500 font-medium">Waktu saat ini melewati jadwal ({pendingLatePrayer.scheduledTime})</p>
+          <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl animate-in slide-in-from-bottom-4 max-w-md w-full max-h-[92vh] flex flex-col overflow-hidden">
+            {/* Modal Header - Sticky on mobile */}
+            <div className="p-6 pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center">
+                  <Clock3 className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">Konfirmasi Sholat {pendingLatePrayer.name}</h3>
+                  <p className="text-sm text-slate-500 font-medium">Waktu saat ini melewati jadwal ({pendingLatePrayer.scheduledTime})</p>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-6">
+            {/* Scrollable Content Area */}
+            <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-4 lg:space-y-6 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Lokasi</p>
@@ -1521,9 +1525,9 @@ const App: React.FC = () => {
               )}
 
               {isLateEntry && !editingLogId && (
-                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Tandai Sebagai</p>
-                  <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Tandai Sebagai</p>
+                  <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => {
                         setIsForgotMarking(false);
@@ -1531,17 +1535,17 @@ const App: React.FC = () => {
                         setExecutionType('Munfarid');
                         setWeatherCondition('Hujan');
                       }}
-                      className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all group ${!isForgotMarking ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-500 shadow-md shadow-amber-500/10' : 'bg-white dark:bg-slate-900 border-transparent text-slate-400'}`}
+                      className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all group ${!isForgotMarking ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-500 shadow-sm shadow-amber-500/10' : 'bg-white dark:bg-slate-900 border-transparent text-slate-400'}`}
                     >
-                      <Clock className={`w-6 h-6 mb-2 transition-transform ${!isForgotMarking ? 'text-amber-600 scale-110' : 'text-slate-400 group-hover:scale-105'}`} />
-                      <span className={`text-[10px] font-black uppercase tracking-wider ${!isForgotMarking ? 'text-amber-800 dark:text-amber-400' : 'text-slate-500'}`}>Memang Telat</span>
+                      <Clock className={`w-4 h-4 transition-transform ${!isForgotMarking ? 'text-amber-600 scale-110' : 'text-slate-400 group-hover:scale-105'}`} />
+                      <span className={`text-[10px] font-black uppercase tracking-tight ${!isForgotMarking ? 'text-amber-800 dark:text-amber-400' : 'text-slate-500'}`}>Telat</span>
                     </button>
                     <button
                       onClick={() => setIsForgotMarking(true)}
-                      className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all group ${isForgotMarking ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-500 shadow-md shadow-emerald-500/10' : 'bg-white dark:bg-slate-900 border-transparent text-slate-400'}`}
+                      className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all group ${isForgotMarking ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-500 shadow-sm shadow-emerald-500/10' : 'bg-white dark:bg-slate-900 border-transparent text-slate-400'}`}
                     >
-                      <CheckCircle className={`w-6 h-6 mb-2 transition-transform ${isForgotMarking ? 'text-emerald-600 scale-110' : 'text-slate-400 group-hover:scale-105'}`} />
-                      <span className={`text-[10px] font-black uppercase tracking-wider ${isForgotMarking ? 'text-emerald-800 dark:text-emerald-400' : 'text-slate-500'}`}>Lupa Menandai</span>
+                      <CheckCircle className={`w-4 h-4 transition-transform ${isForgotMarking ? 'text-emerald-600 scale-110' : 'text-slate-400 group-hover:scale-105'}`} />
+                      <span className={`text-[10px] font-black uppercase tracking-tight ${isForgotMarking ? 'text-emerald-800 dark:text-emerald-400' : 'text-slate-500'}`}>Lupa</span>
                     </button>
                   </div>
                 </div>
@@ -1615,11 +1619,14 @@ const App: React.FC = () => {
                   rows={2}
                 />
               </div>
+            </div>
 
-              <div className="flex gap-3 pt-2">
+            {/* Modal Footer - Sticky */}
+            <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
+              <div className="flex gap-3">
                 <Button
                   variant="ghost"
-                  className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-700 h-14 font-bold text-slate-500"
+                  className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-700 h-14 font-bold text-slate-500 shadow-sm"
                   onClick={() => {
                     setLateModalOpen(false);
                     setPendingLatePrayer(null);
