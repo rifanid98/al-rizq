@@ -12,6 +12,15 @@ export const getLocalDateStr = () => {
   return `${year}-${month}-${day}`;
 };
 
+export const getYesterdayDateStr = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const formatDateForApi = (localDateStr: string) => {
   const [year, month, day] = localDateStr.split('-');
   return `${day}-${month}-${year}`;

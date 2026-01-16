@@ -33,16 +33,18 @@ import {
   Home,
   Users,
   CloudRain,
-  SunMedium
+  SunMedium,
+  ChevronDown
 } from 'lucide-react';
 
 import { PrayerLog, AppState, DailySchedule, PrayerName, UserProfile } from './types';
 import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS, PRAYER_RAKAAT, PRAYER_IMAGES, CURRENT_VERSION } from './constants';
 import { fetchPrayerTimes, searchLocations } from './services/prayerService';
 import { uploadToCloud, downloadFromCloud, shouldAutoSync } from './services/syncService';
-import { getCurrentTimeStr, calculateDelay, isLate, formatDate, isTimePassed, getLocalDateStr } from './utils/helpers';
+import { getCurrentTimeStr, calculateDelay, isLate, formatDate, isTimePassed, getLocalDateStr, getYesterdayDateStr } from './utils/helpers';
 import { Dashboard } from './components/Dashboard';
 import { Button } from './components/ui/Button';
+import IslamicCelebration from './components/IslamicCelebration';
 
 const CACHE_KEY_SEARCH = 'al_rizq_search_cache';
 const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
@@ -81,6 +83,9 @@ const App: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [currentTime, setCurrentTime] = useState(getCurrentTimeStr());
   const [currentDate, setCurrentDate] = useState(getLocalDateStr());
+  const [selectedDate, setSelectedDate] = useState(getLocalDateStr());
+  const isFlashbackMode = selectedDate !== currentDate;
+  const [yesterdaySchedule, setYesterdaySchedule] = useState<DailySchedule | null>(null);
 
   // Late prayer reason modal state
   const [lateModalOpen, setLateModalOpen] = useState(false);
@@ -94,10 +99,27 @@ const App: React.FC = () => {
   const [editingLogId, setEditingLogId] = useState<string | null>(null);
   const [isLateEntry, setIsLateEntry] = useState(false);
   const [isForgotMarking, setIsForgotMarking] = useState(false);
+  const [hasDzikir, setHasDzikir] = useState(false);
+  const [hasQobliyah, setHasQobliyah] = useState(false);
+  const [hasBadiyah, setHasBadiyah] = useState(false);
+  const [hasDua, setHasDua] = useState(false);
+  const [isSunnahExpanded, setIsSunnahExpanded] = useState(false);
   const [hasBackup, setHasBackup] = useState(!!localStorage.getItem(STORAGE_KEYS.LOGS_BACKUP));
   const [backupSource, setBackupSource] = useState<'upload' | 'download' | null>(() => {
     return (localStorage.getItem('al_rizq_backup_source') as 'upload' | 'download') || null;
   });
+
+  const isYesterdayComplete = useMemo(() => {
+    const yesterday = getYesterdayDateStr();
+    return PRAYER_ORDER.every(name => state.logs.some(l => l.date === yesterday && l.prayerName === name));
+  }, [state.logs]);
+
+  const [isYesterdayConfirmed, setIsYesterdayConfirmed] = useState(() => {
+    const yesterday = getYesterdayDateStr();
+    return localStorage.getItem(`al_rizq_confirmed_${yesterday}`) === 'true';
+  });
+
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const [showPrayerBg, setShowPrayerBg] = useState<boolean>(() => {
     const saved = localStorage.getItem('al_rizq_show_bg');
@@ -359,6 +381,21 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
+    const fetchYesterday = async () => {
+      if (!isFlashbackMode || yesterdaySchedule || !state.location && !state.schedule?.location) return;
+
+      try {
+        const loc = state.location ? { lat: state.location.lat, lng: state.location.lng } : { address: state.schedule!.location };
+        const sched = await fetchPrayerTimes(loc, getYesterdayDateStr());
+        setYesterdaySchedule(sched);
+      } catch (err) {
+        console.error("Failed to fetch yesterday's schedule", err);
+      }
+    };
+    fetchYesterday();
+  }, [isFlashbackMode, state.location, state.schedule, yesterdaySchedule]);
+
+  useEffect(() => {
     const savedHistory = localStorage.getItem(STORAGE_KEYS.LOCATION_HISTORY);
     if (savedHistory) setLocationHistory(JSON.parse(savedHistory));
 
@@ -367,6 +404,7 @@ const App: React.FC = () => {
       const todayStr = getLocalDateStr();
       if (state.schedule.date !== todayStr) {
         getLocationAndSchedule();
+        setYesterdaySchedule(null); // Clear yesterday cache on day change
       }
     }
   }, [getLocationAndSchedule]);
@@ -494,6 +532,10 @@ const App: React.FC = () => {
       setIsLateEntry(true);
       setIsForgotMarking(false);
       setShowMasbuqPicker(false);
+      setHasDzikir(false);
+      setHasQobliyah(false);
+      setHasBadiyah(false);
+      setHasDua(false);
       setLateModalOpen(true);
     } else {
       // Log immediately if on time
@@ -510,6 +552,10 @@ const App: React.FC = () => {
       setIsLateEntry(false);
       setIsForgotMarking(false);
       setShowMasbuqPicker(false);
+      setHasDzikir(true); // Default to true if on time? Or let user pick.
+      setHasQobliyah(true);
+      setHasBadiyah(true);
+      setHasDua(true);
       setLateModalOpen(true);
     }
   };
@@ -526,6 +572,10 @@ const App: React.FC = () => {
     setIsLateEntry(log.status === 'Terlambat');
     setIsForgotMarking(log.reason?.includes('(Lupa menandai)') || false);
     setShowMasbuqPicker(log.isMasbuq || false);
+    setHasDzikir(log.hasDzikir || false);
+    setHasQobliyah(log.hasQobliyah || false);
+    setHasBadiyah(log.hasBadiyah || false);
+    setHasDua(log.hasDua || false);
     setLateModalOpen(true);
   };
 
@@ -551,7 +601,7 @@ const App: React.FC = () => {
 
       const logData: PrayerLog = {
         id: (targetId || crypto.randomUUID()),
-        date: existingLog ? existingLog.date : today,
+        date: existingLog ? existingLog.date : (extra?.date || today),
         prayerName,
         scheduledTime,
         actualTime: existingLog ? existingLog.actualTime : (extra?.actualTime || actualTime),
@@ -563,6 +613,10 @@ const App: React.FC = () => {
         locationType: locationType,
         executionType: executionType,
         weatherCondition: weatherCondition,
+        hasDzikir: hasDzikir,
+        hasQobliyah: hasQobliyah,
+        hasBadiyah: hasBadiyah,
+        hasDua: hasDua,
         ...extra
       };
 
@@ -580,7 +634,10 @@ const App: React.FC = () => {
 
   const confirmLatePrayer = () => {
     if (pendingLatePrayer) {
-      logPrayer(pendingLatePrayer.name, pendingLatePrayer.scheduledTime, lateReason.trim() || undefined, isForgotMarking);
+      // Trigger gamification for ALL scenarios during development
+      setShowCelebration(true);
+
+      logPrayer(pendingLatePrayer.name, pendingLatePrayer.scheduledTime, lateReason.trim() || undefined, isForgotMarking, { date: selectedDate });
       setLateModalOpen(false);
       setPendingLatePrayer(null);
       setLateReason('');
@@ -593,6 +650,11 @@ const App: React.FC = () => {
       setIsLateEntry(false);
       setIsForgotMarking(false);
       setShowMasbuqPicker(false);
+      setHasDzikir(false);
+      setHasQobliyah(false);
+      setHasBadiyah(false);
+      setHasDua(false);
+      setIsSunnahExpanded(false);
     }
   };
 
@@ -693,10 +755,11 @@ const App: React.FC = () => {
               <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
                 {activeTab === 'tracker' ? 'Tracker Sholat' : activeTab === 'dashboard' ? 'Statistik' : 'Riwayat'}
               </h2>
-              <div className="flex items-center gap-3 mt-2">
-                <span className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-[10px] lg:text-xs font-bold text-slate-600 dark:text-slate-400 shadow-sm">
-                  <Calendar className="w-3 h-3 lg:w-3.5 lg:h-3.5 text-emerald-600" /> {formatDate(currentDate)}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-2">
+                <span className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-[10px] lg:text-xs font-bold text-slate-600 dark:text-slate-400 shadow-sm w-fit">
+                  <Calendar className="w-3 h-3 lg:w-3.5 lg:h-3.5 text-emerald-600" /> {formatDate(selectedDate)}
                 </span>
+
               </div>
             </div>
 
@@ -781,65 +844,64 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 lg:gap-3 w-full md:w-auto">
-            <div className="flex flex-row items-center gap-2 w-full md:w-auto">
-              <button onClick={() => setIsSearching(!isSearching)} className="flex-1 md:flex-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden min-w-0">
-                <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1 md:max-w-[150px]">{state.schedule?.location || 'Cari lokasi...'}</span>
-                <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isSearching ? 'rotate-90' : ''}`} />
-              </button>
-              <Button
-                variant="ghost"
-                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0"
-                onClick={() => getLocationAndSchedule()}
-                isLoading={state.isLoading && !isSearching}
-                title="Perbarui Jadwal Sholat"
-              >
-                <RefreshCw className={`w-4 h-4 ${state.isLoading ? 'animate-spin' : ''}`} />
-              </Button>
+          {activeTab === 'tracker' && (
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 lg:gap-3 w-full md:w-auto">
+              <div className="flex flex-row items-center gap-2 w-full md:w-auto">
+                <button onClick={() => setIsSearching(!isSearching)} className="flex-1 md:flex-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden min-w-0">
+                  <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1 md:max-w-[150px]">{state.schedule?.location || 'Cari lokasi...'}</span>
+                  <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isSearching ? 'rotate-90' : ''}`} />
+                </button>
+                <Button
+                  variant="ghost"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0"
+                  onClick={() => getLocationAndSchedule()}
+                  isLoading={state.isLoading && !isSearching}
+                  title="Perbarui Jadwal Sholat"
+                >
+                  <RefreshCw className={`w-4 h-4 ${state.isLoading ? 'animate-spin' : ''}`} />
+                </Button>
 
-              {/* In Desktop, show these inline with the buttons above */}
-              {state.user && (
-                <div className="hidden md:flex items-center gap-2 lg:gap-3">
-                  <Button
-                    variant="ghost"
-                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2"
-                    onClick={handleUpload}
-                    isLoading={state.isSyncing && !state.isLoading}
-                    title="Upload Riwayat ke Cloud"
-                  >
-                    <CloudUpload className="w-4 h-4" />
-                    <span className="hidden md:inline text-xs font-bold">Upload</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2"
-                    onClick={handleDownload}
-                    isLoading={state.isSyncing && !state.isLoading}
-                    title="Download Riwayat dari Cloud"
-                  >
-                    <CloudDownload className="w-4 h-4" />
-                    <span className="hidden md:inline text-xs font-bold">Download</span>
-                  </Button>
-                  {hasBackup && (
+                {/* In Desktop, show these inline with the buttons above */}
+                {state.user && (
+                  <div className="hidden md:flex items-center gap-2 lg:gap-3">
                     <Button
                       variant="ghost"
-                      className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/20 flex items-center gap-2 text-rose-600 dark:text-rose-400"
-                      onClick={handleRevert}
-                      title="Batalkan Sinkronisasi & Kembali ke Data Sebelumnya"
+                      className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2"
+                      onClick={handleUpload}
+                      isLoading={state.isSyncing && !state.isLoading}
+                      title="Upload Riwayat ke Cloud"
                     >
-                      <RotateCcw className="w-4 h-4" />
-                      <span className="hidden md:inline text-xs font-bold">Revert</span>
+                      <CloudUpload className="w-4 h-4" />
+                      <span className="hidden md:inline text-xs font-bold">Upload</span>
                     </Button>
-                  )}
-                </div>
-              )}
-            </div>
+                    <Button
+                      variant="ghost"
+                      className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2"
+                      onClick={handleDownload}
+                      isLoading={state.isSyncing && !state.isLoading}
+                      title="Download Riwayat dari Cloud"
+                    >
+                      <CloudDownload className="w-4 h-4" />
+                      <span className="hidden md:inline text-xs font-bold">Download</span>
+                    </Button>
+                    {hasBackup && (
+                      <Button
+                        variant="ghost"
+                        className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/20 flex items-center gap-2 text-rose-600 dark:text-rose-400"
+                        onClick={handleRevert}
+                        title="Batalkan Sinkronisasi & Kembali ke Data Sebelumnya"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                        <span className="hidden md:inline text-xs font-bold">Revert</span>
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
 
-            {/* Combined User/Sync/Revert Row for combined view (Mobile/Small Tablet) */}
-            {activeTab !== 'history' && (
+              {/* Combined User/Sync/Revert Row for combined view (Mobile/Small Tablet) */}
               <div className="flex md:hidden flex-col gap-3 w-full">
-
                 {/* Cloud Sync/Revert Row */}
                 {state.user && (
                   <div className="flex gap-2 w-full">
@@ -874,69 +936,106 @@ const App: React.FC = () => {
                   </div>
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </header>
 
-        {isSearching && (
-          <div className="mb-8 animate-in slide-in-from-top-4 p-6 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl">
-            <form onSubmit={(e) => { e.preventDefault(); getLocationAndSchedule(searchQuery); }} className="flex gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input type="text" placeholder="Masukkan kecamatan..." className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-slate-100 font-bold" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} autoFocus />
+        {activeTab === 'tracker' && (
+          <>
+            {isSearching && (
+              <div className="mb-8 animate-in slide-in-from-top-4 p-6 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl">
+                <form onSubmit={(e) => { e.preventDefault(); getLocationAndSchedule(searchQuery); }} className="flex gap-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input type="text" placeholder="Masukkan kecamatan..." className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-slate-100 font-bold" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} autoFocus />
 
-                {suggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-[60] overflow-hidden">
-                    {suggestions.map((s, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => {
-                          setSearchQuery(s);
-                          getLocationAndSchedule(s);
-                        }}
-                        className="w-full px-6 py-4 text-left text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 border-b border-slate-100 dark:border-slate-800 last:border-0 transition-colors"
-                      >
-                        {s}
-                      </button>
-                    ))}
+                    {suggestions.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-[60] overflow-hidden">
+                        {suggestions.map((s, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => {
+                              setSearchQuery(s);
+                              getLocationAndSchedule(s);
+                            }}
+                            className="w-full px-6 py-4 text-left text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 border-b border-slate-100 dark:border-slate-800 last:border-0 transition-colors"
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {isSearchingSuggestions && (
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                        <Loader2 className="w-5 h-5 text-emerald-500 animate-spin" />
+                      </div>
+                    )}
                   </div>
-                )}
-                {isSearchingSuggestions && (
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                    <Loader2 className="w-5 h-5 text-emerald-500 animate-spin" />
-                  </div>
-                )}
+                  <Button type="submit" className="px-8 rounded-2xl" isLoading={state.isLoading}>Cari</Button>
+                </form>
               </div>
-              <Button type="submit" className="px-8 rounded-2xl" isLoading={state.isLoading}>Cari</Button>
-            </form>
-          </div>
+            )}
+
+            {/* Added Grounding Sources Section as required by Gemini API guidelines */}
+            {state.schedule?.sources && (
+              <div className="mb-8 p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm animate-in fade-in slide-in-from-left-2">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-2">
+                  <Info className="w-3.5 h-3.5 text-emerald-600" /> Sumber Data Resmi (Grounding)
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {state.schedule.sources.map((source, idx) => (
+                    <a
+                      key={idx}
+                      href={source.uri}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      {source.title}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
-        {/* Added Grounding Sources Section as required by Gemini API guidelines */}
-        {state.schedule?.sources && (
-          <div className="mb-8 p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm animate-in fade-in slide-in-from-left-2">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-2">
-              <Info className="w-3.5 h-3.5 text-emerald-600" /> Sumber Data Resmi (Grounding)
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {state.schedule.sources.map((source, idx) => (
-                <a
-                  key={idx}
-                  href={source.uri}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all"
-                >
-                  <ExternalLink className="w-3 h-3" />
-                  {source.title}
-                </a>
-              ))}
+        {activeTab === 'tracker' && !isYesterdayConfirmed && (
+          <div className="mb-8 animate-in fade-in slide-in-from-left-2 delay-150">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Pilih Hari Pencatatan</p>
+            <div className="flex p-1 bg-slate-200/50 dark:bg-slate-800/50 rounded-2xl w-fit border border-slate-200 dark:border-slate-800">
+              <button
+                onClick={() => {
+                  if (isFlashbackMode) {
+                    // Switching from Yesterday to Today
+                    if (isYesterdayComplete && !isYesterdayConfirmed) {
+                      if (window.confirm("Alhamdulillah, semua sholat kemarin sudah ditandai. Apakah data ini sudah benar? Setelah dikonfirmasi, Anda tidak dapat mengubahnya lagi.")) {
+                        const yesterday = getYesterdayDateStr();
+                        localStorage.setItem(`al_rizq_confirmed_${yesterday}`, "true");
+                        setIsYesterdayConfirmed(true);
+                      }
+                    }
+                    setSelectedDate(currentDate);
+                  }
+                }}
+                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase transition-all ${!isFlashbackMode ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-lg shadow-emerald-500/10' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Hari Ini
+              </button>
+
+              <button
+                onClick={() => setSelectedDate(getYesterdayDateStr())}
+                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase transition-all ${isFlashbackMode ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Kemarin
+              </button>
             </div>
           </div>
         )}
 
-        {state.error && (
+        {activeTab === 'tracker' && state.error && (
           <div className="mb-8 p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-2xl flex items-center gap-3 text-rose-700 dark:text-rose-400">
             <AlertCircle className="w-5 h-5" /> <p className="text-sm font-bold">{state.error}</p>
           </div>
@@ -944,14 +1043,44 @@ const App: React.FC = () => {
 
         {activeTab === 'tracker' && (
           <div className="space-y-8 animate-in fade-in duration-500">
+            {isFlashbackMode && (
+              <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-2xl flex items-center justify-between gap-3 text-amber-700 dark:text-amber-400">
+                <div className="flex items-center gap-3">
+                  <Clock className="w-5 h-5 animate-pulse" />
+                  <p className="text-sm font-bold">Mode Flashback Aktif: Jadwal kemarin ({formatDate(selectedDate)})</p>
+                </div>
+                {isYesterdayComplete && !isYesterdayConfirmed && (
+                  <button
+                    onClick={() => {
+                      if (window.confirm("Apakah semua data sholat kemarin sudah benar? Setelah dikonfirmasi, Anda tidak dapat mengubahnya lagi.")) {
+                        const yesterday = getYesterdayDateStr();
+                        localStorage.setItem(`al_rizq_confirmed_${yesterday}`, "true");
+                        setIsYesterdayConfirmed(true);
+                        setSelectedDate(currentDate);
+                      }
+                    }}
+                    className="px-4 py-2 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase shadow-lg shadow-amber-500/20 hover:scale-105 transition-all"
+                  >
+                    Konfirmasi Selesai
+                  </button>
+                )}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {PRAYER_ORDER.map((name) => {
-                const prayer = state.schedule?.prayers.find(p => p.name === name);
-                const loggedToday = state.logs.find(l => l.date === currentDate && l.prayerName === name);
-                const isPassed = prayer ? isTimePassed(prayer.time, currentDate) : false;
+                const scheduleToUse = isFlashbackMode ? yesterdaySchedule : state.schedule;
+                const prayer = scheduleToUse?.prayers.find(p => p.name === name);
+                const loggedToday = state.logs.find(l => l.date === selectedDate && l.prayerName === name);
+                const isPassed = isFlashbackMode ? true : (prayer ? isTimePassed(prayer.time, currentDate) : false);
+
+                // In flashback mode, only show if not logged yet or if it's the one we are editing
+                if (isFlashbackMode && loggedToday) {
+                  // Option: Hide or show as completed. Let's show as completed for clarity.
+                }
 
                 return (
-                  <div key={name} className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 flex flex-col transition-all hover:shadow-2xl dark:hover:shadow-emerald-950/20 hover:border-emerald-100 dark:hover:border-emerald-900 group">
+                  <div key={name} className={`relative overflow-hidden bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 flex flex-col transition-all hover:shadow-2xl dark:hover:shadow-emerald-950/20 hover:border-emerald-100 dark:hover:border-emerald-900 group ${isFlashbackMode && !loggedToday ? 'ring-2 ring-amber-500/20' : ''}`}>
                     {/* Thematic Background Image */}
                     {showPrayerBg && (
                       <div
@@ -1415,6 +1544,62 @@ const App: React.FC = () => {
                 </div>
               )}
 
+              <div className="bg-emerald-50/50 dark:bg-emerald-950/10 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 overflow-hidden transition-all duration-300">
+                <button
+                  onClick={() => setIsSunnahExpanded(!isSunnahExpanded)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-emerald-100/30 dark:hover:bg-emerald-900/20 transition-colors"
+                >
+                  <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Ibadah Sunnah & Pelengkap</p>
+                  <ChevronDown className={`w-4 h-4 text-emerald-600 dark:text-emerald-400 transition-transform duration-300 ${isSunnahExpanded ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isSunnahExpanded && (
+                  <div className="p-4 pt-0 animate-in slide-in-from-top-2 duration-300">
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        onClick={() => setHasQobliyah(!hasQobliyah)}
+                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${hasQobliyah ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm' : 'bg-transparent border-transparent text-slate-400'}`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasQobliyah ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                          <SunMedium className="w-4 h-4" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-left leading-tight">Sunnah Qobliyah</span>
+                      </button>
+
+                      <button
+                        onClick={() => setHasBadiyah(!hasBadiyah)}
+                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${hasBadiyah ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm' : 'bg-transparent border-transparent text-slate-400'}`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasBadiyah ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                          <Moon className="w-4 h-4" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-left leading-tight">Sunnah Ba'diyah</span>
+                      </button>
+
+                      <button
+                        onClick={() => setHasDzikir(!hasDzikir)}
+                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${hasDzikir ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm' : 'bg-transparent border-transparent text-slate-400'}`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasDzikir ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                          <Info className="w-4 h-4" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-left leading-tight">Dzikir</span>
+                      </button>
+
+                      <button
+                        onClick={() => setHasDua(!hasDua)}
+                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${hasDua ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm' : 'bg-transparent border-transparent text-slate-400'}`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasDua ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                          <User className="w-4 h-4" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-left leading-tight">Berdoa</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">
                   Catatan Tambahan (Opsional)
@@ -1451,6 +1636,11 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Gamification Celebration */}
+      <IslamicCelebration
+        show={showCelebration}
+        onComplete={() => setShowCelebration(false)}
+      />
     </div>
   );
 };

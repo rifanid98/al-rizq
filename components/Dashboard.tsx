@@ -12,7 +12,7 @@ import {
   Cell
 } from 'recharts';
 import { PrayerLog } from '../types';
-import { CheckCircle2, Clock, MapPin, AlertCircle, TrendingUp, ChevronDown } from 'lucide-react';
+import { CheckCircle2, Clock, MapPin, AlertCircle, TrendingUp, ChevronDown, SunMedium, Moon, Info, User, Star } from 'lucide-react';
 
 interface DashboardProps {
   logs: PrayerLog[];
@@ -76,7 +76,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
       ? Math.round(logs.filter(l => l.status === 'Terlambat' || l.status === 'Late').reduce((acc, curr) => acc + curr.delayMinutes, 0) / late)
       : 0;
 
-    return { total, ontime, late, missed, avgDelay, atMosque, atHome, masbuqCount, totalMasbuqRakaat };
+    const dzikirCount = logs.filter(l => l.hasDzikir).length;
+    const qobliyahCount = logs.filter(l => l.hasQobliyah).length;
+    const badiyahCount = logs.filter(l => l.hasBadiyah).length;
+    const duaCount = logs.filter(l => l.hasDua).length;
+    const totalWorship = dzikirCount + qobliyahCount + badiyahCount + duaCount;
+
+    return {
+      total, ontime, late, missed, avgDelay, atMosque, atHome, masbuqCount, totalMasbuqRakaat,
+      dzikirCount, qobliyahCount, badiyahCount, duaCount, totalWorship
+    };
   }, [logs]);
 
   const pieData = [
@@ -92,11 +101,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
 
   const chartData = useMemo(() => {
     const days = [...new Set(logs.map(l => l.date))].sort().slice(-7);
-    return days.map(date => ({
-      name: new Date(date as string).toLocaleDateString('id-ID', { weekday: 'short' }),
-      ontime: logs.filter(l => l.date === date && (l.status === 'Tepat Waktu' || l.status === 'Ontime')).length,
-      late: logs.filter(l => l.date === date && (l.status === 'Terlambat' || l.status === 'Late')).length,
-    }));
+    return days.map(date => {
+      const dayLogs = logs.filter(l => l.date === date);
+      return {
+        name: new Date(date as string).toLocaleDateString('id-ID', { weekday: 'short' }),
+        ontime: dayLogs.filter(l => l.status === 'Tepat Waktu' || l.status === 'Ontime').length,
+        late: dayLogs.filter(l => l.status === 'Terlambat' || l.status === 'Late').length,
+        sunnah: dayLogs.filter(l => l.hasQobliyah).length + dayLogs.filter(l => l.hasBadiyah).length + dayLogs.filter(l => l.hasDzikir).length + dayLogs.filter(l => l.hasDua).length,
+      };
+    });
   }, [logs]);
 
   if (logs.length === 0) {
@@ -200,22 +213,71 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
         </div>
       </div>
 
+      {/* Sunnah & Supplemental Worship Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
+          <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+            <SunMedium className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Qobliyah</p>
+            <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.qobliyahCount}</p>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
+          <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+            <Moon className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Ba'diyah</p>
+            <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.badiyahCount}</p>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
+          <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+            <Star className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Dzikir</p>
+            <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.dzikirCount}</p>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
+          <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+            <User className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Berdoa</p>
+            <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.duaCount}</p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Adherence Chart */}
         <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm">
           <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 mb-10">Konsistensi Mingguan</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+              <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} barGap={6} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#1e293b' : '#e2e8f0'} />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: isDark ? '#64748b' : '#94a3b8' }} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: isDark ? '#64748b' : '#94a3b8' }} />
                 <Tooltip
                   cursor={{ fill: isDark ? '#0f172a' : '#f8fafc' }}
-                  contentStyle={{ backgroundColor: isDark ? '#0f172a' : '#fff', border: isDark ? '1px solid #334155' : '1px solid #e2e8f0', borderRadius: '16px', fontWeight: 700 }}
+                  contentStyle={{
+                    backgroundColor: isDark ? '#0f172a' : '#fff',
+                    border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
+                    borderRadius: '16px',
+                    fontWeight: 700,
+                    fontSize: '11px',
+                    boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
+                  }}
+                  itemStyle={{ padding: '2px 0' }}
                 />
-                <Bar dataKey="ontime" name="Tepat Waktu" fill="#10b981" radius={[6, 6, 0, 0]} barSize={24} />
-                <Bar dataKey="late" name="Terlambat" fill="#f59e0b" radius={[6, 6, 0, 0]} barSize={24} />
+                <Bar dataKey="ontime" name="Tepat Waktu" fill="#10b981" radius={[4, 4, 0, 0]} barSize={12} />
+                <Bar dataKey="late" name="Terlambat" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={12} />
+                <Bar dataKey="sunnah" name="Sunnah & Pelengkap" fill="#14b8a6" radius={[4, 4, 0, 0]} barSize={12} />
               </BarChart>
             </ResponsiveContainer>
           </div>

@@ -20,6 +20,10 @@ export interface PrayerLog {
   locationType?: 'Rumah' | 'Masjid';
   executionType?: 'Jamaah' | 'Munfarid';
   weatherCondition?: 'Cerah' | 'Hujan';
+  hasDzikir?: boolean;
+  hasQobliyah?: boolean;
+  hasBadiyah?: boolean;
+  hasDua?: boolean;
 }
 
 export interface DailySchedule {

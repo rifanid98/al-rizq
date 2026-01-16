@@ -30,8 +30,8 @@ export const searchLocations = async (query: string): Promise<string[]> => {
 /**
  * Fetch prayer times using Aladhan API (Method 11 for Kemenag Indonesia)
  */
-export const fetchPrayerTimes = async (location: { lat: number; lng: number } | { address: string }): Promise<DailySchedule> => {
-    const date = getLocalDateStr();
+export const fetchPrayerTimes = async (location: { lat: number; lng: number } | { address: string }, dateOverride?: string): Promise<DailySchedule> => {
+    const date = dateOverride || getLocalDateStr();
     const cacheKey = `prayer_${JSON.stringify(location)}_${date}`;
     const cached = getCache(cacheKey);
     if (cached) return cached;
