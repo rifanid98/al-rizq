@@ -23,6 +23,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
   const performanceRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [isSunnahStatsExpanded, setIsSunnahStatsExpanded] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -213,42 +214,61 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
         </div>
       </div>
 
-      {/* Sunnah & Supplemental Worship Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
-          <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
-            <SunMedium className="w-5 h-5 text-emerald-600" />
+      {/* Sunnah & Supplemental Worship Accordion/Grid */}
+      <div className="flex flex-col gap-4">
+        {/* Mobile Header Toggle */}
+        <button
+          onClick={() => setIsSunnahStatsExpanded(!isSunnahStatsExpanded)}
+          className="lg:hidden w-full flex items-center justify-between p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm"
+        >
+          <div className="flex items-center gap-3 text-emerald-600 dark:text-emerald-400">
+            <Star className="w-5 h-5 fill-current opacity-20" />
+            <span className="text-xs font-black uppercase tracking-[0.2em]">Ibadah Sunnah & Pelengkap</span>
           </div>
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Qobliyah</p>
-            <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.qobliyahCount}</p>
-          </div>
+          <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${isSunnahStatsExpanded ? 'rotate-180' : ''}`} />
+        </button>
+
+        {/* Desktop Header Label (Optional, matches mobile style but no button) */}
+        <div className="hidden lg:block">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Statistik Ibadah Sunnah & Pelengkap</p>
         </div>
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
-          <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
-            <Moon className="w-5 h-5 text-emerald-600" />
+
+        <div className={`grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 transition-all duration-300 ${!isSunnahStatsExpanded ? 'hidden lg:grid' : 'grid'}`}>
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
+            <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+              <SunMedium className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Qobliyah</p>
+              <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.qobliyahCount}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Ba'diyah</p>
-            <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.badiyahCount}</p>
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
+            <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+              <Moon className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Ba'diyah</p>
+              <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.badiyahCount}</p>
+            </div>
           </div>
-        </div>
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
-          <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
-            <Star className="w-5 h-5 text-emerald-600" />
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
+            <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+              <Star className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Dzikir</p>
+              <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.dzikirCount}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Dzikir</p>
-            <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.dzikirCount}</p>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
-          <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
-            <User className="w-5 h-5 text-emerald-600" />
-          </div>
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Berdoa</p>
-            <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.duaCount}</p>
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
+            <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+              <User className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Berdoa</p>
+              <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.duaCount}</p>
+            </div>
           </div>
         </div>
       </div>
