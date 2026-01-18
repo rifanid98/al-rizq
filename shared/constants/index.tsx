@@ -1,5 +1,5 @@
 
-import { PrayerName } from './types';
+import { PrayerName } from '../types';
 
 export const PRAYER_ORDER: PrayerName[] = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
 
