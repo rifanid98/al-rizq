@@ -11,7 +11,7 @@ import {
   Pie,
   Cell
 } from 'recharts';
-import { PrayerLog } from '../types';
+import { PrayerLog } from '../../../shared/types';
 import { CheckCircle2, Clock, MapPin, AlertCircle, TrendingUp, ChevronDown, SunMedium, Moon, Info, User, Star } from 'lucide-react';
 
 interface DashboardProps {
