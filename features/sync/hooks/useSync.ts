@@ -82,8 +82,7 @@ export const useSync = (userEmail: string | undefined) => {
                 if (userEmail) {
                     setIsSyncing(true);
                     try {
-                        const { uploadToCloud: uploadService } = await import('../services/syncService');
-                        await uploadService(userEmail, restoredLogs);
+                        await uploadToCloud(userEmail, restoredLogs);
                         console.log('Cloud data restored successfully');
                     } catch (err) {
                         console.error('Failed to restore cloud data:', err);
