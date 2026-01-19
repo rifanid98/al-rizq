@@ -655,14 +655,49 @@ const App: React.FC = () => {
           {/* Fasting Tab Content */}
           {activeTab === 'fasting' && (
             <div className="space-y-6 lg:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              {/* Use schedule.hijri or fallback to calculating it locally */}
+              {/* Flashback Control */}
+              {!isFlashbackMode && (
+                <div className="flex flex-col md:flex-row gap-4">
+                  <button onClick={() => setSelectedDate(getYesterdayDateStr())} className="flex-1 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-amber-500 transition-all group flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+                        <Clock3 className="w-6 h-6 text-amber-600" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">{t.tracker.flashback}</p>
+                        <p className="text-sm font-black text-slate-800 dark:text-slate-100">{t.tracker.flashbackQuestion}</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              )}
 
+              {/* Flashback Banner */}
+              {isFlashbackMode && (
+                <div className="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-[2rem] border border-amber-200 dark:border-amber-900/50 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                      <RotateCcw className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-black text-amber-900 dark:text-amber-400">{t.tracker.flashbackActive}</h3>
+                      <p className="text-sm font-bold text-amber-700 dark:text-amber-500/80">{t.tracker.showingScheduleFor} <span className="underline">{formatDate(selectedDate)}</span></p>
+                    </div>
+                  </div>
+                  <button onClick={() => { setSelectedDate(currentDate); setYesterdaySchedule(null); }} className="px-6 py-3 bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 font-black rounded-2xl text-xs uppercase tracking-widest shadow-sm border border-amber-200 dark:border-amber-900/50 hover:bg-amber-500 hover:text-white transition-all">{t.common.backToToday}</button>
+                </div>
+              )}
+
+              {/* Use schedule.hijri or fallback to calculating it locally */}
               {(() => {
-                const effectiveHijri = schedule?.hijri || getHijriDate(new Date(currentDate));
+                const effectiveHijri = (isFlashbackMode && yesterdaySchedule?.hijri)
+                  ? yesterdaySchedule.hijri
+                  : (schedule?.hijri && !isFlashbackMode ? schedule.hijri : getHijriDate(new Date(selectedDate)));
 
                 return (
                   <>
-                    <FastingTracker currentDate={currentDate} hijriDate={effectiveHijri} />
+                    <FastingTracker currentDate={selectedDate} hijriDate={effectiveHijri} />
                     <FastingStats hijriDate={effectiveHijri} />
                   </>
                 );
