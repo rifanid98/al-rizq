@@ -314,10 +314,10 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                             Batal
                         </Button>
                         <Button
-                            className="flex-[2] h-14 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-emerald-500/20"
+                            className="flex-1 h-14 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-emerald-500/20"
                             onClick={onConfirm}
                         >
-                            Simpan Catatan
+                            Simpan
                         </Button>
                     </div>
                 </div>

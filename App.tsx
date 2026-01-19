@@ -272,21 +272,6 @@ const App: React.FC = () => {
       return;
     }
 
-    const isLateNow = isTimePassed(scheduledTime, currentDate) && !isTimePassed(scheduledTime, currentDate); // wait, logic in App.tsx was: isTimePassed(...) && isLate(scheduledTime, actualTime)
-    // Actually handlePrayerClick in App.tsx:
-    /*
-    const actualTime = getCurrentTimeStr();
-    if (isLate(scheduledTime, actualTime)) {
-      setEditingLogId(null);
-      setPendingLatePrayer({ name, scheduledTime });
-      setLateModalOpen(true);
-      setIsLateEntry(true);
-      setIsForgotMarking(false);
-    } else {
-      logPrayer(name, scheduledTime, { locationType: 'Masjid', executionType: 'Jamaah', weatherCondition: 'Cerah' });
-      setShowCelebration(true);
-    }
-    */
     const actualTime = getCurrentTimeStr();
     if (isTimePassed(scheduledTime, currentDate) && isLate(scheduledTime, actualTime)) {
       setEditingLogId(null);
@@ -334,15 +319,21 @@ const App: React.FC = () => {
         editingLogId,
         selectedDate: isFlashbackMode ? selectedDate : undefined
       });
+      
+      const curTime = getCurrentTimeStr();
+      const isOnTime = !isLate(pendingLatePrayer.scheduledTime, curTime);
+      
+      if (isOnTime && locationType === 'Masjid' && executionType === 'Jamaah') {
+        setShowCelebration(true);
+      }
+
       setLateModalOpen(false);
       setPendingLatePrayer(null);
       setLateReason('');
       setIsMasbuq(false);
       setEditingLogId(null);
-      setShowCelebration(true);
     }
   };
-
   const confirmCloudReplace = () => {
     if (pendingCloudLogs) {
       localStorage.setItem(STORAGE_KEYS.LOGS_BACKUP, JSON.stringify(logs));
@@ -425,7 +416,7 @@ const App: React.FC = () => {
 
       <main className="flex-1 p-4 lg:p-10 max-w-6xl mx-auto w-full pb-48 lg:pb-0">
         <header className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 lg:mb-10 gap-6">
-          <div className="flex justify-between items-start w-full">
+          <div className="flex justify-between items-start flex-1">
             <div>
               <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
                 {activeTab === 'tracker' ? 'Tracker Sholat' : activeTab === 'dashboard' ? 'Statistik' : 'Riwayat'}
@@ -477,8 +468,8 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {activeTab === 'tracker' && (
-            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 lg:gap-3 w-full md:w-auto">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 lg:gap-3 w-full md:w-auto">
+            {activeTab === 'tracker' && (
               <div className="flex flex-row items-center gap-2 w-full md:w-auto">
                 <button onClick={() => setIsSearching(!isSearching)} className="flex-1 md:flex-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden min-w-0">
                   <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
@@ -488,55 +479,56 @@ const App: React.FC = () => {
                 <Button variant="ghost" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0" onClick={() => getSchedule()} isLoading={isLoading && !isSearching}>
                   <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                 </Button>
-                {user && (
-                  <div className="hidden md:flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0"
-                      onClick={() => handleUpload(logs, getCurrentSettings())}
-                      isLoading={isSyncing && !isLoading}
-                      title="Upload Riwayat ke Cloud"
-                    >
-                      <CloudUpload className="w-4 h-4" />
-                      <span className="text-[10px] font-black uppercase tracking-widest ml-2 lg:hidden">Upload</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0"
-                      onClick={async () => {
-                        const result = await handleDownload();
-                        if (result) {
-                          setLogs(result.logs);
-                          if (result.settings) restoreSettings(result.settings);
-                          localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(result.logs));
-                          localStorage.setItem(STORAGE_KEYS.LAST_SYNC, result.last_updated.toString());
-                        }
-                      }}
-                      isLoading={isSyncing && !isLoading}
-                      title="Download Riwayat dari Cloud"
-                    >
-                      <CloudDownload className="w-4 h-4" />
-                      <span className="text-[10px] font-black uppercase tracking-widest ml-2 lg:hidden">Download</span>
-                    </Button>
-                    {hasBackup && (
-                      <Button
-                        variant="ghost"
-                        className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/20 text-rose-600 p-2.5 shrink-0"
-                        onClick={async () => {
-                          const result = await handleRevert(logs);
-                          if (result) setLogs(result);
-                        }}
-                        title="Batalkan Sinkronisasi"
-                      >
-                        <RotateCcw className="w-4 h-4" />
-                        <span className="text-[10px] font-black uppercase tracking-widest ml-2 lg:hidden">Revert</span>
-                      </Button>
-                    )}
-                  </div>
+              </div>
+            )}
+
+            {user && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0 flex items-center gap-2"
+                  onClick={() => handleUpload(logs, getCurrentSettings())}
+                  isLoading={isSyncing && !isLoading}
+                  title="Upload Riwayat ke Cloud"
+                >
+                  <CloudUpload className="w-4 h-4" />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Upload</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0 flex items-center gap-2"
+                  onClick={async () => {
+                    const result = await handleDownload();
+                    if (result) {
+                      setLogs(result.logs);
+                      if (result.settings) restoreSettings(result.settings);
+                      localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(result.logs));
+                      localStorage.setItem(STORAGE_KEYS.LAST_SYNC, result.last_updated.toString());
+                    }
+                  }}
+                  isLoading={isSyncing && !isLoading}
+                  title="Download Riwayat dari Cloud"
+                >
+                  <CloudDownload className="w-4 h-4" />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Download</span>
+                </Button>
+                {hasBackup && (
+                  <Button
+                    variant="ghost"
+                    className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/20 text-rose-600 p-2.5 shrink-0 flex items-center gap-2"
+                    onClick={async () => {
+                      const result = await handleRevert(logs);
+                      if (result) setLogs(result);
+                    }}
+                    title="Batalkan Sinkronisasi"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Revert</span>
+                  </Button>
                 )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </header>
 
         {/* Tracker Tab Content */}
