@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { PrayerLog } from '../../../shared/types';
 import { CheckCircle2, Clock, MapPin, AlertCircle, TrendingUp, ChevronDown, SunMedium, Moon, Info, User, Star } from 'lucide-react';
+import { useLanguage } from '../../../shared/hooks/useLanguage';
 
 interface DashboardProps {
   logs: PrayerLog[];
@@ -24,6 +25,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [isSunnahStatsExpanded, setIsSunnahStatsExpanded] = useState(false);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -90,14 +92,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
   }, [logs]);
 
   const pieData = [
-    { name: 'Tepat Waktu', value: stats.ontime, color: '#10b981' },
-    { name: 'Terlambat', value: stats.late, color: '#f59e0b' },
-    { name: 'Terlewat', value: stats.missed, color: '#ef4444' },
+    { name: t.dashboard.status.ontime || t.tracker.status.ontime, value: stats.ontime, color: '#10b981' },
+    { name: t.dashboard.status.late || t.tracker.status.late, value: stats.late, color: '#f59e0b' },
+    { name: t.dashboard.status.missed || t.tracker.status.missed, value: stats.missed, color: '#ef4444' },
   ].filter(d => d.value > 0);
 
   const locationData = [
-    { name: 'Masjid', value: stats.atMosque, color: '#0ea5e9' },
-    { name: 'Rumah', value: stats.atHome, color: '#6366f1' },
+    { name: t.tracker.execution.atMosque, value: stats.atMosque, color: '#0ea5e9' },
+    { name: t.tracker.execution.atHome, value: stats.atHome, color: '#6366f1' },
   ].filter(d => d.value > 0);
 
   const chartData = useMemo(() => {
@@ -105,7 +107,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
     return days.map(date => {
       const dayLogs = logs.filter(l => l.date === date);
       return {
-        name: new Date(date as string).toLocaleDateString('id-ID', { weekday: 'short' }),
+        name: new Date(date as string).toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { weekday: 'short' }),
         ontime: dayLogs.filter(l => l.status === 'Tepat Waktu' || l.status === 'Ontime').length,
         late: dayLogs.filter(l => l.status === 'Terlambat' || l.status === 'Late').length,
         sunnah: dayLogs.filter(l => l.hasQobliyah).length + dayLogs.filter(l => l.hasBadiyah).length + dayLogs.filter(l => l.hasDzikir).length + dayLogs.filter(l => l.hasDua).length,
@@ -119,8 +121,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
         <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
           <TrendingUp className="w-10 h-10 text-slate-300 dark:text-slate-700" />
         </div>
-        <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">Belum Ada Data</h3>
-        <p className="text-slate-500 dark:text-slate-500 mt-2 font-medium">Mulai catat sholatmu untuk melihat laporan di sini.</p>
+        <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">{t.dashboard.noData}</h3>
+        <p className="text-slate-500 dark:text-slate-500 mt-2 font-medium">{t.dashboard.noDataSubtitle}</p>
       </div>
     );
   }
@@ -151,8 +153,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
             <TrendingUp className="w-8 h-8" />
           </div>
           <div>
-            <h3 className="text-xl font-black tracking-tight">Performa Ibadah</h3>
-            <p className="text-emerald-100 font-medium opacity-80">Teruskan konsistensi untuk hasil yang maksimal.</p>
+            <h3 className="text-xl font-black tracking-tight">{t.dashboard.performance}</h3>
+            <p className="text-emerald-100 font-medium opacity-80">{t.dashboard.performanceSubtitle}</p>
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8 w-full md:w-auto">
@@ -178,7 +180,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
             <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Tepat Waktu</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">{t.tracker.status.ontime}</p>
             <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.ontime}</p>
           </div>
         </div>
@@ -187,7 +189,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
             <Clock className="w-6 h-6 text-amber-600 dark:text-amber-400" />
           </div>
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Terlambat</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">{t.tracker.status.late}</p>
             <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.late}</p>
           </div>
         </div>
@@ -196,7 +198,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
             <MapPin className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Di Masjid</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">{t.tracker.execution.atMosque}</p>
             <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.atMosque}</p>
           </div>
         </div>
@@ -205,7 +207,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
             <AlertCircle className="w-6 h-6 text-rose-600 dark:text-rose-400" />
           </div>
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Masbuq</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">{t.dashboard.masbuq}</p>
             <div className="flex items-baseline gap-2">
               <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.masbuqCount}</p>
               <span className="text-[10px] font-bold text-slate-400">({stats.totalMasbuqRakaat} rak)</span>
@@ -223,14 +225,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
         >
           <div className="flex items-center gap-3 text-emerald-600 dark:text-emerald-400">
             <Star className="w-5 h-5 fill-current opacity-20" />
-            <span className="text-xs font-black uppercase tracking-[0.2em]">Ibadah Sunnah & Pelengkap</span>
+            <span className="text-xs font-black uppercase tracking-[0.2em]">{t.dashboard.sunnahStats}</span>
           </div>
           <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${isSunnahStatsExpanded ? 'rotate-180' : ''}`} />
         </button>
 
         {/* Desktop Header Label (Optional, matches mobile style but no button) */}
         <div className="hidden lg:block">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Statistik Ibadah Sunnah & Pelengkap</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">{t.dashboard.sunnahStats}</p>
         </div>
 
         <div className={`grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 transition-all duration-300 ${!isSunnahStatsExpanded ? 'hidden lg:grid' : 'grid'}`}>
@@ -266,7 +268,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
               <User className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Berdoa</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">{t.dashboard.dua}</p>
               <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.duaCount}</p>
             </div>
           </div>
@@ -276,7 +278,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Adherence Chart */}
         <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm">
-          <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 mb-10">Konsistensi Mingguan</h3>
+          <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 mb-10">{t.dashboard.weeklyConsistency}</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} barGap={6} barCategoryGap="30%">
@@ -295,9 +297,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
                   }}
                   itemStyle={{ padding: '2px 0' }}
                 />
-                <Bar dataKey="ontime" name="Tepat Waktu" fill="#10b981" radius={[4, 4, 0, 0]} barSize={12} />
-                <Bar dataKey="late" name="Terlambat" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={12} />
-                <Bar dataKey="sunnah" name="Sunnah & Pelengkap" fill="#14b8a6" radius={[4, 4, 0, 0]} barSize={12} />
+                <Bar dataKey="ontime" name={t.tracker.status.ontime} fill="#10b981" radius={[4, 4, 0, 0]} barSize={12} />
+                <Bar dataKey="late" name={t.tracker.status.late} fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={12} />
+                <Bar dataKey="sunnah" name={t.dashboard.sunnahStats} fill="#14b8a6" radius={[4, 4, 0, 0]} barSize={12} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -336,7 +338,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
 
           {/* Location Breakdown */}
           <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
-            <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-6 uppercase tracking-widest text-center">Lokasi</h3>
+            <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-6 uppercase tracking-widest text-center">{t.common.location}</h3>
             <div className="h-48 relative flex-1">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>

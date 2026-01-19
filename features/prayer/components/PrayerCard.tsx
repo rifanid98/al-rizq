@@ -4,6 +4,7 @@ import { CheckCircle, Home, Users, User, CloudRain, SunMedium, Lock } from 'luci
 import { PrayerName, PrayerLog } from '../../../shared/types';
 import { PRAYER_COLORS, PRAYER_IMAGES } from '../../../shared/constants';
 import { Button } from '../../../shared/components/ui/Button';
+import { useLanguage } from '../../../shared/hooks/useLanguage';
 
 interface PrayerCardProps {
     name: PrayerName;
@@ -28,6 +29,7 @@ export const PrayerCard: React.FC<PrayerCardProps> = ({
     onPrayerClick,
     onEditPrayer
 }) => {
+    const { t } = useLanguage();
     return (
         <div className={`relative overflow-hidden bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 flex flex-col transition-all hover:shadow-2xl dark:hover:shadow-emerald-950/20 hover:border-emerald-100 dark:hover:border-emerald-900 group ${isFlashbackMode && !loggedToday ? 'ring-2 ring-amber-500/20' : ''}`}>
             {/* Thematic Background Image */}
@@ -57,9 +59,9 @@ export const PrayerCard: React.FC<PrayerCardProps> = ({
                                 <CheckCircle className="w-6 h-6" />
                                 <div>
                                     <div className="flex items-center gap-2 mb-0.5">
-                                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pelaksanaan</p>
-                                        <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${loggedToday.status === 'Tepat Waktu' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'}`}>
-                                            {loggedToday.status}
+                                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t.tracker.execution.title}</p>
+                                        <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${loggedToday.status === 'Tepat Waktu' || loggedToday.status === 'Ontime' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'}`}>
+                                            {loggedToday.status === 'Tepat Waktu' || loggedToday.status === 'Ontime' ? t.tracker.status.ontime : t.tracker.status.late}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -97,13 +99,17 @@ export const PrayerCard: React.FC<PrayerCardProps> = ({
                             {loggedToday.executionType && (
                                 <div className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
                                     {loggedToday.executionType === 'Jamaah' ? <Users className="w-3 h-3 text-emerald-600" /> : <User className="w-3 h-3 text-slate-400" />}
-                                    <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">{loggedToday.executionType}</span>
+                                    <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">
+                                        {loggedToday.executionType === 'Jamaah' ? t.tracker.execution.jamaah : t.tracker.execution.munfarid}
+                                    </span>
                                 </div>
                             )}
                             {loggedToday.weatherCondition && (
                                 <div className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
                                     {loggedToday.weatherCondition === 'Hujan' ? <CloudRain className="w-3 h-3 text-blue-500" /> : <SunMedium className="w-3 h-3 text-amber-500" />}
-                                    <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">{loggedToday.weatherCondition}</span>
+                                    <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">
+                                        {loggedToday.weatherCondition === 'Hujan' ? t.tracker.weather.rainy : t.tracker.weather.clear}
+                                    </span>
                                 </div>
                             )}
                         </div>
@@ -116,10 +122,10 @@ export const PrayerCard: React.FC<PrayerCardProps> = ({
                             onClick={() => time && onPrayerClick(name, time)}
                         >
                             {!isPassed ? <Lock className="w-4 h-4 mr-2 opacity-50" /> : null}
-                            {isPassed ? "Tandai Sholat" : "Belum Waktunya"}
+                            {isPassed ? t.tracker.markPrayer : t.tracker.notTimeYet}
                         </Button>
                         {!isPassed && time && (
-                            <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Siap pada {time}</p>
+                            <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">{t.tracker.readyAt} {time}</p>
                         )}
                     </div>
                 )}

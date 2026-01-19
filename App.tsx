@@ -438,7 +438,7 @@ const App: React.FC = () => {
                 </h2>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-3">
                   <span className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-[10px] lg:text-xs font-bold text-slate-600 dark:text-slate-400 shadow-sm w-fit">
-                    <Calendar className="w-3 h-3 lg:w-3.5 lg:h-3.5 text-emerald-600" /> {formatDate(selectedDate)}
+                    <Calendar className="w-3 h-3 lg:w-3.5 lg:h-3.5 text-emerald-600" /> {formatDate(selectedDate, language === 'id' ? 'id-ID' : 'en-US')}
                   </span>
                   {activeTab === 'tracker' && (isFlashbackMode ? yesterdaySchedule : schedule) && (
                     <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 rounded-full text-[10px] lg:text-xs font-bold text-emerald-700 dark:text-emerald-400 shadow-sm w-fit animate-in fade-in slide-in-from-left-2 duration-500">
@@ -488,7 +488,7 @@ const App: React.FC = () => {
                 <div className="flex flex-row items-center gap-2 w-full md:w-auto">
                   <button onClick={() => setIsSearching(!isSearching)} className="flex-1 md:flex-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden min-w-0">
                     <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1 md:max-w-[150px]">{schedule?.location || 'Cari lokasi...'}</span>
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1 md:max-w-[150px]">{schedule?.location || t.tracker.searchLocation}</span>
                     <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isSearching ? 'rotate-90' : ''}`} />
                   </button>
                   <Button variant="ghost" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0" onClick={() => getSchedule()} isLoading={isLoading && !isSearching}>
@@ -663,9 +663,9 @@ const App: React.FC = () => {
                         setCurrentPage(1);
                       }}
                       className="px-2 py-1 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg text-[10px] font-black uppercase tracking-widest text-emerald-600 transition-all"
-                      title="Kembali ke Hari Ini"
+                      title={t.common.backToToday}
                     >
-                      Hari Ini
+                      {t.common.today}
                     </button>
                     <div className="w-[1px] h-4 bg-slate-100 dark:bg-slate-800 mx-1" />
                     <button
@@ -683,7 +683,7 @@ const App: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Button variant="danger-outline" className="rounded-xl px-4 py-3 flex items-center gap-2 text-xs font-bold" onClick={clearLogs}><Trash2 className="w-4 h-4" /> Hapus Semua</Button>
+                  <Button variant="danger-outline" className="rounded-xl px-4 py-3 flex items-center gap-2 text-xs font-bold" onClick={clearLogs}><Trash2 className="w-4 h-4" /> {t.common.deleteAll}</Button>
                 </div>
               </div>
 
@@ -692,15 +692,15 @@ const App: React.FC = () => {
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-slate-50 dark:bg-slate-800/50">
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Tanggal</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Sholat</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Waktu</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Status</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Lokasi</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Pelaksanaan</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Cuaca</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Masbuq</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Catatan</th>
+                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.date}</th>
+                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.prayer}</th>
+                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.time}</th>
+                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.statusLabel}</th>
+                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.location}</th>
+                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.tracker.execution.title}</th>
+                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.features?.weather?.title || t.tracker.weather?.title || 'Cuaca'}</th>
+                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.tracker.masbuq}</th>
+                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.history.notes}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -710,28 +710,28 @@ const App: React.FC = () => {
                           <td className="px-6 lg:px-8 py-5"><span className="text-xs font-black uppercase tracking-widest text-emerald-600">{log.prayerName}</span></td>
                           <td className="px-6 lg:px-8 py-5"><p className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.actualTime}</p></td>
                           <td className="px-6 lg:px-8 py-5">
-                            <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase ${log.status === 'Tepat Waktu' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-500'}`}>
-                              {log.status} {log.delayMinutes > 0 && `(${log.delayMinutes}m)`}
+                            <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase ${log.status === 'Tepat Waktu' || log.status === 'Ontime' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-500'}`}>
+                              {log.status === 'Tepat Waktu' || log.status === 'Ontime' ? t.tracker.status.ontime : t.tracker.status.late} {log.delayMinutes > 0 && `(${log.delayMinutes}m)`}
                             </span>
                           </td>
-                          <td className="px-6 lg:px-8 py-5">{log.locationType ? <div className="flex items-center gap-1.5">{log.locationType === 'Masjid' ? <MapPin className="w-3 h-3 text-emerald-600" /> : <Home className="w-3 h-3 text-slate-400" />}<span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.locationType}</span></div> : <span className="text-sm text-slate-300">-</span>}</td>
-                          <td className="px-6 lg:px-8 py-5">{log.executionType ? <div className="flex items-center gap-1.5">{log.executionType === 'Jamaah' ? <Users className="w-3 h-3 text-emerald-600" /> : <User className="w-3 h-3 text-slate-400" />}<span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.executionType}</span></div> : <span className="text-sm text-slate-300">-</span>}</td>
-                          <td className="px-6 lg:px-8 py-5">{log.weatherCondition ? <div className="flex items-center gap-1.5">{log.weatherCondition === 'Hujan' ? <CloudRain className="w-3 h-3 text-blue-500" /> : <SunMedium className="w-3 h-3 text-amber-500" />}<span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.weatherCondition}</span></div> : <span className="text-sm text-slate-300">-</span>}</td>
-                          <td className="px-6 lg:px-8 py-5">{log.isMasbuq ? <span className="px-2 py-1 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 rounded-lg text-[10px] font-black uppercase whitespace-nowrap">Masbuq ({log.masbuqRakaat})</span> : <span className="text-sm text-slate-300">-</span>}</td>
+                          <td className="px-6 lg:px-8 py-5">{log.locationType ? <div className="flex items-center gap-1.5">{log.locationType === 'Masjid' ? <MapPin className="w-3 h-3 text-emerald-600" /> : <Home className="w-3 h-3 text-slate-400" />}<span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.locationType === 'Masjid' ? t.tracker.execution.atMosque : t.tracker.execution.atHome}</span></div> : <span className="text-sm text-slate-300">-</span>}</td>
+                          <td className="px-6 lg:px-8 py-5">{log.executionType ? <div className="flex items-center gap-1.5">{log.executionType === 'Jamaah' ? <Users className="w-3 h-3 text-emerald-600" /> : <User className="w-3 h-3 text-slate-400" />}<span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.executionType === 'Jamaah' ? t.tracker.execution.jamaah : t.tracker.execution.munfarid}</span></div> : <span className="text-sm text-slate-300">-</span>}</td>
+                          <td className="px-6 lg:px-8 py-5">{log.weatherCondition ? <div className="flex items-center gap-1.5">{log.weatherCondition === 'Hujan' ? <CloudRain className="w-3 h-3 text-blue-500" /> : <SunMedium className="w-3 h-3 text-amber-500" />}<span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.weatherCondition === 'Hujan' ? t.tracker.weather.rainy : t.tracker.weather.clear}</span></div> : <span className="text-sm text-slate-300">-</span>}</td>
+                          <td className="px-6 lg:px-8 py-5">{log.isMasbuq ? <span className="px-2 py-1 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 rounded-lg text-[10px] font-black uppercase whitespace-nowrap">{t.tracker.masbuq} ({log.masbuqRakaat})</span> : <span className="text-sm text-slate-300">-</span>}</td>
                           <td className="px-6 lg:px-8 py-5 text-sm text-slate-500 dark:text-slate-400 max-w-[200px] truncate">{log.reason || '-'}</td>
                         </tr>
                       ))}
                       {currentHistoryLogs.length === 0 && (
-                        <tr><td colSpan={9} className="px-8 py-12 text-center text-slate-400"><div className="flex flex-col items-center gap-3"><CalendarDays className="w-12 h-12 opacity-30" /><p className="text-sm font-bold">Tidak ada data untuk tanggal ini</p></div></td></tr>
+                        <tr><td colSpan={9} className="px-8 py-12 text-center text-slate-400"><div className="flex flex-col items-center gap-3"><CalendarDays className="w-12 h-12 opacity-30" /><p className="text-sm font-bold">{t.common.noDataByDate}</p></div></td></tr>
                       )}
                     </tbody>
                   </table>
                 </div>
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                    <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all"><ChevronLeft className="w-3.5 h-3.5" />Prev</button>
-                    <span className="text-xs font-bold text-slate-500">Hal {currentPage} dari {totalPages}</span>
-                    <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all">Next<ChevronRight className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all"><ChevronLeft className="w-3.5 h-3.5" />{t.common.prev}</button>
+                    <span className="text-xs font-bold text-slate-500">{t.common.page} {currentPage} {t.common.of} {totalPages}</span>
+                    <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all">{t.common.next}<ChevronRight className="w-3.5 h-3.5" /></button>
                   </div>
                 )}
               </div>

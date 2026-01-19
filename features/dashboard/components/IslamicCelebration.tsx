@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { useLanguage } from '../../../shared/hooks/useLanguage';
 
 interface IslamicCelebrationProps {
     show: boolean;
@@ -46,48 +47,18 @@ const COLORS = [
     '#ffffff', // white
 ];
 
-const QURANIC_QUOTES = [
-    {
-        title: "Maa Shaa Allah!",
-        quote: "Jadikanlah sabar dan shalat sebagai penolongmu.",
-        source: "QS. Al-Baqarah: 45"
-    },
-    {
-        title: "Tabarakallah!",
-        quote: "Sesungguhnya shalat itu mencegah perbuatan keji dan mungkar.",
-        source: "QS. Al-Ankabut: 45"
-    },
-    {
-        title: "Alhamdulillah!",
-        quote: "Sungguh beruntung orang beriman yang khusyuk shalatnya.",
-        source: "QS. Al-Mu'minun: 1-2"
-    },
-    {
-        title: "Barakallah!",
-        quote: "Peliharalah semua shalat(mu) dan shalat Wusta.",
-        source: "QS. Al-Baqarah: 238"
-    },
-    {
-        title: "Maa Shaa Allah!",
-        quote: "Hanya dengan mengingat Allah hati menjadi tenteram.",
-        source: "QS. Ar-Ra'd: 28"
-    },
-    {
-        title: "Subhanallah!",
-        quote: "Dirikanlah shalat untuk mengingat-Ku.",
-        source: "QS. Thaha: 14"
-    }
-];
+
 
 const IslamicCelebration: React.FC<IslamicCelebrationProps> = ({ show, onComplete }) => {
+    const { t } = useLanguage();
     const [particles, setParticles] = useState<Particle[]>([]);
     const [isActive, setIsActive] = useState(false);
-    const [currentQuote, setCurrentQuote] = useState(QURANIC_QUOTES[0]);
+    const [currentQuote, setCurrentQuote] = useState(t.celebration.quotes[0]);
 
     useEffect(() => {
         if (show && !isActive) {
             setIsActive(true);
-            setCurrentQuote(QURANIC_QUOTES[Math.floor(Math.random() * QURANIC_QUOTES.length)]);
+            setCurrentQuote(t.celebration.quotes[Math.floor(Math.random() * t.celebration.quotes.length)]);
             generateParticles();
 
             const timer = setTimeout(() => {
@@ -185,7 +156,7 @@ const IslamicCelebration: React.FC<IslamicCelebrationProps> = ({ show, onComplet
                                 {currentQuote.title}
                             </h2>
                             <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-widest">
-                                teruskan perjuanganmu!
+                                {t.celebration.keepGoing}
                             </p>
                             <div className="pt-4 space-y-2">
                                 <p className="text-lg font-bold text-slate-800 dark:text-white leading-relaxed italic">
