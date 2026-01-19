@@ -123,7 +123,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                 const finalIsNadzar = isNadzarMatch || typeToLog === 'Nadzar';
                 logFasting(currentDate, typeToLog, true, finalIsNadzar);
             } else {
-                setIsDropdownOpen(true);
+                setIsDropdownOpen(prev => !prev);
             }
         }
     };
@@ -260,7 +260,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
 
     return (
         <>
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-visible">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-4">
@@ -319,7 +319,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                 </Button>
 
                                 {!recommendation.type && isDropdownOpen && (
-                                    <div className="absolute top-full mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                                    <div className="absolute top-full mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-50">
                                         {['Nadzar', 'Qadha', 'Lainnya'].map((type) => (
                                             <button
                                                 key={type}
@@ -384,8 +384,8 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
 
             {/* Fasting Settings Modal */}
             {isConfigOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+                <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="flex-1 text-lg font-black text-slate-800 dark:text-slate-100">Pengaturan Puasa</h3>
                             <button onClick={() => setIsConfigOpen(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
