@@ -1,5 +1,5 @@
-
 export type PrayerName = 'Subuh' | 'Dzuhur' | 'Ashar' | 'Maghrib' | 'Isya';
+export type Language = 'id' | 'en';
 
 export interface PrayerTime {
   name: PrayerName;
@@ -44,6 +44,7 @@ export interface AppSettings {
   locationHistory: string[];
   showPrayerBg: boolean;
   prayerBgOpacity: number;
+  language: Language;
 }
 
 export interface AppState {

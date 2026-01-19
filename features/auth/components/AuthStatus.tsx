@@ -43,22 +43,9 @@ export const AuthStatus: React.FC<AuthStatusProps> = ({ user, onLogout, googleBt
     }
 
     // Header mode (Mobile/Tablet)
+    if (user) return null; // Redundant now that we have Settings tab
+
     return (
-        <>
-            {user ? (
-                <div className="flex items-center gap-2 p-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
-                    <img src={user.picture} alt="Avatar" referrerPolicy="no-referrer" className="w-8 h-8 rounded-lg border border-white dark:border-slate-800" />
-                    <div className="hidden sm:flex flex-col pr-1">
-                        <p className="text-[9px] font-black text-slate-800 dark:text-slate-100 truncate max-w-[80px]">{user.name}</p>
-                        <span className="text-[8px] font-bold text-emerald-600 dark:text-emerald-400">Synced</span>
-                    </div>
-                    <button onClick={onLogout} className="p-2 text-rose-500 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                        <LogOut className="w-3.5 h-3.5" />
-                    </button>
-                </div>
-            ) : (
-                <div ref={googleBtnRef} className="w-10 h-10 rounded-full overflow-hidden scale-75 origin-right flex items-center justify-center"></div>
-            )}
-        </>
+        <div ref={googleBtnRef} className="w-10 h-10 rounded-full overflow-hidden scale-75 origin-right flex items-center justify-center"></div>
     );
 };

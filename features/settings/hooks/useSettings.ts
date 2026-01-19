@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { STORAGE_KEYS } from '../../../shared/constants';
-import { AppSettings } from '../../../shared/types';
+import { AppSettings, Language } from '../../../shared/types';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -23,6 +23,10 @@ export const useSettings = () => {
     const [locationHistory, setLocationHistory] = useState<string[]>(() => {
         const savedHistory = localStorage.getItem(STORAGE_KEYS.LOCATION_HISTORY);
         return savedHistory ? JSON.parse(savedHistory) : [];
+    });
+
+    const [language, setLanguage] = useState<Language>(() => {
+        return (localStorage.getItem('al_rizq_language') as Language) || 'id';
     });
 
     useEffect(() => {
@@ -47,6 +51,10 @@ export const useSettings = () => {
         localStorage.setItem('al_rizq_bg_opacity', JSON.stringify(prayerBgOpacity));
     }, [prayerBgOpacity]);
 
+    useEffect(() => {
+        localStorage.setItem('al_rizq_language', language);
+    }, [language]);
+
     const addToHistory = useCallback((address: string) => {
         setLocationHistory(prev => {
             const updated = [address, ...prev.filter(a => a !== address)].slice(0, 10);
@@ -63,8 +71,9 @@ export const useSettings = () => {
         theme: themeMode,
         locationHistory: locationHistory,
         showPrayerBg: showPrayerBg,
-        prayerBgOpacity: prayerBgOpacity
-    }), [themeMode, locationHistory, showPrayerBg, prayerBgOpacity]);
+        prayerBgOpacity: prayerBgOpacity,
+        language: language
+    }), [themeMode, locationHistory, showPrayerBg, prayerBgOpacity, language]);
 
     const restoreSettings = useCallback((s: AppSettings) => {
         if (s.theme) setThemeMode(s.theme);
@@ -77,6 +86,7 @@ export const useSettings = () => {
         if (s.locationHistory) localStorage.setItem(STORAGE_KEYS.LOCATION_HISTORY, JSON.stringify(s.locationHistory));
         if (s.showPrayerBg !== undefined) localStorage.setItem('al_rizq_show_bg', JSON.stringify(s.showPrayerBg));
         if (s.prayerBgOpacity !== undefined) localStorage.setItem('al_rizq_bg_opacity', JSON.stringify(s.prayerBgOpacity));
+        if (s.language) localStorage.setItem('al_rizq_language', s.language);
     }, []);
 
     return {
@@ -91,6 +101,8 @@ export const useSettings = () => {
         addToHistory,
         cycleTheme,
         getCurrentSettings,
-        restoreSettings
+        restoreSettings,
+        language,
+        setLanguage
     };
 };
