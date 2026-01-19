@@ -186,7 +186,7 @@ const App: React.FC = () => {
 
       const cloudData = await handleDownload(userData.email);
       if (cloudData && (cloudData.logs?.length > 0 || cloudData.settings || cloudData.fastingLogs?.length > 0)) {
-        if (logs.length === 0) {
+        if (logs.length === 0 && fastingLogs.length === 0) {
           if (cloudData.logs) {
             setLogs(cloudData.logs);
             localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(cloudData.logs));
@@ -696,7 +696,7 @@ const App: React.FC = () => {
           )}
 
           {/* Dashboard Tab Content */}
-          {activeTab === 'dashboard' && <Dashboard logs={logs} hijriDate={schedule?.hijri} />}
+          {activeTab === 'dashboard' && <Dashboard logs={logs} fastingLogs={fastingLogs} hijriDate={schedule?.hijri} />}
 
 
           {/* History Tab Content */}

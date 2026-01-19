@@ -16,7 +16,8 @@ import {
     ShieldCheck,
     Globe,
     Bell,
-    Trash2
+    Trash2,
+    Loader2
 } from 'lucide-react';
 import { Button } from '../../../shared/components/ui/Button';
 import { PrayerLog, AppSettings, UserProfile, FastingLog } from '../../../shared/types';
@@ -164,7 +165,11 @@ export const Settings: React.FC<SettingsProps> = ({
                                 className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 sm:py-6 flex flex-row sm:flex-col items-center justify-start sm:justify-center gap-4 sm:gap-2 h-auto hover:border-emerald-500 transition-all group px-6 sm:px-4"
                             >
                                 <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform shrink-0">
-                                    <CloudUpload className="w-5 h-5" />
+                                    {isSyncing ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                        <CloudUpload className="w-5 h-5" />
+                                    )}
                                 </div>
                                 <span className="text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-200">{t.settings.sync.upload}</span>
                             </Button>
@@ -188,7 +193,11 @@ export const Settings: React.FC<SettingsProps> = ({
                                 className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 sm:py-6 flex flex-row sm:flex-col items-center justify-start sm:justify-center gap-4 sm:gap-2 h-auto hover:border-blue-500 transition-all group px-6 sm:px-4"
                             >
                                 <div className="w-10 h-10 bg-blue-50 dark:bg-blue-950/30 rounded-xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform shrink-0">
-                                    <CloudDownload className="w-5 h-5" />
+                                    {isSyncing ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                        <CloudDownload className="w-5 h-5" />
+                                    )}
                                 </div>
                                 <span className="text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-200">{t.settings.sync.download}</span>
                             </Button>

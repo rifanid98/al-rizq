@@ -84,7 +84,7 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate }) => {
     const getFastedLog = (date: string) => fastingLogs.find(l => l.date === date);
 
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-8">
             {/* Fasting Performance Panel */}
             <div className="order-last md:order-first bg-emerald-600 dark:bg-emerald-900/40 p-8 rounded-[2.5rem] shadow-xl shadow-emerald-500/10 flex flex-col md:flex-row items-center justify-between gap-8 text-white">
                 <div className="flex items-center gap-6">
