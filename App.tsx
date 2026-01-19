@@ -195,18 +195,7 @@ const App: React.FC = () => {
           if (cloudData.settings) restoreSettings(cloudData.settings);
           if (cloudData.fastingLogs) {
             localStorage.setItem(STORAGE_KEYS.FASTING_LOGS, JSON.stringify(cloudData.fastingLogs));
-            // Force reload or state update if hook exposes setter? 
-            // Since useFastingLogs is used inside components, we might need a global reload or just let it be if we reload page.
-            // Better: We should expose setFastingLogs in a context or similar if we want global update without reload.
-            // For now, simpler: window.location.reload() for full sync apply? Or just set storage and assume components re-mount?
-            // App.tsx doesn't use useFastingLogs directly for state. 
-            // FastingTracker will read from localStorage on mount/update? 
-            // The hook initializes from localStorage. If we update localStorage here, active hooks won't know.
-            // Ideally we need to trigger an update.
-            // A simple hack: window.dispatchEvent(new Event('storage')) might work if we listened to it, but our hook doesn't.
-            // Let's rely on reload for now for major syncs, OR we could lift state up, but that's a big refactor.
-            // Wait, we are in 'Execution'. Let's do the safe thing: window.location.reload() is drastic.
-            // Let's just set the item. If the user navigates, it might refresh.
+            window.dispatchEvent(new Event('fasting_logs_updated'));
           }
           localStorage.setItem(STORAGE_KEYS.LAST_SYNC, cloudData.last_updated.toString());
         } else {
