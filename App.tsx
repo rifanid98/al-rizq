@@ -640,7 +640,7 @@ const App: React.FC = () => {
                 <div className="flex items-center gap-3 flex-1 max-w-md">
                   <div className="relative flex-1 group">
                     <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
-                    <input type="date" value={historyDateFilter} onChange={(e) => { setHistoryDateFilter(e.target.value); setCurrentPage(1); }} className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500 transition-all" />
+                    <input type="date" value={historyDateFilter} placeholder={t.history.pickDate} onChange={(e) => { setHistoryDateFilter(e.target.value); setCurrentPage(1); }} className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500 transition-all" />
                     {historyDateFilter && <button onClick={() => { setHistoryDateFilter(''); setCurrentPage(1); }} className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400"><X className="w-3.5 h-3.5" /></button>}
                   </div>
                   <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-sm shrink-0">

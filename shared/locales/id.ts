@@ -193,6 +193,7 @@ export const id = {
         title: "Riwayat",
         noLogs: "Belum ada riwayat sholat.",
         notes: "Catatan",
-        activeFilter: "Filter Aktif"
+        activeFilter: "Filter Aktif",
+        pickDate: "Pilih Tanggal"
     }
 };

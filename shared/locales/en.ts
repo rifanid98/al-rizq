@@ -191,6 +191,7 @@ export const en = {
         title: "History",
         noLogs: "No prayer history yet.",
         notes: "Notes",
-        activeFilter: "Active Filter"
+        activeFilter: "Active Filter",
+        pickDate: "Pick a date"
     }
 };
