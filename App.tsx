@@ -193,7 +193,7 @@ const App: React.FC = () => {
       setUser(userData);
       localStorage.setItem('al_rizq_user', JSON.stringify(userData));
 
-      const cloudData = await handleDownload();
+      const cloudData = await handleDownload(userData.email);
       if (cloudData && (cloudData.logs?.length > 0 || cloudData.settings)) {
         if (logs.length === 0) {
           if (cloudData.logs) {

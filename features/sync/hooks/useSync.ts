@@ -38,11 +38,12 @@ export const useSync = (userEmail: string | undefined) => {
         }
     }, [userEmail]);
 
-    const handleDownload = useCallback(async () => {
-        if (!userEmail) return;
+    const handleDownload = useCallback(async (emailOverride?: string) => {
+        const targetEmail = emailOverride || userEmail;
+        if (!targetEmail) return;
         setIsSyncing(true);
         try {
-            const result = await downloadFromCloud(userEmail);
+            const result = await downloadFromCloud(targetEmail);
             if (result) {
                 localStorage.setItem('al_rizq_backup_source', 'download');
                 setHasBackup(true);
