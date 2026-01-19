@@ -10,6 +10,8 @@ export const useAuth = () => {
         return savedUser ? JSON.parse(savedUser) : null;
     });
 
+    const [isGoogleReady, setIsGoogleReady] = useState(!!(window as any).google?.accounts?.id);
+
     const logout = useCallback(() => {
         setUser(null);
         Object.keys(localStorage).forEach(key => {
@@ -40,10 +42,14 @@ export const useAuth = () => {
             script.src = "https://accounts.google.com/gsi/client";
             script.async = true;
             script.defer = true;
-            script.onload = () => { }; // App will call initGoogle
+            script.onload = () => {
+                setIsGoogleReady(true);
+            };
             document.head.appendChild(script);
+        } else {
+            setIsGoogleReady(true);
         }
     }, []);
 
-    return { user, setUser, logout, initGoogle };
+    return { user, setUser, logout, initGoogle, isGoogleReady };
 };

@@ -60,7 +60,7 @@ import IslamicCelebration from './features/dashboard/components/IslamicCelebrati
 
 const App: React.FC = () => {
   // Hooks
-  const { user, setUser, logout, initGoogle } = useAuth();
+  const { user, setUser, logout, initGoogle, isGoogleReady } = useAuth();
   const {
     themeMode, cycleTheme, showPrayerBg, setShowPrayerBg, prayerBgOpacity, setPrayerBgOpacity,
     locationHistory, getCurrentSettings, restoreSettings, addToHistory
@@ -204,18 +204,22 @@ const App: React.FC = () => {
   }, [logs.length, setUser, handleDownload, restoreSettings, setLogs]);
 
   useEffect(() => {
-    initGoogle(handleGoogleCallback);
-  }, [initGoogle, handleGoogleCallback]);
+    if (isGoogleReady) {
+      initGoogle(handleGoogleCallback);
+    }
+  }, [initGoogle, handleGoogleCallback, isGoogleReady]);
 
   // Re-init Google when logged out
   useEffect(() => {
-    if (!user && (window as any).google?.accounts?.id) {
+    if (!user && isGoogleReady) {
       initGoogle(handleGoogleCallback);
     }
-  }, [user, initGoogle, handleGoogleCallback]);
+  }, [user, initGoogle, handleGoogleCallback, isGoogleReady]);
 
   // Render Google buttons
   useEffect(() => {
+    if (!isGoogleReady) return;
+
     const renderBtn = (ref: React.RefObject<HTMLDivElement | null>) => {
       if (ref.current && (window as any).google?.accounts?.id) {
         ref.current.innerHTML = '';
@@ -226,7 +230,7 @@ const App: React.FC = () => {
     };
     renderBtn(googleBtnSidebarRef);
     renderBtn(googleBtnHeaderRef);
-  }, [user, initGoogle]);
+  }, [user, initGoogle, isGoogleReady]);
 
   // Yesterday schedule for flashback
   useEffect(() => {
