@@ -15,7 +15,8 @@ import {
     Settings as SettingsIcon,
     ShieldCheck,
     Globe,
-    Bell
+    Bell,
+    Trash2
 } from 'lucide-react';
 import { Button } from '../../../shared/components/ui/Button';
 import { PrayerLog, AppSettings, UserProfile } from '../../../shared/types';
@@ -42,6 +43,7 @@ interface SettingsProps {
     setLogs: (logs: PrayerLog[]) => void;
     restoreSettings: (s: AppSettings) => void;
     googleBtnRef: React.RefObject<HTMLDivElement | null>;
+    onClearData: () => void;
 }
 
 export const Settings: React.FC<SettingsProps> = ({
@@ -62,7 +64,8 @@ export const Settings: React.FC<SettingsProps> = ({
     getCurrentSettings,
     setLogs,
     restoreSettings,
-    googleBtnRef
+    googleBtnRef,
+    onClearData
 }) => {
     const { t, language, setLanguage } = useLanguage();
 
@@ -108,15 +111,17 @@ export const Settings: React.FC<SettingsProps> = ({
                             </Button>
                         </>
                     ) : (
-                        <div className="w-full flex flex-col items-center gap-6 py-4">
-                            <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center">
+                        <div className="w-full flex flex-col md:flex-row items-center gap-6 relative z-10">
+                            <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center shrink-0">
                                 <User className="w-10 h-10 text-slate-400" />
                             </div>
-                            <div className="text-center">
+                            <div className="text-center md:text-left flex-1">
                                 <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">{t.common.notLoggedIn}</h3>
                                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t.common.loginPrompt}</p>
                             </div>
-                            <div ref={googleBtnRef} className="w-10 h-10 rounded-full shadow-md overflow-hidden transform hover:scale-110 active:scale-95 transition-all flex items-center justify-center"></div>
+                            <div className="flex flex-col items-center gap-2">
+                                <div ref={googleBtnRef} className="rounded-full shadow-md overflow-hidden transform hover:scale-105 active:scale-95 transition-all flex items-center justify-center bg-white"></div>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -315,6 +320,28 @@ export const Settings: React.FC<SettingsProps> = ({
                         <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
                     </div>
                 </div>
+            </section>
+
+            {/* Danger Zone */}
+            <section className="bg-rose-50 dark:bg-rose-950/10 rounded-[2.5rem] p-6 border border-rose-100 dark:border-rose-900/30 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                    <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-2xl flex items-center justify-center text-rose-600 shrink-0">
+                        <Trash2 className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h4 className="text-lg font-black text-rose-700 dark:text-rose-400">{t.common.deleteAll}</h4>
+                        <p className="text-xs font-bold text-rose-500/60 dark:text-rose-400/60 uppercase tracking-widest mt-0.5">
+                            {language === 'id' ? 'Hapus semua catatan ibadah' : 'Delete all worship logs'}
+                        </p>
+                    </div>
+                </div>
+                <Button
+                    variant="danger"
+                    onClick={() => { if (window.confirm(t.common.confirmDeleteAll)) onClearData(); }}
+                    className="w-full md:w-auto rounded-xl px-6 py-3 shadow-lg shadow-rose-500/20"
+                >
+                    {t.common.deleteAll}
+                </Button>
             </section>
         </div>
     );

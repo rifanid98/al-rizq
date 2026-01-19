@@ -770,9 +770,7 @@ const App: React.FC = () => {
                     </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Button variant="danger-outline" className="rounded-xl px-4 py-3 flex items-center gap-2 text-xs font-bold" onClick={() => { if (window.confirm(t.common.confirmDeleteAll)) clearLogs(); }}><Trash2 className="w-4 h-4" /> {t.common.deleteAll}</Button>
-                </div>
+
               </div>
 
               <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
@@ -846,6 +844,7 @@ const App: React.FC = () => {
               setLogs={setLogs}
               restoreSettings={restoreSettings}
               googleBtnRef={googleBtnSettingsRef}
+              onClearData={clearLogs}
             />
           )}
         </main>
