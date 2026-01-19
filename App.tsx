@@ -40,6 +40,7 @@ import { useAuth } from './features/auth/hooks/useAuth';
 import { useSettings } from './features/settings/hooks/useSettings';
 import { usePrayerSchedule } from './features/prayer/hooks/usePrayerSchedule';
 import { usePrayerLogs } from './features/prayer/hooks/usePrayerLogs';
+import { useFastingLogs } from './features/fasting/hooks/useFastingLogs';
 import { useSync } from './features/sync/hooks/useSync';
 
 import { AuthStatus } from './features/auth/components/AuthStatus';
@@ -66,7 +67,8 @@ const App: React.FC = () => {
   const {
     schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule
   } = usePrayerSchedule();
-  const { logs, setLogs, logPrayer, deleteLog, clearLogs } = usePrayerLogs();
+  const { logs, setLogs, logPrayer, deleteLog, clearLogs: clearPrayerLogs } = usePrayerLogs();
+  const { clearFastingLogs } = useFastingLogs();
   const { isSyncing, handleUpload, handleDownload, hasBackup, handleRevert } = useSync(user?.email);
 
   // Local States
@@ -833,7 +835,10 @@ const App: React.FC = () => {
               setLogs={setLogs}
               restoreSettings={restoreSettings}
               googleBtnRef={googleBtnSettingsRef}
-              onClearData={clearLogs}
+              onClearData={() => {
+                clearPrayerLogs();
+                clearFastingLogs();
+              }}
             />
           )}
         </main>

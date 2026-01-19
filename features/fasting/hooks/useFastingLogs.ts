@@ -55,6 +55,11 @@ export const useFastingLogs = () => {
         window.dispatchEvent(new Event(FASTING_LOGS_UPDATED));
     }, [getStoredLogs]);
 
+    const clearFastingLogs = useCallback(() => {
+        localStorage.removeItem(STORAGE_KEYS.FASTING_LOGS);
+        window.dispatchEvent(new Event(FASTING_LOGS_UPDATED));
+    }, []);
+
     const getLogForDate = useCallback((date: string) => {
         return fastingLogs.find(l => l.date === date);
     }, [fastingLogs]);
@@ -113,6 +118,7 @@ export const useFastingLogs = () => {
         fastingLogs,
         logFasting,
         removeFastingLog,
+        clearFastingLogs,
         getLogForDate,
         getLogStats
     };
