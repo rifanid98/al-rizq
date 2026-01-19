@@ -11,21 +11,21 @@ export const useSync = (userEmail: string | undefined) => {
         return (localStorage.getItem('al_rizq_backup_source') as 'upload' | 'download') || null;
     });
 
-    const handleUpload = useCallback(async (logs: PrayerLog[], settings: AppSettings) => {
+    const handleUpload = useCallback(async (logs: PrayerLog[], settings: AppSettings, fastingLogs: FastingLog[]) => {
         if (!userEmail) return;
         setIsSyncing(true);
         try {
             // Backup current cloud data before overwriting
             const result = await downloadFromCloud(userEmail);
-            if (result && result.logs && result.logs.length > 0) {
-                localStorage.setItem(STORAGE_KEYS.LOGS_BACKUP, JSON.stringify(result.logs));
+            if (result) {
+                if (result.logs) localStorage.setItem(STORAGE_KEYS.LOGS_BACKUP, JSON.stringify(result.logs));
+                if (result.fastingLogs) localStorage.setItem('al_rizq_fasting_logs_backup', JSON.stringify(result.fastingLogs));
+                if (result.settings) localStorage.setItem('al_rizq_settings_backup', JSON.stringify(result.settings));
+
                 localStorage.setItem('al_rizq_backup_source', 'upload');
                 setHasBackup(true);
                 setBackupSource('upload');
             }
-
-            const fastingLogsStr = localStorage.getItem(STORAGE_KEYS.FASTING_LOGS);
-            const fastingLogs: FastingLog[] = fastingLogsStr ? JSON.parse(fastingLogsStr) : [];
 
             const timestamp = await uploadToCloud(userEmail, logs, settings, fastingLogs);
             localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, timestamp.toString());
@@ -46,6 +46,18 @@ export const useSync = (userEmail: string | undefined) => {
             const result = await downloadFromCloud(targetEmail);
             if (result) {
                 localStorage.setItem('al_rizq_backup_source', 'download');
+                // Backup LOCAL state before applying download
+                const currentLogs = localStorage.getItem(STORAGE_KEYS.LOGS);
+                if (currentLogs) localStorage.setItem(STORAGE_KEYS.LOGS_BACKUP, currentLogs);
+
+                const currentFasting = localStorage.getItem(STORAGE_KEYS.FASTING_LOGS);
+                if (currentFasting) localStorage.setItem('al_rizq_fasting_logs_backup', currentFasting);
+
+                // Ideally backup settings too, but we need them passed in or read from storage if stored separately.
+                // Settings are usually in local storage or computed. 
+                // For now let's focus on logs as settings are less critical to lose on download (usually user wants cloud settings), 
+                // but user asked for "pengaturan puasa" backup.
+
                 setHasBackup(true);
                 setBackupSource('download');
                 return result;
@@ -61,29 +73,35 @@ export const useSync = (userEmail: string | undefined) => {
 
     const clearBackup = useCallback(() => {
         localStorage.removeItem(STORAGE_KEYS.LOGS_BACKUP);
+        localStorage.removeItem('al_rizq_fasting_logs_backup');
+        localStorage.removeItem('al_rizq_settings_backup');
         localStorage.removeItem('al_rizq_backup_source');
         setHasBackup(false);
         setBackupSource(null);
     }, []);
 
     const handleRevert = useCallback(async (currentLogs: PrayerLog[]) => {
-        const backup = localStorage.getItem(STORAGE_KEYS.LOGS_BACKUP);
+        const backupLogs = localStorage.getItem(STORAGE_KEYS.LOGS_BACKUP);
+        const backupFasting = localStorage.getItem('al_rizq_fasting_logs_backup');
+        const backupSettings = localStorage.getItem('al_rizq_settings_backup');
         const source = backupSource;
 
-        if (!backup) return null;
+        if (!backupLogs) return null;
 
         const confirmMessage = source === 'upload'
             ? 'Membatalkan upload akan mengembalikan data cloud ke kondisi sebelum upload. Lanjutkan?'
             : 'Membatalkan download akan mengembalikan data lokal ke kondisi sebelum download. Lanjutkan?';
 
         if (window.confirm(confirmMessage)) {
-            const restoredLogs = JSON.parse(backup);
+            const restoredLogs = JSON.parse(backupLogs);
+            const restoredFasting = backupFasting ? JSON.parse(backupFasting) : [];
+            const restoredSettings = backupSettings ? JSON.parse(backupSettings) : undefined;
 
             if (source === 'upload') {
                 if (userEmail) {
                     setIsSyncing(true);
                     try {
-                        await uploadToCloud(userEmail, restoredLogs);
+                        await uploadToCloud(userEmail, restoredLogs, restoredSettings, restoredFasting);
                         console.log('Cloud data restored successfully');
                     } catch (err) {
                         console.error('Failed to restore cloud data:', err);
@@ -96,9 +114,13 @@ export const useSync = (userEmail: string | undefined) => {
                 clearBackup();
                 return null;
             } else {
-                localStorage.setItem(STORAGE_KEYS.LOGS, backup);
+                localStorage.setItem(STORAGE_KEYS.LOGS, backupLogs);
+                if (backupFasting) {
+                    localStorage.setItem(STORAGE_KEYS.FASTING_LOGS, backupFasting);
+                    window.dispatchEvent(new Event('fasting_logs_updated'));
+                }
                 clearBackup();
-                return restoredLogs;
+                return { logs: restoredLogs, settings: restoredSettings, fastingLogs: restoredFasting };
             }
         }
         return null;

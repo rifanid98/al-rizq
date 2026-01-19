@@ -68,7 +68,7 @@ const App: React.FC = () => {
     schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule
   } = usePrayerSchedule();
   const { logs, setLogs, logPrayer, deleteLog, clearLogs: clearPrayerLogs } = usePrayerLogs();
-  const { clearFastingLogs } = useFastingLogs();
+  const { fastingLogs, clearFastingLogs } = useFastingLogs();
   const { isSyncing, handleUpload, handleDownload, hasBackup, handleRevert } = useSync(user?.email);
 
   // Local States
@@ -185,7 +185,7 @@ const App: React.FC = () => {
       localStorage.setItem('al_rizq_user', JSON.stringify(userData));
 
       const cloudData = await handleDownload(userData.email);
-      if (cloudData && (cloudData.logs?.length > 0 || cloudData.settings)) {
+      if (cloudData && (cloudData.logs?.length > 0 || cloudData.settings || cloudData.fastingLogs?.length > 0)) {
         if (logs.length === 0) {
           if (cloudData.logs) {
             setLogs(cloudData.logs);
@@ -351,18 +351,28 @@ const App: React.FC = () => {
     }
   };
   const confirmCloudReplace = () => {
-    if (pendingCloudLogs) {
+    if (pendingCloudLogs || pendingCloudSettings || pendingFastingLogs) {
+      // Backup current local state
       localStorage.setItem(STORAGE_KEYS.LOGS_BACKUP, JSON.stringify(logs));
+      const currentFasting = localStorage.getItem(STORAGE_KEYS.FASTING_LOGS);
+      if (currentFasting) localStorage.setItem('al_rizq_fasting_logs_backup', currentFasting);
       localStorage.setItem('al_rizq_backup_source', 'download');
-      setLogs(pendingCloudLogs);
-      localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(pendingCloudLogs));
+
+      if (pendingCloudLogs) {
+        setLogs(pendingCloudLogs);
+        localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(pendingCloudLogs));
+      }
+
       if (pendingCloudSettings) restoreSettings(pendingCloudSettings);
+
       if (pendingFastingLogs) {
         localStorage.setItem(STORAGE_KEYS.FASTING_LOGS, JSON.stringify(pendingFastingLogs));
-        // Trigger reload to ensure all hooks update
-        window.location.reload();
       }
+
       if (pendingLastUpdated) localStorage.setItem(STORAGE_KEYS.LAST_SYNC, pendingLastUpdated.toString());
+
+      // Trigger reload to ensure all hooks update with new storage data
+      window.location.reload();
     }
     setSyncConfirmOpen(false);
     setPendingCloudLogs(null);
@@ -375,7 +385,7 @@ const App: React.FC = () => {
     setPendingCloudLogs(null);
     setPendingCloudSettings(null);
     setPendingFastingLogs(null);
-    handleUpload(logs, getCurrentSettings());
+    handleUpload(logs, getCurrentSettings(), fastingLogs);
   };
 
   return (
@@ -808,6 +818,7 @@ const App: React.FC = () => {
             <Settings
               user={user}
               logs={logs}
+              fastingLogs={fastingLogs}
               isSyncing={isSyncing}
               hasBackup={hasBackup}
               themeMode={themeMode}

@@ -71,6 +71,8 @@ export interface AppSettings {
   showPrayerBg: boolean;
   prayerBgOpacity: number;
   language: Language;
+  nadzarConfig?: any;
+  qadhaConfig?: any;
 }
 
 export interface AppState {

@@ -19,7 +19,7 @@ import {
     Trash2
 } from 'lucide-react';
 import { Button } from '../../../shared/components/ui/Button';
-import { PrayerLog, AppSettings, UserProfile } from '../../../shared/types';
+import { PrayerLog, AppSettings, UserProfile, FastingLog } from '../../../shared/types';
 import { STORAGE_KEYS } from '../../../shared/constants';
 
 import { useLanguage } from '../../../shared/hooks/useLanguage';
@@ -27,12 +27,13 @@ import { useLanguage } from '../../../shared/hooks/useLanguage';
 interface SettingsProps {
     user: UserProfile | null;
     logs: PrayerLog[];
+    fastingLogs: FastingLog[];
     isSyncing: boolean;
     hasBackup: boolean;
     themeMode: 'light' | 'dark' | 'system';
     showPrayerBg: boolean;
     prayerBgOpacity: number;
-    onUpload: (logs: PrayerLog[], settings: AppSettings) => Promise<void>;
+    onUpload: (logs: PrayerLog[], settings: AppSettings, fastingLogs: FastingLog[]) => Promise<void>;
     onDownload: () => Promise<any>;
     onRevert: (logs: PrayerLog[]) => Promise<any>;
     onLogout: () => void;
@@ -49,6 +50,7 @@ interface SettingsProps {
 export const Settings: React.FC<SettingsProps> = ({
     user,
     logs,
+    fastingLogs,
     isSyncing,
     hasBackup,
     themeMode,
@@ -158,7 +160,7 @@ export const Settings: React.FC<SettingsProps> = ({
                             <Button
                                 variant="ghost"
                                 disabled={!user || isSyncing}
-                                onClick={() => onUpload(logs, getCurrentSettings())}
+                                onClick={() => onUpload(logs, getCurrentSettings(), fastingLogs)}
                                 className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 sm:py-6 flex flex-row sm:flex-col items-center justify-start sm:justify-center gap-4 sm:gap-2 h-auto hover:border-emerald-500 transition-all group px-6 sm:px-4"
                             >
                                 <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform shrink-0">
@@ -175,6 +177,10 @@ export const Settings: React.FC<SettingsProps> = ({
                                     if (result) {
                                         setLogs(result.logs);
                                         if (result.settings) restoreSettings(result.settings);
+                                        if (result.fastingLogs) {
+                                            localStorage.setItem(STORAGE_KEYS.FASTING_LOGS, JSON.stringify(result.fastingLogs));
+                                            window.dispatchEvent(new Event('fasting_logs_updated'));
+                                        }
                                         localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(result.logs));
                                         localStorage.setItem(STORAGE_KEYS.LAST_SYNC, result.last_updated.toString());
                                     }
@@ -193,7 +199,14 @@ export const Settings: React.FC<SettingsProps> = ({
                                 variant="ghost"
                                 onClick={async () => {
                                     const result = await onRevert(logs);
-                                    if (result) setLogs(result);
+                                    if (result) {
+                                        if (result.logs) setLogs(result.logs);
+                                        if (result.settings) restoreSettings(result.settings);
+                                        if (result.fastingLogs) {
+                                            localStorage.setItem(STORAGE_KEYS.FASTING_LOGS, JSON.stringify(result.fastingLogs));
+                                            window.dispatchEvent(new Event('fasting_logs_updated'));
+                                        }
+                                    }
                                 }}
                                 className="w-full rounded-2xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/20 text-rose-600 py-4 flex items-center justify-center gap-3 mt-2 hover:bg-rose-100 transition-all"
                             >

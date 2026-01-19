@@ -71,19 +71,34 @@ export const useSettings = () => {
         setThemeMode(prev => prev === 'light' ? 'dark' : prev === 'dark' ? 'system' : 'light');
     }, []);
 
-    const getCurrentSettings = useCallback((): AppSettings => ({
-        theme: themeMode,
-        locationHistory: locationHistory,
-        showPrayerBg: showPrayerBg,
-        prayerBgOpacity: prayerBgOpacity,
-        language: language
-    }), [themeMode, locationHistory, showPrayerBg, prayerBgOpacity, language]);
+    const getCurrentSettings = useCallback((): AppSettings => {
+        const nadzar = localStorage.getItem(STORAGE_KEYS.NADZAR_CONFIG);
+        const qadha = localStorage.getItem(STORAGE_KEYS.QADHA_CONFIG);
+        return {
+            theme: themeMode,
+            locationHistory: locationHistory,
+            showPrayerBg: showPrayerBg,
+            prayerBgOpacity: prayerBgOpacity,
+            language: language,
+            nadzarConfig: nadzar ? JSON.parse(nadzar) : undefined,
+            qadhaConfig: qadha ? JSON.parse(qadha) : undefined
+        };
+    }, [themeMode, locationHistory, showPrayerBg, prayerBgOpacity, language]);
 
     const restoreSettings = useCallback((s: AppSettings) => {
         if (s.theme) setThemeMode(s.theme);
         if (s.locationHistory) setLocationHistory(s.locationHistory);
         if (s.showPrayerBg !== undefined) setShowPrayerBg(s.showPrayerBg);
         if (s.prayerBgOpacity !== undefined) setPrayerBgOpacity(s.prayerBgOpacity);
+
+        if (s.nadzarConfig) {
+            localStorage.setItem(STORAGE_KEYS.NADZAR_CONFIG, JSON.stringify(s.nadzarConfig));
+            window.dispatchEvent(new Event('fasting_config_updated'));
+        }
+        if (s.qadhaConfig) {
+            localStorage.setItem(STORAGE_KEYS.QADHA_CONFIG, JSON.stringify(s.qadhaConfig));
+            window.dispatchEvent(new Event('fasting_config_updated'));
+        }
 
         if (s.language) {
             const normalized = (s.language.startsWith('id') ? 'id' : s.language.startsWith('en') ? 'en' : 'id') as Language;

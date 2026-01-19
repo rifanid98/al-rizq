@@ -6,6 +6,7 @@ import { useFastingLogs } from "../hooks/useFastingLogs";
 import { getFastingRecommendation } from "../services/fastingService";
 import { Moon, Check, Info, Star, RotateCcw, Target, Settings, X, Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../../../shared/components/ui/Button";
+import { STORAGE_KEYS } from "../../../shared/constants";
 
 interface FastingTrackerProps {
     currentDate: string; // YYYY-MM-DD
@@ -18,8 +19,8 @@ interface FastingPreferenceConfig {
     customDates: string[];
 }
 
-const STORAGE_KEY_NADZAR_CONFIG = 'al_rizq_nadzar_config';
-const STORAGE_KEY_QADHA_CONFIG = 'al_rizq_qadha_config';
+const STORAGE_KEY_NADZAR_CONFIG = STORAGE_KEYS.NADZAR_CONFIG;
+const STORAGE_KEY_QADHA_CONFIG = STORAGE_KEYS.QADHA_CONFIG;
 
 export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hijriDate }) => {
     const { t } = useLanguage();
@@ -62,6 +63,17 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
     useEffect(() => {
         localStorage.setItem(STORAGE_KEY_QADHA_CONFIG, JSON.stringify(qadhaConfig));
     }, [qadhaConfig]);
+
+    useEffect(() => {
+        const handleConfigUpdate = () => {
+            const savedNadzar = localStorage.getItem(STORAGE_KEY_NADZAR_CONFIG);
+            if (savedNadzar) setNadzarConfig(JSON.parse(savedNadzar));
+            const savedQadha = localStorage.getItem(STORAGE_KEY_QADHA_CONFIG);
+            if (savedQadha) setQadhaConfig(JSON.parse(savedQadha));
+        };
+        window.addEventListener('fasting_config_updated', handleConfigUpdate);
+        return () => window.removeEventListener('fasting_config_updated', handleConfigUpdate);
+    }, []);
 
     const todayLog = getLogForDate(currentDate);
 

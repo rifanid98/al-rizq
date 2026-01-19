@@ -37,7 +37,9 @@ export const STORAGE_KEYS = {
   LAST_SYNC: 'al_rizq_last_sync',
   LOGS_BACKUP: 'al_rizq_logs_backup',
   ACTIVE_TAB: 'al_rizq_active_tab',
-  APP_VERSION: 'al_rizq_version'
+  APP_VERSION: 'al_rizq_version',
+  NADZAR_CONFIG: 'al_rizq_nadzar_config',
+  QADHA_CONFIG: 'al_rizq_qadha_config'
 };
 
 export const CURRENT_VERSION = '1.1.0';
