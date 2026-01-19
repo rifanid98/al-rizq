@@ -55,17 +55,19 @@ const IslamicCelebration: React.FC<IslamicCelebrationProps> = ({ show, onComplet
     const [isActive, setIsActive] = useState(false);
     const [currentQuote, setCurrentQuote] = useState(t.celebration.quotes[0]);
 
+    const handleDismiss = () => {
+        setIsActive(false);
+        setParticles([]);
+        onComplete();
+    };
+
     useEffect(() => {
         if (show && !isActive) {
             setIsActive(true);
             setCurrentQuote(t.celebration.quotes[Math.floor(Math.random() * t.celebration.quotes.length)]);
             generateParticles();
 
-            const timer = setTimeout(() => {
-                setIsActive(false);
-                setParticles([]);
-                onComplete();
-            }, 5000);
+            const timer = setTimeout(handleDismiss, 5000);
 
             return () => clearTimeout(timer);
         }
@@ -124,7 +126,7 @@ const IslamicCelebration: React.FC<IslamicCelebrationProps> = ({ show, onComplet
     if (!isActive) return null;
 
     return (
-        <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
+        <div className="fixed inset-0 z-[9999] overflow-hidden cursor-pointer" onClick={handleDismiss}>
             {particles.map(p => (
                 <div
                     key={p.id}

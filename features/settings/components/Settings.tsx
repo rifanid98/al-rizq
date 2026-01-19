@@ -21,7 +21,7 @@ import {
 import { Button } from '../../../shared/components/ui/Button';
 import { PrayerLog, AppSettings, UserProfile } from '../../../shared/types';
 import { STORAGE_KEYS } from '../../../shared/constants';
-import { AuthStatus } from '../../auth/components/AuthStatus';
+
 import { useLanguage } from '../../../shared/hooks/useLanguage';
 
 interface SettingsProps {

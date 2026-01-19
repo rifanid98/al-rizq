@@ -1,32 +1,22 @@
-
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   MapPin,
   Calendar,
   Clock,
-  CheckCircle,
   History as HistoryIcon,
   LayoutDashboard,
-  Bell,
-  Trash2,
   RefreshCw,
   Search,
   ChevronRight,
   X,
   Loader2,
-  ExternalLink,
   Info,
   Clock3,
-  Cloud,
-  CloudUpload,
-  LogOut,
   User,
   Moon,
   Sun,
   Monitor,
   AlertCircle,
-  Lock,
-  CloudDownload,
   ChevronLeft,
   CalendarDays,
   RotateCcw,
@@ -34,7 +24,6 @@ import {
   Users,
   CloudRain,
   SunMedium,
-  ChevronDown,
   Settings as SettingsIcon,
   UtensilsCrossed
 } from 'lucide-react';
@@ -60,7 +49,7 @@ import { SyncConfirmModal } from './features/sync/components/SyncConfirmModal';
 import { Dashboard } from './features/dashboard/components/Dashboard';
 import { Settings } from './features/settings/components/Settings';
 import { LanguageProvider } from './shared/hooks/useLanguage';
-import IslamicCelebration from './features/dashboard/components/IslamicCelebration';
+import IslamicCelebration from './features/prayer/components/IslamicCelebration';
 import { translations } from './shared/locales';
 import { FastingTracker } from './features/fasting/components/FastingTracker';
 import { FastingStats } from './features/fasting/components/FastingStats';
@@ -359,7 +348,7 @@ const App: React.FC = () => {
       const curTime = getCurrentTimeStr();
       const isOnTime = !isLate(pendingLatePrayer.scheduledTime, curTime);
 
-      if (isOnTime && locationType === 'Masjid' && executionType === 'Jamaah') {
+      if (!editingLogId && isOnTime && locationType === 'Masjid' && executionType === 'Jamaah') {
         setShowCelebration(true);
       }
 
