@@ -35,7 +35,7 @@ export const AuthStatus: React.FC<AuthStatusProps> = ({ user, onLogout, googleBt
                 ) : (
                     <div className="p-5 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 flex flex-col items-center gap-4">
                         <p className="text-[11px] font-black uppercase text-slate-400 text-center">Cloud Sync</p>
-                        <div ref={googleBtnRef} className="rounded-full shadow-md overflow-hidden transform hover:scale-110 active:scale-95 transition-all"></div>
+                        <div ref={googleBtnRef} className="w-10 h-10 rounded-full shadow-md overflow-hidden transform hover:scale-110 active:scale-95 transition-all flex items-center justify-center"></div>
                     </div>
                 )}
             </div>
@@ -57,7 +57,7 @@ export const AuthStatus: React.FC<AuthStatusProps> = ({ user, onLogout, googleBt
                     </button>
                 </div>
             ) : (
-                <div ref={googleBtnRef} className="rounded-full overflow-hidden scale-75 origin-right"></div>
+                <div ref={googleBtnRef} className="w-10 h-10 rounded-full overflow-hidden scale-75 origin-right flex items-center justify-center"></div>
             )}
         </>
     );
