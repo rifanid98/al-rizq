@@ -92,9 +92,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
   }, [logs]);
 
   const pieData = [
-    { name: t.dashboard.status.ontime || t.tracker.status.ontime, value: stats.ontime, color: '#10b981' },
-    { name: t.dashboard.status.late || t.tracker.status.late, value: stats.late, color: '#f59e0b' },
-    { name: t.dashboard.status.missed || t.tracker.status.missed, value: stats.missed, color: '#ef4444' },
+    { name: t.dashboard.status.ontime, value: stats.ontime, color: '#10b981' },
+    { name: t.dashboard.status.late, value: stats.late, color: '#f59e0b' },
+    { name: t.dashboard.status.missed, value: stats.missed, color: '#ef4444' },
   ].filter(d => d.value > 0);
 
   const locationData = [
@@ -132,7 +132,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
       {/* Floating Scroll CTA (Visible based on scroll) */}
       <button
         onClick={scrollToBottom}
-        title="Scroll ke Bagian Bawah"
+        title={t.dashboard.scrollToBottom || "Scroll to Bottom"}
         className={`fixed right-6 lg:right-10 z-[60] flex items-center justify-center w-14 h-14 bg-emerald-600 dark:bg-emerald-500 text-white rounded-full shadow-2xl shadow-emerald-500/40 animate-in slide-in-from-bottom-8 duration-500 hover:scale-110 active:scale-95 transition-all group ${showScrollBtn ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-12 pointer-events-none'
           } ${
           // Tablet/Mobile: Above bottom nav
@@ -157,17 +157,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
             <p className="text-emerald-100 font-medium opacity-80">{t.dashboard.performanceSubtitle}</p>
           </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 w-full md:w-auto">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 w-full lg:w-auto">
           <div className="text-center md:text-left">
-            <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">Masjid Rate</p>
+            <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">{t.dashboard.masjidRate}</p>
             <p className="text-2xl font-black">{stats.total > 0 ? Math.round((stats.atMosque / stats.total) * 100) : 0}%</p>
           </div>
           <div className="text-center md:text-left">
-            <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">Ontime Rate</p>
+            <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">{t.dashboard.ontimeRate}</p>
             <p className="text-2xl font-black">{stats.total > 0 ? Math.round((stats.ontime / stats.total) * 100) : 0}%</p>
           </div>
           <div className="text-center md:text-left col-span-2 md:col-span-1">
-            <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">Avg Delay</p>
+            <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">{t.dashboard.avgDelay}</p>
             <p className="text-2xl font-black">{stats.avgDelay}m</p>
           </div>
         </div>
@@ -241,7 +241,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
               <SunMedium className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Qobliyah</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">{t.tracker.qobliyah}</p>
               <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.qobliyahCount}</p>
             </div>
           </div>
@@ -250,7 +250,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
               <Moon className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Ba'diyah</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">{t.tracker.badiyah}</p>
               <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.badiyahCount}</p>
             </div>
           </div>
@@ -259,7 +259,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
               <Star className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Dzikir</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">{t.tracker.dzikir}</p>
               <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.dzikirCount}</p>
             </div>
           </div>
@@ -309,7 +309,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:col-span-1">
           {/* Status Breakdown */}
           <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
-            <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-6 uppercase tracking-widest text-center">Status</h3>
+            <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-6 uppercase tracking-widest text-center">{t.common.statusLabel}</h3>
             <div className="h-48 relative flex-1">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>

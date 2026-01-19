@@ -164,7 +164,7 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                         </div>
 
                         <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Cuaca</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t.tracker.weather.title}</p>
                             <div className="flex gap-1 p-1 bg-slate-200/50 dark:bg-slate-900 rounded-xl">
                                 <button
                                     onClick={() => setWeatherCondition('Cerah')}

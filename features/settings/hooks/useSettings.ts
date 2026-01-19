@@ -26,7 +26,11 @@ export const useSettings = () => {
     });
 
     const [language, setLanguage] = useState<Language>(() => {
-        return (localStorage.getItem('al_rizq_language') as Language) || 'id';
+        const saved = localStorage.getItem('al_rizq_language');
+        if (saved === 'id' || saved === 'en') return saved;
+        if (saved?.startsWith('id')) return 'id';
+        if (saved?.startsWith('en')) return 'en';
+        return 'id';
     });
 
     useEffect(() => {
@@ -81,12 +85,17 @@ export const useSettings = () => {
         if (s.showPrayerBg !== undefined) setShowPrayerBg(s.showPrayerBg);
         if (s.prayerBgOpacity !== undefined) setPrayerBgOpacity(s.prayerBgOpacity);
 
+        if (s.language) {
+            const normalized = (s.language.startsWith('id') ? 'id' : s.language.startsWith('en') ? 'en' : 'id') as Language;
+            setLanguage(normalized);
+            localStorage.setItem('al_rizq_language', normalized);
+        }
+
         // Also update localStorage for immediate persistence
         if (s.theme) localStorage.setItem('al_rizq_theme', s.theme);
         if (s.locationHistory) localStorage.setItem(STORAGE_KEYS.LOCATION_HISTORY, JSON.stringify(s.locationHistory));
         if (s.showPrayerBg !== undefined) localStorage.setItem('al_rizq_show_bg', JSON.stringify(s.showPrayerBg));
         if (s.prayerBgOpacity !== undefined) localStorage.setItem('al_rizq_bg_opacity', JSON.stringify(s.prayerBgOpacity));
-        if (s.language) localStorage.setItem('al_rizq_language', s.language);
     }, []);
 
     return {

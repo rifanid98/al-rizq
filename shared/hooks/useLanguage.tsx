@@ -12,7 +12,7 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: ReactNode, language: Language, setLanguage: (lang: Language) => void }> = ({ children, language, setLanguage }) => {
-    const t = useMemo(() => translations[language], [language]);
+    const t = useMemo(() => translations[language as keyof typeof translations] || translations['id'], [language]);
 
     return (
         <LanguageContext.Provider value={{ language, setLanguage, t }}>

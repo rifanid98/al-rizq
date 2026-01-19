@@ -63,17 +63,23 @@ export const isTimePassed = (scheduledTime: string, targetDateStr?: string): boo
 };
 
 export const formatDate = (dateStr: string, locale: string = 'id-ID') => {
-  if (!dateStr) return '';
-  // Split the YYYY-MM-DD and create a local date
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const d = new Date(year, month - 1, day);
+  if (!dateStr || dateStr === 'undefined') return '';
+  try {
+    // Split the YYYY-MM-DD and create a local date
+    const [year, month, day] = dateStr.split('-').map(Number);
+    if (isNaN(year)) return dateStr;
+    const d = new Date(year, month - 1, day);
+    if (isNaN(d.getTime())) return dateStr;
 
-  return d.toLocaleDateString(locale, {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+    return d.toLocaleDateString(locale, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  } catch (e) {
+    return dateStr;
+  }
 };
 
 // Cache Utilities

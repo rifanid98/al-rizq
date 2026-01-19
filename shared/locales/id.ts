@@ -26,7 +26,8 @@ export const id = {
         of: "dari",
         noDataByDate: "Tidak ada data untuk tanggal ini",
         prayer: "Sholat",
-        statusLabel: "Status"
+        statusLabel: "Status",
+        change: "Ubah"
     },
     tabs: {
         tracker: "Tracker",
@@ -38,15 +39,20 @@ export const id = {
         title: "Pengaturan",
         profile: "Profil Pengguna",
         appearance: {
-            title: "Pengaturan Tampilan",
-            subtitle: "Ubah tampilan aplikasi",
-            theme: "Mode Tema",
+            title: "Penampilan",
+            subtitle: "Kustomisasi Antarmuka",
+            theme: "Tema",
             changeTheme: "Ganti",
-            background: "Latar Gambar Sholat",
-            backgroundSubtitle: "Latar belakang kartu sholat",
-            opacity: "Tingkat Transparansi",
-            clear: "Jelas",
-            overlay: "Overlay"
+            background: "Background Sholat",
+            backgroundSubtitle: "Tampilkan gambar tematik",
+            opacity: "Opacity",
+            clear: "Terang",
+            overlay: "Gelap"
+        },
+        themes: {
+            light: "Terang",
+            dark: "Gelap",
+            system: "Sistem"
         },
         sync: {
             title: "Sinkronisasi Cloud",
@@ -83,10 +89,12 @@ export const id = {
         title: "Tracker Sholat",
         location: "Lokasi",
         searchLocation: "Cari lokasi...",
-        flashback: "Lupa Tandai Kemarin?",
-        currentTime: "Jam Sekarang",
+        locationHistory: "Riwayat Lokasi",
+        flashback: "Flashback",
+        flashbackQuestion: "Lupa Tandai Kemarin?",
+        currentTime: "Waktu Sekarang",
         flashbackActive: "Mode Flashback Aktif",
-        showingScheduleFor: "Menampilkan jadwal sholat untuk",
+        showingScheduleFor: "Menampilkan jadwal untuk",
         prayerNames: {
             Subuh: "Subuh",
             Dzuhur: "Dzuhur",
@@ -95,6 +103,7 @@ export const id = {
             Isya: "Isya"
         },
         weather: {
+            title: "Cuaca",
             clear: "Cerah",
             rainy: "Hujan"
         },
@@ -169,11 +178,21 @@ export const id = {
         weeklyConsistency: "Konsistensi Mingguan",
         sunnahStats: "Ibadah Sunnah & Pelengkap",
         dua: "Berdoa",
-        masbuq: "Masbuq"
+        masbuq: "Masbuq",
+        masjidRate: "Laju Masjid",
+        ontimeRate: "Laju Tepat Waktu",
+        avgDelay: "Rata-rata Terlambat",
+        scrollToBottom: "Gulir ke Bawah",
+        status: {
+            ontime: "Tepat Waktu",
+            late: "Terlambat",
+            missed: "Terlewat"
+        }
     },
     history: {
         title: "Riwayat",
         noLogs: "Belum ada riwayat sholat.",
-        notes: "Catatan"
+        notes: "Catatan",
+        activeFilter: "Filter Aktif"
     }
 };

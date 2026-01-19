@@ -139,9 +139,13 @@ export const Settings: React.FC<SettingsProps> = ({
                         <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                             <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">{t.settings.sync.lastSync}</p>
                             <p className="text-sm font-black text-slate-800 dark:text-slate-100">
-                                {localStorage.getItem(STORAGE_KEYS.LAST_SYNC)
-                                    ? new Date(parseInt(localStorage.getItem(STORAGE_KEYS.LAST_SYNC)!)).toLocaleString(language === 'id' ? 'id-ID' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })
-                                    : t.settings.sync.never}
+                                {(() => {
+                                    const lastSync = localStorage.getItem(STORAGE_KEYS.LAST_SYNC);
+                                    if (!lastSync) return t.settings.sync.never;
+                                    const ts = parseInt(lastSync);
+                                    if (isNaN(ts)) return t.settings.sync.never;
+                                    return new Date(ts).toLocaleString(language === 'id' ? 'id-ID' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' });
+                                })()}
                             </p>
                         </div>
 
@@ -218,7 +222,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                 </div>
                                 <div>
                                     <p className="text-sm font-black text-slate-800 dark:text-slate-100">{t.settings.appearance.theme}</p>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{themeMode}</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.settings.themes[themeMode]}</p>
                                 </div>
                             </div>
                             <button
@@ -286,7 +290,7 @@ export const Settings: React.FC<SettingsProps> = ({
                             <p className="text-[10px] font-bold text-slate-400">{language === 'id' ? t.settings.language.id : t.settings.language.en}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest px-2 py-1 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">Change</span>
+                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest px-2 py-1 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">{t.common.change}</span>
                             <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
                         </div>
                     </div>

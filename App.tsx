@@ -239,7 +239,7 @@ const App: React.FC = () => {
   }, [user, initGoogle, isGoogleReady]);
 
   // Translations
-  const t = useMemo(() => translations[language], [language]);
+  const t = useMemo(() => translations[language as keyof typeof translations] || translations['id'], [language]);
 
   // Yesterday schedule for flashback
   useEffect(() => {
@@ -472,7 +472,7 @@ const App: React.FC = () => {
                   {showPrayerBg && showOpacitySlider && (
                     <div className="absolute top-full right-0 mt-3 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-[100] flex items-center gap-4 min-w-[200px] animate-in slide-in-from-top-2 duration-300" onMouseEnter={() => { if (sliderTimerRef.current) window.clearTimeout(sliderTimerRef.current); }} onMouseLeave={resetSliderTimer}>
                       <div className="flex-1 flex flex-col gap-2">
-                        <div className="flex justify-between items-center"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Opacity</span><span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">{prayerBgOpacity}%</span></div>
+                        <div className="flex justify-between items-center"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.settings.appearance.opacity}</span><span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">{prayerBgOpacity}%</span></div>
                         <input type="range" min="0" max="40" step="5" value={prayerBgOpacity} onChange={(e) => { setPrayerBgOpacity(parseInt(e.target.value)); resetSliderTimer(); }} className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500" />
                       </div>
                       <button onClick={() => setShowOpacitySlider(false)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 transition-colors"><X className="w-4 h-4" /></button>
@@ -483,12 +483,12 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 lg:gap-3 w-full md:w-auto">
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2 lg:gap-3 w-full lg:w-auto">
               {activeTab === 'tracker' && (
-                <div className="flex flex-row items-center gap-2 w-full md:w-auto">
-                  <button onClick={() => setIsSearching(!isSearching)} className="flex-1 md:flex-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden min-w-0">
+                <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
+                  <button onClick={() => setIsSearching(!isSearching)} className="flex-1 lg:flex-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden min-w-0">
                     <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1 md:max-w-[150px]">{schedule?.location || t.tracker.searchLocation}</span>
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1 lg:max-w-[150px]">{schedule?.location || t.tracker.searchLocation}</span>
                     <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isSearching ? 'rotate-90' : ''}`} />
                   </button>
                   <Button variant="ghost" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0" onClick={() => getSchedule()} isLoading={isLoading && !isSearching}>
@@ -532,7 +532,7 @@ const App: React.FC = () => {
 
                   {locationHistory.length > 0 && !searchQuery && (
                     <div className="mt-6">
-                      <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Riwayat Lokasi</p>
+                      <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">{t.tracker.locationHistory}</p>
                       <div className="space-y-1">
                         {locationHistory.map((loc, i) => (
                           <button key={i} onClick={() => { getSchedule({ address: loc }); setIsSearching(false); }} className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 flex items-center justify-between group">
@@ -565,7 +565,7 @@ const App: React.FC = () => {
                       </div>
                       <div className="text-left">
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">{t.tracker.flashback}</p>
-                        <p className="text-sm font-black text-slate-800 dark:text-slate-100">Lupa Tandai Kemarin?</p>
+                        <p className="text-sm font-black text-slate-800 dark:text-slate-100">{t.tracker.flashbackQuestion}</p>
                       </div>
                     </div>
                     <ChevronRight className="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform" />
@@ -629,9 +629,9 @@ const App: React.FC = () => {
                   <Calendar className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600/60 mb-0.5">Filter Aktif</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600/60 mb-0.5">{t.history.activeFilter}</p>
                   <p className="text-sm font-black text-emerald-700 dark:text-emerald-400">
-                    Menampilkan: {formatDate(historyDateFilter || getLocalDateStr())}
+                    {t.common.showing}: {formatDate(historyDateFilter || getLocalDateStr(), language === 'id' ? 'id-ID' : 'en-US')}
                   </p>
                 </div>
               </div>
@@ -652,7 +652,7 @@ const App: React.FC = () => {
                         setCurrentPage(1);
                       }}
                       className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-all hover:text-emerald-500"
-                      title="Halaman Sebelumnya"
+                      title={t.common.prev}
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
@@ -676,7 +676,7 @@ const App: React.FC = () => {
                         setCurrentPage(1);
                       }}
                       className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-all hover:text-emerald-500"
-                      title="Halaman Berikutnya"
+                      title={t.common.next}
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
@@ -698,7 +698,7 @@ const App: React.FC = () => {
                         <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.statusLabel}</th>
                         <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.location}</th>
                         <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.tracker.execution.title}</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.features?.weather?.title || t.tracker.weather?.title || 'Cuaca'}</th>
+                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.tracker.weather.title}</th>
                         <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.tracker.masbuq}</th>
                         <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.history.notes}</th>
                       </tr>
@@ -706,7 +706,7 @@ const App: React.FC = () => {
                     <tbody>
                       {currentHistoryLogs.map((log) => (
                         <tr key={log.id} className="border-t border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
-                          <td className="px-6 lg:px-8 py-5"><p className="text-xs font-bold text-slate-800 dark:text-slate-100">{log.date}</p></td>
+                          <td className="px-6 lg:px-8 py-5"><p className="text-xs font-bold text-slate-800 dark:text-slate-100">{formatDate(log.date, language === 'id' ? 'id-ID' : 'en-US')}</p></td>
                           <td className="px-6 lg:px-8 py-5"><span className="text-xs font-black uppercase tracking-widest text-emerald-600">{log.prayerName}</span></td>
                           <td className="px-6 lg:px-8 py-5"><p className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.actualTime}</p></td>
                           <td className="px-6 lg:px-8 py-5">

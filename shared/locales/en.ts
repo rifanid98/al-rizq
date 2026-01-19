@@ -26,7 +26,8 @@ export const en = {
         of: "of",
         noDataByDate: "No data for this date",
         prayer: "Prayer",
-        statusLabel: "Status"
+        statusLabel: "Status",
+        change: "Change"
     },
     tabs: {
         tracker: "Tracker",
@@ -38,15 +39,20 @@ export const en = {
         title: "Settings",
         profile: "User Profile",
         appearance: {
-            title: "Appearance Settings",
-            subtitle: "Customize the look and feel",
-            theme: "Theme Mode",
+            title: "Appearance",
+            subtitle: "Customize Interface",
+            theme: "Theme",
             changeTheme: "Change",
             background: "Prayer Background",
-            backgroundSubtitle: "Prayer card background image",
-            opacity: "Opacity Level",
+            backgroundSubtitle: "Show thematic images",
+            opacity: "Opacity",
             clear: "Clear",
             overlay: "Overlay"
+        },
+        themes: {
+            light: "Light",
+            dark: "Dark",
+            system: "System"
         },
         sync: {
             title: "Cloud Synchronization",
@@ -81,7 +87,9 @@ export const en = {
         title: "Prayer Tracker",
         location: "Location",
         searchLocation: "Search location...",
-        flashback: "Forgot to Mark Yesterday?",
+        locationHistory: "Location History",
+        flashback: "Flashback",
+        flashbackQuestion: "Forgot yesterday?",
         currentTime: "Current Time",
         flashbackActive: "Flashback Mode Active",
         showingScheduleFor: "Showing schedule for",
@@ -93,6 +101,7 @@ export const en = {
             Isya: "Night"
         },
         weather: {
+            title: "Weather",
             clear: "Clear",
             rainy: "Rainy"
         },
@@ -167,11 +176,21 @@ export const en = {
         weeklyConsistency: "Weekly Consistency",
         sunnahStats: "Sunnah & Complementary Worship",
         dua: "Praying",
-        masbuq: "Masbuq"
+        masbuq: "Masbuq",
+        masjidRate: "Masjid Rate",
+        ontimeRate: "Ontime Rate",
+        avgDelay: "Avg Delay",
+        scrollToBottom: "Scroll to Bottom",
+        status: {
+            ontime: "On Time",
+            late: "Late",
+            missed: "Missed"
+        }
     },
     history: {
         title: "History",
         noLogs: "No prayer history yet.",
-        notes: "Notes"
+        notes: "Notes",
+        activeFilter: "Active Filter"
     }
 };
