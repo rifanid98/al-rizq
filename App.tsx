@@ -319,10 +319,10 @@ const App: React.FC = () => {
         editingLogId,
         selectedDate: isFlashbackMode ? selectedDate : undefined
       });
-      
+
       const curTime = getCurrentTimeStr();
       const isOnTime = !isLate(pendingLatePrayer.scheduledTime, curTime);
-      
+
       if (isOnTime && locationType === 'Masjid' && executionType === 'Jamaah') {
         setShowCelebration(true);
       }
@@ -483,7 +483,7 @@ const App: React.FC = () => {
             )}
 
             {user && (
-              <div className="flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-2">
                 <Button
                   variant="ghost"
                   className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0 flex items-center gap-2"
