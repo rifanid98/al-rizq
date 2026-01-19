@@ -30,7 +30,8 @@ export const en = {
         change: "Change"
     },
     tabs: {
-        tracker: "Tracker",
+        tracker: "Prayer",
+        fasting: "Fasting",
         dashboard: "Dashboard",
         history: "History",
         settings: "Settings"
@@ -84,7 +85,7 @@ export const en = {
         }
     },
     tracker: {
-        title: "Prayer Tracker",
+        title: "Prayer Schedule",
         location: "Location",
         searchLocation: "Search location...",
         locationHistory: "Location History",
@@ -193,5 +194,37 @@ export const en = {
         notes: "Notes",
         activeFilter: "Active Filter",
         pickDate: "Pick a date"
+    },
+    fasting: {
+        title: "Fasting Schedule",
+        statsTitle: "Fasting Statistics",
+        today: "Today",
+        upcoming: "Upcoming",
+        types: {
+            monday: "Sunnah Monday Fasting",
+            thursday: "Sunnah Thursday Fasting",
+            mondayThursdayShort: "Mon & Thu",
+            midMonth: "Ayyamul Bidh",
+            ramadhan: "Ramadan",
+            nadzar: "Vow (Nadzar)",
+            qadha: "Makeup (Qadha)",
+            forbidden: "Forbidden",
+            other: "Other"
+        },
+        actions: {
+            mark: "I'm Fasting",
+            unmark: "Cancel Fasting",
+            selectType: "Select Fasting Type",
+            forbidden: "Fasting Not Allowed"
+        },
+        stats: {
+            qadha: "Qadha/Debt",
+            sunnah: "Sunnah Fasting",
+            nadzar: "Vow",
+            total: "Total Fasting",
+            streak: "Streak"
+        },
+        distribution: "Fasting Distribution",
+        history: "Monthly History"
     }
 };

@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { PrayerLog, AppSettings } from '../../../shared/types';
+import { PrayerLog, AppSettings, FastingLog } from '../../../shared/types';
 import { uploadToCloud, downloadFromCloud } from '../services/syncService';
 import { STORAGE_KEYS } from '../../../shared/constants';
 
@@ -24,7 +24,10 @@ export const useSync = (userEmail: string | undefined) => {
                 setBackupSource('upload');
             }
 
-            const timestamp = await uploadToCloud(userEmail, logs, settings);
+            const fastingLogsStr = localStorage.getItem(STORAGE_KEYS.FASTING_LOGS);
+            const fastingLogs: FastingLog[] = fastingLogsStr ? JSON.parse(fastingLogsStr) : [];
+
+            const timestamp = await uploadToCloud(userEmail, logs, settings, fastingLogs);
             localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, timestamp.toString());
             localStorage.setItem(STORAGE_KEYS.LAST_SYNC, timestamp.toString());
         } catch (err) {

@@ -1,5 +1,6 @@
 export type PrayerName = 'Subuh' | 'Dzuhur' | 'Ashar' | 'Maghrib' | 'Isya';
 export type Language = 'id' | 'en';
+export type FastingType = 'Senin-Kamis' | 'Ayyamul Bidh' | 'Ramadhan' | 'Nadzar' | 'Qadha' | 'Lainnya';
 
 export interface PrayerTime {
   name: PrayerName;
@@ -26,10 +27,35 @@ export interface PrayerLog {
   hasDua?: boolean;
 }
 
+export interface FastingLog {
+  id: string;
+  date: string; // YYYY-MM-DD
+  type: FastingType;
+  isCompleted: boolean;
+  notes?: string;
+  isNadzar?: boolean;
+  isQadha?: boolean;
+}
+
+export interface HijriDate {
+  day: string;
+  month: {
+    number: number;
+    en: string;
+    ar: string;
+  };
+  year: string;
+  designation: {
+    abbreviated: string;
+    expanded: string;
+  };
+}
+
 export interface DailySchedule {
   date: string;
   location: string;
   prayers: PrayerTime[];
+  hijri?: HijriDate;
   sources?: { title: string; uri: string }[];
 }
 

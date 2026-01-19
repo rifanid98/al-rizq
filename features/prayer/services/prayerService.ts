@@ -70,10 +70,26 @@ export const fetchPrayerTimes = async (location: { lat: number; lng: number } | 
             };
         });
 
+        const hijriDate = resData.data.date.hijri;
+        const hijri = {
+            day: hijriDate.day,
+            month: {
+                number: hijriDate.month.number,
+                en: hijriDate.month.en,
+                ar: hijriDate.month.ar
+            },
+            year: hijriDate.year,
+            designation: {
+                abbreviated: hijriDate.designation.abbreviated,
+                expanded: hijriDate.designation.expanded
+            }
+        };
+
         const result: DailySchedule = {
             date: date,
             location: 'address' in location ? location.address : `Lat: ${location.lat.toFixed(2)}, Lng: ${location.lng.toFixed(2)}`,
             prayers: finalPrayers,
+            hijri: hijri,
             sources: [{
                 title: "Kemenag RI via Aladhan API",
                 uri: "https://aladhan.com/prayer-times-api"

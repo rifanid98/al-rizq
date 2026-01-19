@@ -1,4 +1,4 @@
-import { PrayerLog, AppSettings } from '../../../shared/types';
+import { PrayerLog, AppSettings, FastingLog } from '../../../shared/types';
 import { STORAGE_KEYS } from '../../../shared/constants';
 import { supabase } from '../../../shared/services/supabaseClient';
 
@@ -7,14 +7,14 @@ import { supabase } from '../../../shared/services/supabaseClient';
  * We wrap both logs and settings into the existing 'logs' column 
  * since adding a new column 'settings' might require manual DB migration.
  */
-export const uploadToCloud = async (email: string, logs: PrayerLog[], settings?: AppSettings): Promise<number> => {
+export const uploadToCloud = async (email: string, logs: PrayerLog[], settings?: AppSettings, fastingLogs?: FastingLog[]): Promise<number> => {
     const timestamp = Date.now();
 
     const { error } = await supabase
         .from('user_backups')
         .upsert({
             email: email,
-            logs: { logs, settings }, // Wrap into the existing 'logs' column
+            logs: { logs, settings, fastingLogs }, // Wrap into the existing 'logs' column
             last_updated: timestamp
         }, { onConflict: 'email' });
 
@@ -29,7 +29,7 @@ export const uploadToCloud = async (email: string, logs: PrayerLog[], settings?:
 /**
  * Download data from Supabase for a specific user
  */
-export const downloadFromCloud = async (email: string): Promise<{ logs: PrayerLog[], settings?: AppSettings, last_updated: number } | null> => {
+export const downloadFromCloud = async (email: string): Promise<{ logs: PrayerLog[], settings?: AppSettings, fastingLogs?: FastingLog[], last_updated: number } | null> => {
     const { data, error } = await supabase
         .from('user_backups')
         .select('logs, last_updated')
@@ -45,6 +45,7 @@ export const downloadFromCloud = async (email: string): Promise<{ logs: PrayerLo
     // Backward compatibility check
     let logs: PrayerLog[] = [];
     let settings: AppSettings | undefined = undefined;
+    let fastingLogs: FastingLog[] = [];
 
     if (Array.isArray(data.logs)) {
         // Old format: logs is just an array
@@ -53,11 +54,13 @@ export const downloadFromCloud = async (email: string): Promise<{ logs: PrayerLo
         // New format: logs is { logs, settings }
         logs = data.logs.logs || [];
         settings = data.logs.settings;
+        fastingLogs = data.logs.fastingLogs || [];
     }
 
     return {
         logs,
         settings,
+        fastingLogs,
         last_updated: data.last_updated
     };
 };

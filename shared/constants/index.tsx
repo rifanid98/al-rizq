@@ -31,6 +31,7 @@ export const STORAGE_KEYS = {
   LOGS: 'al_rizq_logs',
   SCHEDULE: 'al_rizq_schedule',
   LOCATION_HISTORY: 'al_rizq_location_history',
+  FASTING_LOGS: 'al_rizq_fasting_logs',
   CACHE_TIMESTAMP: 'al_rizq_cache_timestamp',
   LAST_UPDATED: 'al_rizq_last_updated',
   LAST_SYNC: 'al_rizq_last_sync',

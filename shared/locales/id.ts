@@ -30,7 +30,8 @@ export const id = {
         change: "Ubah"
     },
     tabs: {
-        tracker: "Tracker",
+        tracker: "Sholat",
+        fasting: "Puasa",
         dashboard: "Statistik",
         history: "Riwayat",
         settings: "Pengaturan"
@@ -86,7 +87,7 @@ export const id = {
         }
     },
     tracker: {
-        title: "Tracker Sholat",
+        title: "Jadwal Sholat",
         location: "Lokasi",
         searchLocation: "Cari lokasi...",
         locationHistory: "Riwayat Lokasi",
@@ -195,5 +196,37 @@ export const id = {
         notes: "Catatan",
         activeFilter: "Filter Aktif",
         pickDate: "Pilih Tanggal"
+    },
+    fasting: {
+        title: "Jadwal Puasa",
+        statsTitle: "Statistik Puasa",
+        today: "Hari Ini",
+        upcoming: "Akan Datang",
+        types: {
+            monday: "Puasa Sunnah Senin",
+            thursday: "Puasa Sunnah Kamis",
+            mondayThursdayShort: "Senin & Kamis",
+            midMonth: "Ayyamul Bidh",
+            ramadhan: "Ramadhan",
+            nadzar: "Nadzar",
+            qadha: "Qadha",
+            forbidden: "Diharamkan",
+            other: "Lainnya"
+        },
+        actions: {
+            mark: "Saya Puasa",
+            unmark: "Batal Puasa",
+            selectType: "Pilih Jenis Puasa",
+            forbidden: "Tidak Boleh Puasa"
+        },
+        stats: {
+            qadha: "Qadha/Hutang",
+            sunnah: "Puasa Sunnah",
+            nadzar: "Nadzar",
+            total: "Total Puasa",
+            streak: "Streak"
+        },
+        distribution: "Distribusi Puasa",
+        history: "Riwayat Bulanan"
     }
 };

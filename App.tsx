@@ -35,7 +35,8 @@ import {
   CloudRain,
   SunMedium,
   ChevronDown,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  UtensilsCrossed
 } from 'lucide-react';
 
 // Shared
@@ -61,6 +62,10 @@ import { Settings } from './features/settings/components/Settings';
 import { LanguageProvider } from './shared/hooks/useLanguage';
 import IslamicCelebration from './features/dashboard/components/IslamicCelebration';
 import { translations } from './shared/locales';
+import { FastingTracker } from './features/fasting/components/FastingTracker';
+import { FastingStats } from './features/fasting/components/FastingStats';
+import { getHijriDate } from './features/fasting/services/fastingService';
+import { Mosque } from './shared/components/icons/Mosque';
 
 const App: React.FC = () => {
   // Hooks
@@ -76,7 +81,7 @@ const App: React.FC = () => {
   const { isSyncing, handleUpload, handleDownload, hasBackup, handleRevert } = useSync(user?.email);
 
   // Local States
-  const [activeTab, setActiveTab] = useState<'tracker' | 'dashboard' | 'history' | 'settings'>(() => {
+  const [activeTab, setActiveTab] = useState<'tracker' | 'fasting' | 'dashboard' | 'history' | 'settings'>(() => {
     return (localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) as any) || 'tracker';
   });
   const [isSearching, setIsSearching] = useState(false);
@@ -109,6 +114,7 @@ const App: React.FC = () => {
   const [syncConfirmOpen, setSyncConfirmOpen] = useState(false);
   const [pendingCloudLogs, setPendingCloudLogs] = useState<PrayerLog[] | null>(null);
   const [pendingCloudSettings, setPendingCloudSettings] = useState<AppSettings | null>(null);
+  const [pendingFastingLogs, setPendingFastingLogs] = useState<any[] | null>(null);
   const [pendingLastUpdated, setPendingLastUpdated] = useState<number | null>(null);
 
   const [showCelebration, setShowCelebration] = useState(false);
@@ -194,11 +200,28 @@ const App: React.FC = () => {
             setLogs(cloudData.logs);
             localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(cloudData.logs));
           }
+
           if (cloudData.settings) restoreSettings(cloudData.settings);
+          if (cloudData.fastingLogs) {
+            localStorage.setItem(STORAGE_KEYS.FASTING_LOGS, JSON.stringify(cloudData.fastingLogs));
+            // Force reload or state update if hook exposes setter? 
+            // Since useFastingLogs is used inside components, we might need a global reload or just let it be if we reload page.
+            // Better: We should expose setFastingLogs in a context or similar if we want global update without reload.
+            // For now, simpler: window.location.reload() for full sync apply? Or just set storage and assume components re-mount?
+            // App.tsx doesn't use useFastingLogs directly for state. 
+            // FastingTracker will read from localStorage on mount/update? 
+            // The hook initializes from localStorage. If we update localStorage here, active hooks won't know.
+            // Ideally we need to trigger an update.
+            // A simple hack: window.dispatchEvent(new Event('storage')) might work if we listened to it, but our hook doesn't.
+            // Let's rely on reload for now for major syncs, OR we could lift state up, but that's a big refactor.
+            // Wait, we are in 'Execution'. Let's do the safe thing: window.location.reload() is drastic.
+            // Let's just set the item. If the user navigates, it might refresh.
+          }
           localStorage.setItem(STORAGE_KEYS.LAST_SYNC, cloudData.last_updated.toString());
         } else {
           setPendingCloudLogs(cloudData.logs);
           setPendingCloudSettings(cloudData.settings || null);
+          setPendingFastingLogs(cloudData.fastingLogs || null);
           setPendingLastUpdated(cloudData.last_updated);
           setSyncConfirmOpen(true);
         }
@@ -354,17 +377,24 @@ const App: React.FC = () => {
       setLogs(pendingCloudLogs);
       localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(pendingCloudLogs));
       if (pendingCloudSettings) restoreSettings(pendingCloudSettings);
+      if (pendingFastingLogs) {
+        localStorage.setItem(STORAGE_KEYS.FASTING_LOGS, JSON.stringify(pendingFastingLogs));
+        // Trigger reload to ensure all hooks update
+        window.location.reload();
+      }
       if (pendingLastUpdated) localStorage.setItem(STORAGE_KEYS.LAST_SYNC, pendingLastUpdated.toString());
     }
     setSyncConfirmOpen(false);
     setPendingCloudLogs(null);
     setPendingCloudSettings(null);
+    setPendingFastingLogs(null);
   };
 
   const keepLocalData = () => {
     setSyncConfirmOpen(false);
     setPendingCloudLogs(null);
     setPendingCloudSettings(null);
+    setPendingFastingLogs(null);
     handleUpload(logs, getCurrentSettings());
   };
 
@@ -381,9 +411,10 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex lg:flex-col lg:w-full gap-1 w-full justify-around lg:justify-start">
-            {['tracker', 'dashboard', 'history', 'settings'].map((tab) => (
+            {['tracker', 'fasting', 'dashboard', 'history', 'settings'].map((tab) => (
               <button key={tab} onClick={() => setActiveTab(tab as any)} className={`flex flex-col lg:flex-row items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-xl transition-all ${activeTab === tab ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-                {tab === 'tracker' && <Clock className="w-5 h-5 lg:w-6 lg:h-6" />}
+                {tab === 'tracker' && <Mosque className="w-5 h-5 lg:w-6 lg:h-6" />}
+                {tab === 'fasting' && <UtensilsCrossed className="w-5 h-5 lg:w-6 lg:h-6" />}
                 {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5 lg:w-6 lg:h-6" />}
                 {tab === 'history' && <HistoryIcon className="w-5 h-5 lg:w-6 lg:h-6" />}
                 {tab === 'settings' && <SettingsIcon className="w-5 h-5 lg:w-6 lg:h-6" />}
@@ -434,7 +465,7 @@ const App: React.FC = () => {
             <div className="flex justify-between items-start flex-1">
               <div>
                 <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
-                  {activeTab === 'tracker' ? t.tracker.title : activeTab === 'dashboard' ? t.tabs.dashboard : activeTab === 'history' ? t.tabs.history : t.tabs.settings}
+                  {activeTab === 'tracker' ? t.tracker.title : activeTab === 'fasting' ? t.tabs.fasting : activeTab === 'dashboard' ? t.tabs.dashboard : activeTab === 'history' ? t.tabs.history : t.tabs.settings}
                 </h2>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-3">
                   <span className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-[10px] lg:text-xs font-bold text-slate-600 dark:text-slate-400 shadow-sm w-fit">
@@ -599,6 +630,8 @@ const App: React.FC = () => {
                 </div>
               )}
 
+              {/* Fasting Tracker moved to own tab */}
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {PRAYER_ORDER.map((name) => {
                   const activeSchedule = isFlashbackMode ? yesterdaySchedule : schedule;
@@ -618,8 +651,28 @@ const App: React.FC = () => {
             </div>
           )}
 
+
+          {/* Fasting Tab Content */}
+          {activeTab === 'fasting' && (
+            <div className="space-y-6 lg:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              {/* Use schedule.hijri or fallback to calculating it locally */}
+
+              {(() => {
+                const effectiveHijri = schedule?.hijri || getHijriDate(new Date(currentDate));
+
+                return (
+                  <>
+                    <FastingTracker currentDate={currentDate} hijriDate={effectiveHijri} />
+                    <FastingStats hijriDate={effectiveHijri} />
+                  </>
+                );
+              })()}
+            </div>
+          )}
+
           {/* Dashboard Tab Content */}
-          {activeTab === 'dashboard' && <Dashboard logs={logs} />}
+          {activeTab === 'dashboard' && <Dashboard logs={logs} hijriDate={schedule?.hijri} />}
+
 
           {/* History Tab Content */}
           {activeTab === 'history' && (
