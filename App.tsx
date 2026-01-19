@@ -771,7 +771,7 @@ const App: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Button variant="danger-outline" className="rounded-xl px-4 py-3 flex items-center gap-2 text-xs font-bold" onClick={clearLogs}><Trash2 className="w-4 h-4" /> {t.common.deleteAll}</Button>
+                  <Button variant="danger-outline" className="rounded-xl px-4 py-3 flex items-center gap-2 text-xs font-bold" onClick={() => { if (window.confirm(t.common.confirmDeleteAll)) clearLogs(); }}><Trash2 className="w-4 h-4" /> {t.common.deleteAll}</Button>
                 </div>
               </div>
 

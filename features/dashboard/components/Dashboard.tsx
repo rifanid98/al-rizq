@@ -148,23 +148,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, hijriDate }) => {
         </button>
       </div>
 
+      {/* Floating Scroll CTA (Visible based on scroll) */}
+      <button
+        onClick={scrollToBottom}
+        title={t.dashboard.scrollToBottom || "Scroll to Bottom"}
+        className={`fixed right-6 lg:right-10 z-[60] flex items-center justify-center w-14 h-14 bg-emerald-600 dark:bg-emerald-500 text-white rounded-full shadow-2xl shadow-emerald-500/40 animate-in slide-in-from-bottom-8 duration-500 hover:scale-110 active:scale-95 transition-all group ${showScrollBtn ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-12 pointer-events-none'
+          } ${
+          // Tablet/Mobile: Above bottom nav
+          // Desktop: Bottom-10
+          'bottom-28 lg:bottom-10'
+          }`}
+      >
+        <ChevronDown className="w-8 h-8 group-hover:translate-y-0.5 transition-transform" />
+      </button>
+
       {activeTab === 'fasting' ? (
         <FastingStats hijriDate={hijriDate} />
       ) : (
         <>
-          {/* Floating Scroll CTA (Visible based on scroll) */}
-          <button
-            onClick={scrollToBottom}
-            title={t.dashboard.scrollToBottom || "Scroll to Bottom"}
-            className={`fixed right-6 lg:right-10 z-[60] flex items-center justify-center w-14 h-14 bg-emerald-600 dark:bg-emerald-500 text-white rounded-full shadow-2xl shadow-emerald-500/40 animate-in slide-in-from-bottom-8 duration-500 hover:scale-110 active:scale-95 transition-all group ${showScrollBtn ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-12 pointer-events-none'
-              } ${
-              // Tablet/Mobile: Above bottom nav
-              // Desktop: Bottom-10
-              'bottom-28 lg:bottom-10'
-              }`}
-          >
-            <ChevronDown className="w-8 h-8 group-hover:translate-y-0.5 transition-transform" />
-          </button>
+
 
           {/* Detail Masbuq Summary (Performa Ibadah) */}
           <div

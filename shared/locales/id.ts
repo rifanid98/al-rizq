@@ -27,7 +27,8 @@ export const id = {
         noDataByDate: "Tidak ada data untuk tanggal ini",
         prayer: "Sholat",
         statusLabel: "Status",
-        change: "Ubah"
+        change: "Ubah",
+        confirmDeleteAll: "Apakah Anda yakin ingin menghapus semua riwayat? Tindakan ini tidak dapat dibatalkan."
     },
     tabs: {
         tracker: "Sholat",

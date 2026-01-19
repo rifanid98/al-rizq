@@ -27,7 +27,8 @@ export const en = {
         noDataByDate: "No data for this date",
         prayer: "Prayer",
         statusLabel: "Status",
-        change: "Change"
+        change: "Change",
+        confirmDeleteAll: "Are you sure you want to delete all history? This action cannot be undone."
     },
     tabs: {
         tracker: "Prayer",

@@ -4,7 +4,7 @@ import { useLanguage } from "../../../shared/hooks/useLanguage";
 import { useFastingLogs } from "../hooks/useFastingLogs";
 import { getMonthForecast } from "../services/fastingService";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Calendar as CalendarIcon, Info, Star, RotateCcw, Moon, Target } from 'lucide-react';
+import { Calendar as CalendarIcon, Info, Star, RotateCcw, Moon, Target, TrendingUp } from 'lucide-react';
 import { HijriDate, FastingType } from '../../../shared/types';
 import { getLocalDateStr } from '../../../shared/utils/helpers';
 
@@ -84,7 +84,30 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate }) => {
     const getFastedLog = (date: string) => fastingLogs.find(l => l.date === date);
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
+            {/* Fasting Performance Panel */}
+            <div className="order-last md:order-first bg-emerald-600 dark:bg-emerald-900/40 p-8 rounded-[2.5rem] shadow-xl shadow-emerald-500/10 flex flex-col md:flex-row items-center justify-between gap-8 text-white">
+                <div className="flex items-center gap-6">
+                    <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+                        <TrendingUp className="w-8 h-8" />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-black tracking-tight">{t.dashboard.performance}</h3>
+                        <p className="text-emerald-100 font-medium opacity-80">{t.dashboard.performanceSubtitle}</p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-8 w-full md:w-auto">
+                    <div className="text-center md:text-left">
+                        <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">{t.fasting.stats.streak}</p>
+                        <p className="text-2xl font-black">{stats.streak} <span className="text-sm font-bold opacity-60">Hari</span></p>
+                    </div>
+                    <div className="text-center md:text-left">
+                        <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">{t.fasting.stats.total}</p>
+                        <p className="text-2xl font-black">{stats.total} <span className="text-sm font-bold opacity-60">Hari</span></p>
+                    </div>
+                </div>
+            </div>
+
             {/* Summary Cards */}
             <div className="grid grid-cols-3 gap-4">
                 <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 flex flex-col items-center justify-center text-center">
@@ -101,6 +124,8 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate }) => {
                     <span className="text-[10px] uppercase font-bold text-rose-600/60 dark:text-rose-400/60 mt-1">{t.fasting.stats.qadha}</span>
                 </div>
             </div>
+
+
 
             {/* Distribution Chart */}
             <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 border border-slate-200 dark:border-slate-800">
