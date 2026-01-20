@@ -700,7 +700,7 @@ const App: React.FC = () => {
                 return (
                   <>
                     <FastingTracker currentDate={selectedDate} hijriDate={effectiveHijri} />
-                    <FastingStats hijriDate={effectiveHijri} />
+                    <FastingStats hijriDate={effectiveHijri} minimal={true} />
                   </>
                 );
               })()}

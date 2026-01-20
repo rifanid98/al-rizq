@@ -19,9 +19,10 @@ const STORAGE_KEY_QADHA_CONFIG = 'al_rizq_qadha_config';
 
 interface FastingStatsProps {
     hijriDate?: HijriDate;
+    minimal?: boolean; // If true, hides Performance and Distribution sections
 }
 
-export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate }) => {
+export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal = false }) => {
     const { t } = useLanguage();
     const { getLogStats, fastingLogs } = useFastingLogs();
     const stats = getLogStats();
@@ -86,27 +87,29 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate }) => {
     return (
         <div className="flex flex-col gap-8">
             {/* Fasting Performance Panel */}
-            <div className="order-last md:order-first bg-emerald-600 dark:bg-emerald-900/40 p-8 rounded-[2.5rem] shadow-xl shadow-emerald-500/10 flex flex-col md:flex-row items-center justify-between gap-8 text-white">
-                <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
-                        <TrendingUp className="w-8 h-8" />
+            {!minimal && (
+                <div className="order-last md:order-first bg-emerald-600 dark:bg-emerald-900/40 p-8 rounded-[2.5rem] shadow-xl shadow-emerald-500/10 flex flex-col md:flex-row items-center justify-between gap-8 text-white">
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+                            <TrendingUp className="w-8 h-8" />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-black tracking-tight">{t.dashboard.performance}</h3>
+                            <p className="text-emerald-100 font-medium opacity-80">{t.dashboard.performanceSubtitle}</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 className="text-xl font-black tracking-tight">{t.dashboard.performance}</h3>
-                        <p className="text-emerald-100 font-medium opacity-80">{t.dashboard.performanceSubtitle}</p>
+                    <div className="grid grid-cols-2 gap-8 w-full md:w-auto">
+                        <div className="text-center md:text-left">
+                            <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">{t.fasting.stats.streak}</p>
+                            <p className="text-2xl font-black">{stats.streak} <span className="text-sm font-bold opacity-60">Hari</span></p>
+                        </div>
+                        <div className="text-center md:text-left">
+                            <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">{t.fasting.stats.total}</p>
+                            <p className="text-2xl font-black">{stats.total} <span className="text-sm font-bold opacity-60">Hari</span></p>
+                        </div>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-8 w-full md:w-auto">
-                    <div className="text-center md:text-left">
-                        <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">{t.fasting.stats.streak}</p>
-                        <p className="text-2xl font-black">{stats.streak} <span className="text-sm font-bold opacity-60">Hari</span></p>
-                    </div>
-                    <div className="text-center md:text-left">
-                        <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">{t.fasting.stats.total}</p>
-                        <p className="text-2xl font-black">{stats.total} <span className="text-sm font-bold opacity-60">Hari</span></p>
-                    </div>
-                </div>
-            </div>
+            )}
 
             {/* Summary Cards */}
             <div className="grid grid-cols-3 gap-4">
@@ -128,42 +131,44 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate }) => {
 
 
             {/* Distribution Chart */}
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 border border-slate-200 dark:border-slate-800">
-                <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
-                    <Info className="w-4 h-4 text-emerald-500" />
-                    {t.fasting.distribution}
-                </h4>
-                <div className="h-48 w-full flex items-center justify-center relative">
-                    {data.length > 0 ? (
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={data}
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                >
-                                    {data.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                                    ))}
-                                </Pie>
-                                <Tooltip
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                    itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
-                                />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    ) : (
-                        <div className="text-slate-400 text-xs font-bold">{t.dashboard.noData}</div>
-                    )}
-                    {/* Center Text */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.total}</span>
-                        <span className="text-[9px] uppercase font-bold text-slate-400">Total</span>
+            {!minimal && (
+                <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 border border-slate-200 dark:border-slate-800">
+                    <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
+                        <Info className="w-4 h-4 text-emerald-500" />
+                        {t.fasting.distribution}
+                    </h4>
+                    <div className="h-48 w-full flex items-center justify-center relative">
+                        {data.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={data}
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                    >
+                                        {data.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                        itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="text-slate-400 text-xs font-bold">{t.dashboard.noData}</div>
+                        )}
+                        {/* Center Text */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.total}</span>
+                            <span className="text-[9px] uppercase font-bold text-slate-400">Total</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Monthly Forecast Calendar */}
             <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 border border-slate-200 dark:border-slate-800">
