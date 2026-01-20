@@ -80,6 +80,7 @@ const App: React.FC = () => {
     return (localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) as any) || 'tracker';
   });
   const [isSearching, setIsSearching] = useState(false);
+  const [isTrackerMenuOpen, setIsTrackerMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isSearchingSuggestions, setIsSearchingSuggestions] = useState(false);
@@ -404,18 +405,86 @@ const App: React.FC = () => {
             <h1 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">AL-RIZQ <span className="text-emerald-600">APP</span></h1>
           </div>
 
-          <div className="flex lg:flex-col lg:w-full gap-1 w-full justify-around lg:justify-start">
-            {['tracker', 'fasting', 'dzikir', 'dashboard', 'history', 'settings'].map((tab) => (
-              <button key={tab} onClick={() => setActiveTab(tab as any)} className={`flex flex-col lg:flex-row items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-xl transition-all ${activeTab === tab ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-                {tab === 'tracker' && <Mosque className="w-5 h-5 lg:w-6 lg:h-6" />}
-                {tab === 'fasting' && <UtensilsCrossed className="w-5 h-5 lg:w-6 lg:h-6" />}
-                {tab === 'dzikir' && <Star className="w-5 h-5 lg:w-6 lg:h-6" />}
-                {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5 lg:w-6 lg:h-6" />}
-                {tab === 'history' && <HistoryIcon className="w-5 h-5 lg:w-6 lg:h-6" />}
-                {tab === 'settings' && <SettingsIcon className="w-5 h-5 lg:w-6 lg:h-6" />}
-                <span className="text-[10px] lg:text-sm capitalize font-bold">{t.tabs[tab as keyof typeof t.tabs]}</span>
+          {/* Mobile Bottom Nav */}
+          {/* Mobile Bottom Nav */}
+          <div className="lg:hidden flex w-full justify-around items-center relative">
+            {/* Tracker Group Button */}
+            <div className="relative group">
+              <button
+                onClick={() => setIsTrackerMenuOpen(!isTrackerMenuOpen)}
+                className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${['tracker', 'fasting', 'dzikir'].includes(activeTab) ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}
+              >
+                <div className={`p-1 rounded-full ${['tracker', 'fasting', 'dzikir'].includes(activeTab) ? 'bg-emerald-100' : ''}`}>
+                  <Mosque className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] uppercase font-black tracking-wider">Tracker</span>
+              </button>
+
+              {/* Floating Sub-menu for Mobile Tracker */}
+              <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-2 flex flex-col gap-1 min-w-[140px] transition-all transform origin-bottom ${isTrackerMenuOpen ? 'scale-100 opacity-100 z-50 pointer-events-auto' : 'scale-0 opacity-0 pointer-events-none'}`}>
+                {/* Prayer */}
+                <button onClick={(e) => { e.stopPropagation(); setActiveTab('tracker'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'tracker' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                  <Mosque className="w-4 h-4" /> <span className="text-xs">{t.common.prayer}</span>
+                </button>
+                {/* Fasting */}
+                <button onClick={(e) => { e.stopPropagation(); setActiveTab('fasting'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'fasting' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                  <UtensilsCrossed className="w-4 h-4" /> <span className="text-xs">{t.tabs.fasting}</span>
+                </button>
+                {/* Dzikir */}
+                <button onClick={(e) => { e.stopPropagation(); setActiveTab('dzikir'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'dzikir' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                  <Star className="w-4 h-4" /> <span className="text-xs">{t.tabs.dzikir}</span>
+                </button>
+                {/* Arrow */}
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-slate-900 border-b border-r border-slate-200 dark:border-slate-800 rotate-45"></div>
+              </div>
+            </div>
+
+            {/* Other Tabs */}
+            {['dashboard', 'history', 'settings'].map((tab) => (
+              <button key={tab} onClick={() => { setActiveTab(tab as any); setIsTrackerMenuOpen(false); }} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${activeTab === tab ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}>
+                {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5" />}
+                {tab === 'history' && <HistoryIcon className="w-5 h-5" />}
+                {tab === 'settings' && <SettingsIcon className="w-5 h-5" />}
+                <span className="text-[10px] uppercase font-black tracking-wider">{t.tabs[tab as keyof typeof t.tabs]}</span>
               </button>
             ))}
+
+            {/* Backdrop for closing menu */}
+            {isTrackerMenuOpen && (
+              <div className="fixed inset-0 z-0" onClick={() => setIsTrackerMenuOpen(false)} />
+            )}
+          </div>
+
+          {/* Desktop Sidebar Nav (Unchanged or vertically grouped) */}
+          <div className="hidden lg:flex flex-col w-full gap-2">
+            <div className="mb-2">
+              <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Ibadah Tracker</p>
+              <div className="flex flex-col gap-1">
+                <button onClick={() => setActiveTab('tracker')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'tracker' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                  <Mosque className="w-5 h-5" /> <span className="text-sm">{t.common.prayer}</span>
+                </button>
+                <button onClick={() => setActiveTab('fasting')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'fasting' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                  <UtensilsCrossed className="w-5 h-5" /> <span className="text-sm">{t.tabs.fasting}</span>
+                </button>
+                <button onClick={() => setActiveTab('dzikir')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'dzikir' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                  <Star className="w-5 h-5" /> <span className="text-sm">{t.tabs.dzikir}</span>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Menu</p>
+              <div className="flex flex-col gap-1">
+                {['dashboard', 'history', 'settings'].map((tab) => (
+                  <button key={tab} onClick={() => setActiveTab(tab as any)} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === tab ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                    {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5" />}
+                    {tab === 'history' && <HistoryIcon className="w-5 h-5" />}
+                    {tab === 'settings' && <SettingsIcon className="w-5 h-5" />}
+                    <span className="text-sm capitalize">{t.tabs[tab as keyof typeof t.tabs]}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="hidden lg:block w-full px-2 mt-auto border-t border-slate-100 dark:border-slate-800 pt-6 space-y-6">
