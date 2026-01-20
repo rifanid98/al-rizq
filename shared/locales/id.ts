@@ -200,7 +200,13 @@ export const id = {
             ontime: "Tepat Waktu",
             late: "Terlambat",
             missed: "Terlewat"
-        }
+        },
+        dzikirStats: "Statistik Ibadah Dzikir",
+        totalSessions: "Total Sesi",
+        morning: "Pagi",
+        evening: "Petang",
+        currentStreak: "Streak Hari Ini",
+        days: "Hari"
     },
     history: {
         title: "Riwayat",

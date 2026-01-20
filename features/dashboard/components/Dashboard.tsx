@@ -187,27 +187,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                       </div>
                       <div>
                         <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">{t.tabs.dzikir}</h3>
-                        <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Statistik Ibadah Dzikir</p>
+                        <p className="text-sm font-bold text-slate-500 dark:text-slate-400">{t.dashboard.dzikirStats}</p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       {/* Total Session */}
                       <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Total Sesi</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t.dashboard.totalSessions}</p>
                         <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{dzikirLogs.filter(l => l.isCompleted).length}</p>
                       </div>
                       {/* Pagi vs Petang */}
                       <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl flex flex-col justify-center gap-2">
                         <div className="flex justify-between items-center">
-                          <span className="text-xs font-bold text-slate-500"><SunMedium className="w-3 h-3 inline mr-1" /> Pagi</span>
+                          <span className="text-xs font-bold text-slate-500"><SunMedium className="w-3 h-3 inline mr-1" /> {t.dashboard.morning}</span>
                           <span className="font-black">{dzikirLogs.filter(l => l.categoryId === 'pagi' && l.isCompleted).length}</span>
                         </div>
                         <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                           <div className="h-full bg-amber-400" style={{ width: `${(dzikirLogs.filter(l => l.categoryId === 'pagi' && l.isCompleted).length / (dzikirLogs.filter(l => l.isCompleted).length || 1)) * 100}%` }} />
                         </div>
                         <div className="flex justify-between items-center mt-1">
-                          <span className="text-xs font-bold text-slate-500"><Moon className="w-3 h-3 inline mr-1" /> Petang</span>
+                          <span className="text-xs font-bold text-slate-500"><Moon className="w-3 h-3 inline mr-1" /> {t.dashboard.evening}</span>
                           <span className="font-black">{dzikirLogs.filter(l => l.categoryId === 'petang' && l.isCompleted).length}</span>
                         </div>
                         <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -216,7 +216,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                       </div>
                       {/* Streak (Simple Calculation) */}
                       <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Streak Hari Ini</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t.dashboard.currentStreak}</p>
                         <div className="flex items-baseline gap-2">
                           <p className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
                             {(() => {
@@ -253,7 +253,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                               return streak;
                             })()}
                           </p>
-                          <span className="text-xs font-bold text-slate-400">hari</span>
+                          <span className="text-xs font-bold text-slate-400">{t.dashboard.days}</span>
                         </div>
                       </div>
                     </div>

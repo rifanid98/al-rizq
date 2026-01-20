@@ -196,7 +196,13 @@ export const en = {
             ontime: "On Time",
             late: "Late",
             missed: "Missed"
-        }
+        },
+        dzikirStats: "Dhikr Statistics",
+        totalSessions: "Total Sessions",
+        morning: "Morning",
+        evening: "Evening",
+        currentStreak: "Current Streak",
+        days: "Days"
     },
     history: {
         title: "History",
