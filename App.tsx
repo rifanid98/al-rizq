@@ -32,7 +32,7 @@ import {
 // Shared
 import { PrayerLog, DailySchedule, PrayerName, AppSettings } from './shared/types';
 import { STORAGE_KEYS, PRAYER_ORDER, PRAYER_COLORS, PRAYER_IMAGES, CURRENT_VERSION } from './shared/constants';
-import { getCurrentTimeStr, formatDate, isTimePassed, getLocalDateStr, getYesterdayDateStr, isLate, calculateDelay } from './shared/utils/helpers';
+import { getCurrentTimeStr, formatDate, isTimePassed, getLocalDateStr, getYesterdayDateStr, isLate, calculateDelay, addMinutesToTime } from './shared/utils/helpers';
 import { searchLocations } from './features/prayer/services/prayerService';
 import { Button } from './shared/components/ui/Button';
 
@@ -65,7 +65,8 @@ const App: React.FC = () => {
   const { user, setUser, logout, initGoogle, isGoogleReady } = useAuth();
   const {
     themeMode, cycleTheme, showPrayerBg, setShowPrayerBg, prayerBgOpacity, setPrayerBgOpacity,
-    locationHistory, getCurrentSettings, restoreSettings, addToHistory, language, setLanguage
+    locationHistory, getCurrentSettings, restoreSettings, addToHistory, language, setLanguage,
+    prayerTimeCorrection, setPrayerTimeCorrection
   } = useSettings();
   const {
     schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule
@@ -145,6 +146,31 @@ const App: React.FC = () => {
 
   const totalPages = Math.ceil(filteredHistoryLogs.length / ITEMS_PER_PAGE);
   const currentHistoryLogs = filteredHistoryLogs.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  // Correction Logic
+  const applyCorrection = useCallback((s: DailySchedule | null) => {
+    if (!s) return null;
+    const globalOffset = prayerTimeCorrection.global;
+
+    const newPrayers = s.prayers.map(p => {
+      let exactOffset = globalOffset;
+      if (p.name === 'Subuh') exactOffset += prayerTimeCorrection.fajr;
+      if (p.name === 'Dzuhur') exactOffset += prayerTimeCorrection.dhuhr;
+      if (p.name === 'Ashar') exactOffset += prayerTimeCorrection.asr;
+      if (p.name === 'Maghrib') exactOffset += prayerTimeCorrection.maghrib;
+      if (p.name === 'Isya') exactOffset += prayerTimeCorrection.isha;
+
+      return {
+        ...p,
+        time: addMinutesToTime(p.time, exactOffset)
+      };
+    });
+
+    return { ...s, prayers: newPrayers };
+  }, [prayerTimeCorrection]);
+
+  const adjustedSchedule = useMemo(() => applyCorrection(schedule), [schedule, applyCorrection]);
+  const adjustedYesterdaySchedule = useMemo(() => applyCorrection(yesterdaySchedule), [yesterdaySchedule, applyCorrection]);
 
   // Sync active tab to localStorage
   useEffect(() => {
@@ -535,9 +561,9 @@ const App: React.FC = () => {
                   <span className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-[10px] lg:text-xs font-bold text-slate-600 dark:text-slate-400 shadow-sm w-fit">
                     <Calendar className="w-3 h-3 lg:w-3.5 lg:h-3.5 text-emerald-600" /> {formatDate(selectedDate, language === 'id' ? 'id-ID' : 'en-US')}
                   </span>
-                  {activeTab === 'tracker' && (isFlashbackMode ? yesterdaySchedule : schedule) && (
+                  {activeTab === 'tracker' && (isFlashbackMode ? adjustedYesterdaySchedule : adjustedSchedule) && (
                     <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 rounded-full text-[10px] lg:text-xs font-bold text-emerald-700 dark:text-emerald-400 shadow-sm w-fit animate-in fade-in slide-in-from-left-2 duration-500">
-                      <Info className="w-3 h-3 text-emerald-600" /> {(isFlashbackMode ? yesterdaySchedule : schedule)?.sources?.[0]?.title || 'Kemenag RI'}
+                      <Info className="w-3 h-3 text-emerald-600" /> {(isFlashbackMode ? adjustedYesterdaySchedule : adjustedSchedule)?.sources?.[0]?.title || 'Kemenag RI'}
                     </div>
                   )}
                 </div>
@@ -581,9 +607,9 @@ const App: React.FC = () => {
             <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2 lg:gap-3 w-full lg:w-auto">
               {activeTab === 'tracker' && (
                 <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
-                  <button onClick={() => setIsSearching(!isSearching)} className="flex-1 lg:flex-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden min-w-0">
+                  <button onClick={() => setIsSearching(!isSearching)} className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden min-w-0">
                     <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1 lg:max-w-[150px]">{schedule?.location || t.tracker.searchLocation}</span>
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1">{adjustedSchedule?.location || t.tracker.searchLocation}</span>
                     <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isSearching ? 'rotate-90' : ''}`} />
                   </button>
                   <Button variant="ghost" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0" onClick={() => getSchedule()} isLoading={isLoading && !isSearching}>
@@ -608,7 +634,7 @@ const App: React.FC = () => {
             <div className="space-y-6 lg:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
               {isSearching && (
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-xl animate-in zoom-in-95 duration-300 relative z-40">
-                  <div className="relative group max-w-sm">
+                  <div className="relative group">
                     <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                       <Search className={`w-4 h-4 ${isSearching ? 'text-emerald-500 animate-pulse' : 'text-slate-400'}`} />
                     </div>
@@ -705,7 +731,7 @@ const App: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {PRAYER_ORDER.map((name) => {
-                  const activeSchedule = isFlashbackMode ? yesterdaySchedule : schedule;
+                  const activeSchedule = isFlashbackMode ? adjustedYesterdaySchedule : adjustedSchedule;
                   const prayer = activeSchedule?.prayers.find(p => p.name === name);
                   const loggedToday = logs.find(l => l.date === selectedDate && l.prayerName === name);
                   const isPassed = isFlashbackMode ? true : (prayer ? isTimePassed(prayer.time, currentDate) : false);
@@ -762,9 +788,9 @@ const App: React.FC = () => {
 
               {/* Use schedule.hijri or fallback to calculating it locally */}
               {(() => {
-                const effectiveHijri = (isFlashbackMode && yesterdaySchedule?.hijri)
-                  ? yesterdaySchedule.hijri
-                  : (schedule?.hijri && !isFlashbackMode ? schedule.hijri : getHijriDate(new Date(selectedDate)));
+                const effectiveHijri = (isFlashbackMode && adjustedYesterdaySchedule?.hijri)
+                  ? adjustedYesterdaySchedule.hijri
+                  : (adjustedSchedule?.hijri && !isFlashbackMode ? adjustedSchedule.hijri : getHijriDate(new Date(selectedDate)));
 
                 return (
                   <>
@@ -777,7 +803,7 @@ const App: React.FC = () => {
           )}
 
           {/* Dashboard Tab Content */}
-          {activeTab === 'dashboard' && <Dashboard logs={logs} fastingLogs={fastingLogs} dzikirLogs={dzikirLogs} hijriDate={schedule?.hijri} />}
+          {activeTab === 'dashboard' && <Dashboard logs={logs} fastingLogs={fastingLogs} dzikirLogs={dzikirLogs} hijriDate={adjustedSchedule?.hijri} />}
 
 
           {/* History Tab Content */}
@@ -905,6 +931,8 @@ const App: React.FC = () => {
               themeMode={themeMode}
               showPrayerBg={showPrayerBg}
               prayerBgOpacity={prayerBgOpacity}
+              prayerTimeCorrection={prayerTimeCorrection}
+              onCorrectionChange={setPrayerTimeCorrection}
               onUpload={handleUpload}
               onDownload={handleDownload}
               onRevert={handleRevert}

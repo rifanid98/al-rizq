@@ -46,11 +46,19 @@ export const en = {
             subtitle: "Customize Interface",
             theme: "Theme",
             changeTheme: "Change",
-            background: "Prayer Background",
+            background: "Background", // Modified from "Prayer Background"
+            bgDescription: "Show prayer time background", // New key
             backgroundSubtitle: "Show thematic images",
             opacity: "Opacity",
             clear: "Clear",
             overlay: "Overlay"
+        },
+        correction: { // New section
+            title: 'Prayer Time Correction',
+            description: 'Manually adjust prayer times if they differ from your local mosque.',
+            global: 'Global Offset (All Prayers)',
+            individual: 'Individual Correction',
+            minutes: 'Minutes'
         },
         themes: {
             light: "Light",

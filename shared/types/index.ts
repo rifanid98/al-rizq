@@ -73,6 +73,14 @@ export interface AppSettings {
   language: Language;
   nadzarConfig?: any;
   qadhaConfig?: any;
+  prayerTimeCorrection?: {
+    global: number;
+    fajr: number;
+    dhuhr: number;
+    asr: number;
+    maghrib: number;
+    isha: number;
+  };
 }
 
 export interface AppState {

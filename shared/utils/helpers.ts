@@ -112,3 +112,13 @@ export const setCache = (key: string, data: any) => {
   const expiry = Date.now() + CACHE_EXPIRY;
   localStorage.setItem(CACHE_PREFIX + key, JSON.stringify({ data, expiry }));
 };
+
+export const addMinutesToTime = (timeStr: string, minutes: number): string => {
+  const [h, m] = timeStr.split(':').map(Number);
+  const date = new Date(); // Use today to avoid date component issues, we only care about time wrapping
+  date.setHours(h);
+  date.setMinutes(m + minutes);
+  const newH = String(date.getHours()).padStart(2, '0');
+  const newM = String(date.getMinutes()).padStart(2, '0');
+  return `${newH}:${newM}`;
+};

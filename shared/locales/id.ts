@@ -42,9 +42,19 @@ export const id = {
         title: "Pengaturan",
         profile: "Profil Pengguna",
         appearance: {
-            title: "Penampilan",
-            subtitle: "Kustomisasi Antarmuka",
-            theme: "Tema",
+            title: 'Tampilan',
+            bgDescription: 'Tampilkan background waktu sholat',
+            background: 'Background',
+            opacity: 'Opasitas'
+        },
+        correction: {
+            title: 'Koreksi Waktu Sholat',
+            description: 'Sesuaikan waktu sholat secara manual jika berbeda dengan masjid setempat.',
+            global: 'Offset Global (Semua Sholat)',
+            individual: 'Koreksi Per-Sholat',
+            minutes: 'Menit'
+        },
+        data: {
             changeTheme: "Ganti",
             background: "Background Sholat",
             backgroundSubtitle: "Tampilkan gambar tematik",

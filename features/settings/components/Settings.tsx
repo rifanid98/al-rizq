@@ -17,7 +17,8 @@ import {
     Globe,
     Bell,
     Trash2,
-    Loader2
+    Loader2,
+    LayoutGrid
 } from 'lucide-react';
 import { Button } from '../../../shared/components/ui/Button';
 import { PrayerLog, AppSettings, UserProfile, FastingLog } from '../../../shared/types';
@@ -41,6 +42,8 @@ interface SettingsProps {
     onCycleTheme: () => void;
     onToggleBg: () => void;
     onOpacityChange: (val: number) => void;
+    prayerTimeCorrection: Required<AppSettings['prayerTimeCorrection']>;
+    onCorrectionChange: (newCorrection: Required<AppSettings['prayerTimeCorrection']>) => void;
     getCurrentSettings: () => AppSettings;
     setLogs: (logs: PrayerLog[]) => void;
     restoreSettings: (s: AppSettings) => void;
@@ -64,6 +67,8 @@ export const Settings: React.FC<SettingsProps> = ({
     onCycleTheme,
     onToggleBg,
     onOpacityChange,
+    prayerTimeCorrection,
+    onCorrectionChange,
     getCurrentSettings,
     setLogs,
     restoreSettings,
@@ -71,6 +76,7 @@ export const Settings: React.FC<SettingsProps> = ({
     onClearData
 }) => {
     const { t, language, setLanguage } = useLanguage();
+    const [showIndividualCorrection, setShowIndividualCorrection] = React.useState(false);
 
     return (
         <div className="space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -300,49 +306,149 @@ export const Settings: React.FC<SettingsProps> = ({
                         </div>
                     </div>
                 </section>
+
+                {/* Prayer Time Correction Section */}
+                <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-950/50 rounded-2xl flex items-center justify-center text-blue-600">
+                            <img src="https://img.icons8.com/?size=100&id=10255&format=png&color=2563EB" className="w-6 h-6" alt="Clock" />
+                        </div>
+                        <div>
+                            <h4 className="text-lg font-black text-slate-800 dark:text-slate-100">{t.settings.correction.title}</h4>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">{t.settings.correction.description}</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6 flex-1">
+                        {/* Global Offset */}
+                        <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-sm font-black text-slate-700 dark:text-slate-200">{t.settings.correction.global}</span>
+                                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-lg">
+                                    {prayerTimeCorrection.global > 0 ? '+' : ''}{prayerTimeCorrection.global} {t.settings.correction.minutes}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => onCorrectionChange({ ...prayerTimeCorrection, global: Math.max(-30, prayerTimeCorrection.global - 1) })}
+                                    className="w-8 h-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold transition-colors"
+                                >-</button>
+                                <input
+                                    type="range" min="-30" max="30" step="1"
+                                    value={prayerTimeCorrection.global}
+                                    onChange={(e) => onCorrectionChange({ ...prayerTimeCorrection, global: parseInt(e.target.value) })}
+                                    className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                                />
+                                <button
+                                    onClick={() => onCorrectionChange({ ...prayerTimeCorrection, global: Math.min(30, prayerTimeCorrection.global + 1) })}
+                                    className="w-8 h-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold transition-colors"
+                                >+</button>
+                            </div>
+                            <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 px-1">
+                                <span>-30</span>
+                                <span>0</span>
+                                <span>+30</span>
+                            </div>
+                        </div>
+
+                        {/* Individual Offsets (Accordion style) */}
+                        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden transition-all">
+                            <button
+                                onClick={() => setShowIndividualCorrection(!showIndividualCorrection)}
+                                className="w-full flex items-center justify-between p-4 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
+                            >
+                                <div className="flex flex-col items-start">
+                                    <span className="text-sm font-black text-slate-700 dark:text-slate-200">{t.settings.correction.individual}</span>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                        {showIndividualCorrection ? t.common.hide : t.common.show}
+                                    </span>
+                                </div>
+                                <ChevronRight className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${showIndividualCorrection ? 'rotate-90' : ''}`} />
+                            </button>
+
+                            {showIndividualCorrection && (
+                                <div className="p-4 pt-0 animate-in slide-in-from-top-2 duration-300">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-2">
+                                        {(['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'] as const).map((p) => (
+                                            <div key={p} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between">
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 capitalize">{t.tracker.prayerNames[p === 'subuh' ? 'Subuh' : p === 'dzuhur' ? 'Dzuhur' : p === 'ashar' ? 'Ashar' : p === 'maghrib' ? 'Maghrib' : 'Isya']}</span>
+                                                    <span className="text-[10px] text-slate-400">{prayerTimeCorrection[p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p] > 0 ? '+' : ''}{prayerTimeCorrection[p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p]} min</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <button
+                                                        onClick={() => onCorrectionChange({ ...prayerTimeCorrection, [p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p]: (prayerTimeCorrection[p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p] as number) - 1 })}
+                                                        className="w-6 h-6 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold"
+                                                    >-</button>
+                                                    <button
+                                                        onClick={() => onCorrectionChange({ ...prayerTimeCorrection, [p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p]: (prayerTimeCorrection[p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p] as number) + 1 })}
+                                                        className="w-6 h-6 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold"
+                                                    >+</button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Additional Links/Info */}
+                <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center group">
+                    <div className="flex lg:hidden lg:group-[:nth-child(even):last-child]:flex items-center gap-4 mb-8">
+                        <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-950/50 rounded-2xl flex items-center justify-center text-indigo-600">
+                            <LayoutGrid className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h4 className="text-lg font-black text-slate-800 dark:text-slate-100">Miscellaneous</h4>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">Other Settings</p>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-6">
+                        <div
+                            onClick={() => setLanguage(language === 'id' ? 'en' : 'id')}
+                            className="flex items-center gap-4 group cursor-pointer"
+                        >
+                            <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-emerald-500 transition-colors">
+                                <Globe className="w-6 h-6" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-base font-black text-slate-700 dark:text-slate-200">{t.settings.language.title}</p>
+                                <p className="text-xs font-bold text-slate-400">{language === 'id' ? t.settings.language.id : t.settings.language.en}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest px-2 py-1 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">{t.common.change}</span>
+                                <ChevronRight className="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform" />
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-4 group cursor-pointer">
+                            <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-emerald-500 transition-colors">
+                                <Bell className="w-6 h-6" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-base font-black text-slate-700 dark:text-slate-200">{t.settings.additional.notifications}</p>
+                                <p className="text-xs font-bold text-slate-400">{t.settings.additional.notificationsSubtitle}</p>
+                            </div>
+                            <ChevronRight className="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform" />
+                        </div>
+
+                        <div className="flex items-center gap-4 group cursor-pointer">
+                            <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-emerald-500 transition-colors">
+                                <ShieldCheck className="w-6 h-6" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-base font-black text-slate-700 dark:text-slate-200">{t.settings.additional.privacy}</p>
+                                <p className="text-xs font-bold text-slate-400">{t.settings.additional.privacySubtitle}</p>
+                            </div>
+                            <ChevronRight className="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                    </div>
+                </section>
             </div>
 
-            {/* Additional Links/Info */}
-            <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div
-                        onClick={() => setLanguage(language === 'id' ? 'en' : 'id')}
-                        className="flex items-center gap-4 group cursor-pointer"
-                    >
-                        <div className="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-emerald-500 transition-colors">
-                            <Globe className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1">
-                            <p className="text-sm font-black text-slate-700 dark:text-slate-200">{t.settings.language.title}</p>
-                            <p className="text-[10px] font-bold text-slate-400">{language === 'id' ? t.settings.language.id : t.settings.language.en}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest px-2 py-1 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">{t.common.change}</span>
-                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-4 group cursor-pointer">
-                        <div className="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-emerald-500 transition-colors">
-                            <Bell className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1">
-                            <p className="text-sm font-black text-slate-700 dark:text-slate-200">{t.settings.additional.notifications}</p>
-                            <p className="text-[10px] font-bold text-slate-400">{t.settings.additional.notificationsSubtitle}</p>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                    <div className="flex items-center gap-4 group cursor-pointer">
-                        <div className="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-emerald-500 transition-colors">
-                            <ShieldCheck className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1">
-                            <p className="text-sm font-black text-slate-700 dark:text-slate-200">{t.settings.additional.privacy}</p>
-                            <p className="text-[10px] font-bold text-slate-400">{t.settings.additional.privacySubtitle}</p>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                </div>
-            </section>
 
             {/* Danger Zone */}
             <section className="bg-rose-50 dark:bg-rose-950/10 rounded-[2.5rem] p-6 border border-rose-100 dark:border-rose-900/30 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
