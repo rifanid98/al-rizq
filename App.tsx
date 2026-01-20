@@ -25,7 +25,8 @@ import {
   CloudRain,
   SunMedium,
   Settings as SettingsIcon,
-  UtensilsCrossed
+  UtensilsCrossed,
+  Star
 } from 'lucide-react';
 
 // Shared
@@ -41,6 +42,7 @@ import { useSettings } from './features/settings/hooks/useSettings';
 import { usePrayerSchedule } from './features/prayer/hooks/usePrayerSchedule';
 import { usePrayerLogs } from './features/prayer/hooks/usePrayerLogs';
 import { useFastingLogs } from './features/fasting/hooks/useFastingLogs';
+import { useDzikir } from './features/dzikir/hooks/useDzikir';
 import { useSync } from './features/sync/hooks/useSync';
 
 import { AuthStatus } from './features/auth/components/AuthStatus';
@@ -56,6 +58,7 @@ import { FastingTracker } from './features/fasting/components/FastingTracker';
 import { FastingStats } from './features/fasting/components/FastingStats';
 import { getHijriDate } from './features/fasting/services/fastingService';
 import { Mosque } from './shared/components/icons/Mosque';
+import { DzikirTracker } from './features/dzikir/components/DzikirTracker';
 
 const App: React.FC = () => {
   // Hooks
@@ -69,10 +72,11 @@ const App: React.FC = () => {
   } = usePrayerSchedule();
   const { logs, setLogs, logPrayer, deleteLog, clearLogs: clearPrayerLogs } = usePrayerLogs();
   const { fastingLogs, clearFastingLogs } = useFastingLogs();
+  const { logs: dzikirLogs } = useDzikir();
   const { isSyncing, handleUpload, handleDownload, hasBackup, handleRevert } = useSync(user?.email);
 
   // Local States
-  const [activeTab, setActiveTab] = useState<'tracker' | 'fasting' | 'dashboard' | 'history' | 'settings'>(() => {
+  const [activeTab, setActiveTab] = useState<'tracker' | 'fasting' | 'dzikir' | 'dashboard' | 'history' | 'settings'>(() => {
     return (localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) as any) || 'tracker';
   });
   const [isSearching, setIsSearching] = useState(false);
@@ -401,10 +405,11 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex lg:flex-col lg:w-full gap-1 w-full justify-around lg:justify-start">
-            {['tracker', 'fasting', 'dashboard', 'history', 'settings'].map((tab) => (
+            {['tracker', 'fasting', 'dzikir', 'dashboard', 'history', 'settings'].map((tab) => (
               <button key={tab} onClick={() => setActiveTab(tab as any)} className={`flex flex-col lg:flex-row items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-xl transition-all ${activeTab === tab ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
                 {tab === 'tracker' && <Mosque className="w-5 h-5 lg:w-6 lg:h-6" />}
                 {tab === 'fasting' && <UtensilsCrossed className="w-5 h-5 lg:w-6 lg:h-6" />}
+                {tab === 'dzikir' && <Star className="w-5 h-5 lg:w-6 lg:h-6" />}
                 {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5 lg:w-6 lg:h-6" />}
                 {tab === 'history' && <HistoryIcon className="w-5 h-5 lg:w-6 lg:h-6" />}
                 {tab === 'settings' && <SettingsIcon className="w-5 h-5 lg:w-6 lg:h-6" />}
@@ -455,7 +460,7 @@ const App: React.FC = () => {
             <div className="flex justify-between items-start flex-1">
               <div>
                 <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
-                  {activeTab === 'tracker' ? t.tracker.title : activeTab === 'fasting' ? t.tabs.fasting : activeTab === 'dashboard' ? t.tabs.dashboard : activeTab === 'history' ? t.tabs.history : t.tabs.settings}
+                  {activeTab === 'tracker' ? t.tracker.title : activeTab === 'fasting' ? t.tabs.fasting : activeTab === 'dzikir' ? t.tabs.dzikir : activeTab === 'dashboard' ? t.tabs.dashboard : activeTab === 'history' ? t.tabs.history : t.tabs.settings}
                 </h2>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-3">
                   <span className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-[10px] lg:text-xs font-bold text-slate-600 dark:text-slate-400 shadow-sm w-fit">
@@ -521,6 +526,13 @@ const App: React.FC = () => {
 
             </div>
           </header>
+
+          {/* Dzikir Tab Content */}
+          {activeTab === 'dzikir' && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <DzikirTracker />
+            </div>
+          )}
 
           {/* Tracker Tab Content */}
           {activeTab === 'tracker' && (
@@ -696,7 +708,7 @@ const App: React.FC = () => {
           )}
 
           {/* Dashboard Tab Content */}
-          {activeTab === 'dashboard' && <Dashboard logs={logs} fastingLogs={fastingLogs} hijriDate={schedule?.hijri} />}
+          {activeTab === 'dashboard' && <Dashboard logs={logs} fastingLogs={fastingLogs} dzikirLogs={dzikirLogs} hijriDate={schedule?.hijri} />}
 
 
           {/* History Tab Content */}

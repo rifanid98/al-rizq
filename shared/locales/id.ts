@@ -35,7 +35,8 @@ export const id = {
         fasting: "Puasa",
         dashboard: "Statistik",
         history: "Riwayat",
-        settings: "Pengaturan"
+        settings: "Pengaturan",
+        dzikir: "Dzikir"
     },
     settings: {
         title: "Pengaturan",
@@ -200,7 +201,7 @@ export const id = {
     },
     fasting: {
         title: "Jadwal Puasa",
-        statsTitle: "Statistik Puasa",
+        statsTitle: "Puasa",
         today: "Hari Ini",
         upcoming: "Akan Datang",
         types: {

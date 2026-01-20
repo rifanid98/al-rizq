@@ -85,3 +85,30 @@ export interface AppState {
   isSyncing: boolean;
   settings: AppSettings;
 }
+
+export interface DzikirItem {
+  id: string;
+  title: string;
+  arabic: string;
+  transliteration?: string;
+  translation: string;
+  count: number;
+  note?: string;
+  source?: string;
+}
+
+export interface DzikirCategory {
+  id: string; // 'pagi', 'petang', 'custom'
+  title: string;
+  description?: string;
+  items: DzikirItem[];
+}
+
+export interface DzikirLog {
+  id: string;
+  date: string; // YYYY-MM-DD
+  categoryId: string;
+  completedItems: string[]; // Array of DzikirItem IDs
+  isCompleted: boolean;
+  timestamp: number;
+}

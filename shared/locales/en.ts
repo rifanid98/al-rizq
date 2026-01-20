@@ -35,7 +35,8 @@ export const en = {
         fasting: "Fasting",
         dashboard: "Dashboard",
         history: "History",
-        settings: "Settings"
+        settings: "Settings",
+        dzikir: "Dhikr"
     },
     settings: {
         title: "Settings",
@@ -198,7 +199,7 @@ export const en = {
     },
     fasting: {
         title: "Fasting Schedule",
-        statsTitle: "Fasting Statistics",
+        statsTitle: "Fasting",
         today: "Today",
         upcoming: "Upcoming",
         types: {
