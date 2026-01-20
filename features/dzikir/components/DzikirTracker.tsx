@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useDzikir } from '../hooks/useDzikir';
-import { Check, Sun, Moon, List, ChevronDown } from 'lucide-react';
+import { Check, Sun, Moon, List, ChevronDown, Maximize2, Minimize2, CheckCircle, ArrowDown, ChevronsUp, ChevronsDown } from 'lucide-react';
 import { getLocalDateStr } from '../../../shared/utils/helpers';
 
 export const DzikirTracker: React.FC = () => {
@@ -9,11 +9,68 @@ export const DzikirTracker: React.FC = () => {
 
     const [activeCategoryId, setActiveCategoryId] = useState<string>(getSuggestedCategory());
     const [expandedItems, setExpandedItems] = useState<string[]>([]);
+    const [showScrollBtn, setShowScrollBtn] = useState(false);
+    const bottomRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        const handleScroll = () => {
+            const scrollHeight = document.documentElement.scrollHeight;
+            const clientHeight = document.documentElement.clientHeight;
+            const isScrollable = scrollHeight > clientHeight + 100;
+
+            if (!bottomRef.current) {
+                setShowScrollBtn(false);
+                return;
+            }
+
+            const rect = bottomRef.current.getBoundingClientRect();
+            // Hide button when the bottom of the page is visible within viewport
+            const hasReachedBottom = rect.top < window.innerHeight + 100;
+
+            setShowScrollBtn(isScrollable && !hasReachedBottom);
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('resize', handleScroll);
+
+        // Check initially
+        const timer = setTimeout(handleScroll, 200);
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', handleScroll);
+            clearTimeout(timer);
+        };
+    }, [activeCategoryId]);
 
     const toggleExpansion = (id: string) => {
         setExpandedItems(prev =>
             prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
         );
+    };
+
+    const toggleAllExpansion = () => {
+        if (expandedItems.length === list.length) {
+            setExpandedItems([]);
+        } else {
+            setExpandedItems(list.map(i => i.id));
+        }
+    };
+
+    const scrollToLatestMarked = () => {
+        if (completedItems.length === 0) return;
+
+        // Find the last completed item based on the list order
+        const lastMarkedItem = [...list].reverse().find(item => completedItems.includes(item.id));
+
+        if (lastMarkedItem) {
+            const element = document.getElementById(`dzikir-item-${lastMarkedItem.id}`);
+            element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    };
+
+    const scrollToBottom = () => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     };
 
     // Safety check if suggested category doesn't exist (though it should)
@@ -101,6 +158,7 @@ export const DzikirTracker: React.FC = () => {
                     return (
                         <div
                             key={item.id}
+                            id={`dzikir-item-${item.id}`}
                             className={`group relative overflow-hidden rounded-2xl border transition-all duration-200 ${isChecked
                                 ? 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-900/30'
                                 : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
@@ -158,6 +216,42 @@ export const DzikirTracker: React.FC = () => {
                     Belum ada item dzikir untuk kategori ini.
                 </div>
             )}
+            {/* Floating Action Buttons */}
+            {/* Floating Action Buttons */}
+            <div className="fixed bottom-28 lg:bottom-10 right-6 lg:right-10 flex flex-col gap-3 z-50">
+                {/* Expand/Collapse All */}
+                <button
+                    onClick={toggleAllExpansion}
+                    className="w-12 h-12 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
+                    title={expandedItems.length === list.length ? "Collapse All" : "Expand All"}
+                >
+                    {expandedItems.length === list.length ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+                </button>
+
+                {/* Scroll to Latest Marked */}
+                {completedItems.length > 0 && (
+                    <button
+                        onClick={scrollToLatestMarked}
+                        className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-full shadow-lg border border-emerald-200 dark:border-emerald-800 flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
+                        title="Scroll to Latest Marked"
+                    >
+                        <CheckCircle className="w-5 h-5" />
+                    </button>
+                )}
+
+                {/* Scroll to Bottom */}
+                <button
+                    onClick={scrollToBottom}
+                    className={`w-12 h-12 bg-emerald-600 dark:bg-emerald-500 text-white rounded-full shadow-2xl shadow-emerald-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all ${showScrollBtn ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'
+                        }`}
+                    title="Scroll to Bottom"
+                >
+                    <ChevronDown className="w-6 h-6" />
+                </button>
+            </div>
+
+            {/* Sentinel for bottom detection */}
+            <div ref={bottomRef} className="h-24 lg:h-10" />
         </div>
     );
 };
