@@ -28,7 +28,14 @@ export const id = {
         prayer: "Sholat",
         statusLabel: "Status",
         change: "Ubah",
-        confirmDeleteAll: "Apakah Anda yakin ingin menghapus semua riwayat? Tindakan ini tidak dapat dibatalkan."
+        menu: "Menu",
+        confirmDeleteAll: "Apakah Anda yakin ingin menghapus semua riwayat? Tindakan ini tidak dapat dibatalkan.",
+        errors: {
+            geolocationDenied: "Izin lokasi ditolak. Silakan cari lokasi secara manual.",
+            locationUnavailable: "Lokasi tidak tersedia.",
+            timeout: "Waktu pengambilan lokasi habis."
+        },
+        trackerCategory: "Ibadah Tracker"
     },
     tabs: {
         tracker: "Sholat",
@@ -43,9 +50,15 @@ export const id = {
         profile: "Profil Pengguna",
         appearance: {
             title: 'Tampilan',
-            bgDescription: 'Tampilkan background waktu sholat',
+            subtitle: 'Kustomisasi Antarmuka',
+            theme: 'Tema',
+            changeTheme: 'Ganti',
             background: 'Background',
-            opacity: 'Opasitas'
+            bgDescription: 'Tampilkan background waktu sholat',
+            backgroundSubtitle: 'Tampilkan gambar tematik',
+            opacity: 'Opasitas',
+            clear: 'Terang',
+            overlay: 'Overlay'
         },
         correction: {
             title: 'Koreksi Waktu Sholat',
@@ -53,14 +66,6 @@ export const id = {
             global: 'Offset Global (Semua Sholat)',
             individual: 'Koreksi Per-Sholat',
             minutes: 'Menit'
-        },
-        data: {
-            changeTheme: "Ganti",
-            background: "Background Sholat",
-            backgroundSubtitle: "Tampilkan gambar tematik",
-            opacity: "Opacity",
-            clear: "Terang",
-            overlay: "Gelap"
         },
         themes: {
             light: "Terang",
@@ -92,11 +97,20 @@ export const id = {
             en: "English"
         },
         additional: {
+            title: "Lain-lain",
+            subtitle: "Pengaturan Lainnya",
             notifications: "Notifikasi",
             notificationsSubtitle: "Aktif (Kemenag Source)",
             privacy: "Privasi",
             privacySubtitle: "Data Lokal & Cloud Sync"
         }
+    },
+    dzikir: {
+        title: "Dzikir",
+        morning: "Pagi",
+        evening: "Petang",
+        morningDesc: "Dibaca setelah sholat Subuh hingga terbit matahari",
+        eveningDesc: "Dibaca setelah sholat Ashar hingga terbenam matahari",
     },
     tracker: {
         title: "Sholat",
@@ -245,6 +259,55 @@ export const id = {
             streak: "Streak"
         },
         distribution: "Distribusi Puasa",
-        history: "Riwayat Bulanan"
+        history: "Riwayat Bulanan",
+        config: {
+            title: "Pengaturan Puasa",
+            nadzar: "Nadzar",
+            qadha: "Qadha / Hutang",
+            computeAs: "Hitung sebagai {type} jika:",
+            specialDays: "Hari-hari tertentu:",
+            specialDates: "Tanggal Khusus:",
+            resetTab: "Reset Tab Ini",
+            saveConfig: "Simpan {type}",
+            selectedDates: "{count} tanggal dipilih",
+            selectOnCalendar: "Pilih tanggal di kalender"
+        },
+        days: {
+            sun: "Ahad",
+            mon: "SEN",
+            tue: "SEL",
+            wed: "RAB",
+            thu: "KAM",
+            fri: "JUM",
+            sat: "SAB"
+        },
+        months: {
+            jan: "Januari",
+            feb: "Februari",
+            mar: "Maret",
+            apr: "April",
+            may: "Mei",
+            jun: "Juni",
+            jul: "Juli",
+            aug: "Agustus",
+            sep: "September",
+            oct: "Oktober",
+            nov: "November",
+            dec: "Desember"
+        },
+        hijriMonths: {
+            1: "Muharram",
+            2: "Safar",
+            3: "Rabi'ul Awal",
+            4: "Rabi'ul Akhir",
+            5: "Jumadil Awal",
+            6: "Jumadil Akhir",
+            7: "Rajab",
+            8: "Sya'ban",
+            9: "Ramadhan",
+            10: "Syawal",
+            11: "Dzulkaidah",
+            12: "Dzulhijjah"
+        }
     }
 };

@@ -23,7 +23,7 @@ interface FastingStatsProps {
 }
 
 export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal = false }) => {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const { getLogStats, fastingLogs } = useFastingLogs();
     const stats = getLogStats();
 
@@ -177,12 +177,12 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
                         <CalendarIcon className="w-4 h-4 text-emerald-500" />
                         {t.fasting.history}
                     </h4>
-                    <span className="text-xs font-bold text-slate-400">{new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' })}</span>
+                    <span className="text-xs font-bold text-slate-400">{new Date().toLocaleString(language === 'id' ? 'id-ID' : 'en-US', { month: 'long', year: 'numeric' })}</span>
                 </div>
 
                 <div className="grid grid-cols-7 gap-2 mb-4">
-                    {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((d, i) => (
-                        <div key={i} className="text-center text-xs font-bold text-slate-400 uppercase tracking-wider">{d}</div>
+                    {[t.fasting.days.mon, t.fasting.days.tue, t.fasting.days.wed, t.fasting.days.thu, t.fasting.days.fri, t.fasting.days.sat, t.fasting.days.sun].map((d, i) => (
+                        <div key={i} className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">{d}</div>
                     ))}
                 </div>
 
