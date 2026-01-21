@@ -122,10 +122,10 @@ export const id = {
         },
         execution: {
             title: "Pelaksanaan",
-            atMosque: "Di Masjid",
-            atHome: "Di Rumah",
-            jamaah: "Berjamaah",
-            munfarid: "Sendirian"
+            atMosque: "Masjid",
+            atHome: "Rumah",
+            jamaah: "Jama'ah",
+            munfarid: "Munfarid"
         },
         status: {
             ontime: "Tepat Waktu",

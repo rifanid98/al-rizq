@@ -118,10 +118,10 @@ export const en = {
         },
         execution: {
             title: "Execution",
-            atMosque: "At Mosque",
-            atHome: "At Home",
-            jamaah: "Jamaah",
-            munfarid: "Individual"
+            atMosque: "Mosque",
+            atHome: "Home",
+            jamaah: "Jama'ah",
+            munfarid: "Munfarid"
         },
         status: {
             ontime: "On Time",
