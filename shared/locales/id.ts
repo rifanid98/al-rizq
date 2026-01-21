@@ -99,7 +99,7 @@ export const id = {
         }
     },
     tracker: {
-        title: "Jadwal Sholat",
+        title: "Sholat",
         location: "Lokasi",
         searchLocation: "Cari lokasi...",
         locationHistory: "Riwayat Lokasi",

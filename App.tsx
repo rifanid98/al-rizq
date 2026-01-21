@@ -80,6 +80,35 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'tracker' | 'fasting' | 'dzikir' | 'dashboard' | 'history' | 'settings'>(() => {
     return (localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) as any) || 'tracker';
   });
+
+  // Independent scroll position management
+  const scrollPositions = useRef<Record<string, number>>({});
+
+  // Save scroll position before changing tabs
+  useEffect(() => {
+    const handleScroll = () => {
+      if (['tracker', 'fasting', 'dzikir'].includes(activeTab)) {
+        scrollPositions.current[activeTab] = window.scrollY;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeTab]);
+
+  // Restore scroll position when tab changes
+  useEffect(() => {
+    if (['tracker', 'fasting', 'dzikir'].includes(activeTab)) {
+      const savedPosition = scrollPositions.current[activeTab] || 0;
+      // Immediate restoration
+      window.scrollTo(0, savedPosition);
+      // Fallback restoration for slower renders
+      requestAnimationFrame(() => window.scrollTo(0, savedPosition));
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [activeTab]);
+
   const [isSearching, setIsSearching] = useState(false);
   const [isTrackerMenuOpen, setIsTrackerMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -425,9 +454,7 @@ const App: React.FC = () => {
         {/* Sidebar for Desktop, Bottom Nav for Mobile */}
         <nav className="fixed bottom-0 left-0 right-0 z-[100] lg:sticky lg:top-0 lg:w-72 lg:h-screen lg:z-50 bg-white dark:bg-slate-900 border-t lg:border-t-0 lg:border-r border-slate-100 dark:border-slate-800 p-6 lg:p-6 flex flex-col items-center gap-8 lg:relative rounded-t-[2.5rem] lg:rounded-none shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.15)] lg:shadow-none">
           <div className="hidden lg:flex items-center gap-3 self-start px-2">
-            <div className="w-10 h-10 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-600/20">
-              <span className="text-white font-black text-xl">R</span>
-            </div>
+            <img src="/favicon.png" alt="Al-Rizq Logo" className="w-10 h-10 rounded-2xl" />
             <h1 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">AL-RIZQ <span className="text-emerald-600">APP</span></h1>
           </div>
 

@@ -95,7 +95,7 @@ export const en = {
         }
     },
     tracker: {
-        title: "Prayer Schedule",
+        title: "Prayer",
         location: "Location",
         searchLocation: "Search location...",
         locationHistory: "Location History",
