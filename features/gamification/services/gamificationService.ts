@@ -18,21 +18,21 @@ export const calculatePrayerPoints = (log: PrayerLog, config: GamificationConfig
     // Ideally standardize, but we'll check broadly.
     const isOnTime = log.status === 'Tepat Waktu' || (log as any).status === 'Ontime';
 
-    if (isMosque) points += p.mosque;
-    if (isJamaah) points += p.jamaah;
-    if (isNoMasbuq) points += p.noMasbuq;
-    if (isOnTime) points += p.onTime;
+    if (isMosque) points += (p.mosque || 0);
+    if (isJamaah) points += (p.jamaah || 0);
+    if (isNoMasbuq) points += (p.noMasbuq || 0);
+    if (isOnTime) points += (p.onTime || 0);
 
     // Sunnah & Complementary
-    if (log.hasQobliyah) points += p.qobliyah;
-    if (log.hasBadiyah) points += p.badiyah;
-    if (log.hasDzikir) points += p.dzikir;
-    if (log.hasDua) points += p.dua;
+    if (log.hasQobliyah) points += (p.qobliyah || 0);
+    if (log.hasBadiyah) points += (p.badiyah || 0);
+    if (log.hasDzikir) points += (p.dzikir || 0);
+    if (log.hasDua) points += (p.dua || 0);
 
     // Bonuses
     // Perfect: Mosque + Jamaah + NoMasbuq + OnTime
     if (isMosque && isJamaah && isNoMasbuq && isOnTime) {
-        points += p.bonusPerfect;
+        points += (p.bonusPerfect || 0);
     }
 
     // All Sunnah: Qobliyah + Badiyah + Dzikir + Dua
@@ -46,7 +46,7 @@ export const calculatePrayerPoints = (log: PrayerLog, config: GamificationConfig
     // Let's assume the UI handles availability or the user just checks what they did.
     // For strict fairness, if they checked all 4, they get the bonus.
     if (log.hasQobliyah && log.hasBadiyah && log.hasDzikir && log.hasDua) {
-        points += p.bonusAllSunnah;
+        points += (p.bonusAllSunnah || 0);
     }
 
     return points;
@@ -56,12 +56,12 @@ export const calculateFastingPoints = (log: FastingLog, config: GamificationConf
     if (!config.enabled || !log.isCompleted) return 0;
 
     const p = config.points.fasting;
-    if (log.type === 'Senin-Kamis') return p.mondayThursday;
-    if (log.type === 'Ayyamul Bidh') return p.ayyamulBidh;
-    if (log.type === 'Ramadhan') return p.ramadhan;
-    if (log.type === 'Nadzar') return p.nadzar;
-    if (log.type === 'Qadha') return p.qadha;
-    if (log.type === 'Lainnya') return p.other;
+    if (log.type === 'Senin-Kamis') return p.mondayThursday || 0;
+    if (log.type === 'Ayyamul Bidh') return p.ayyamulBidh || 0;
+    if (log.type === 'Ramadhan') return p.ramadhan || 0;
+    if (log.type === 'Nadzar') return p.nadzar || 0;
+    if (log.type === 'Qadha') return p.qadha || 0;
+    if (log.type === 'Lainnya') return p.other || 0;
 
     return 0;
 };
@@ -72,7 +72,7 @@ export const calculateDzikirPoints = (log: DzikirLog, config: GamificationConfig
     const p = config.points.dzikir;
     // Check category
     if (log.categoryId === 'pagi' || log.categoryId === 'petang') {
-        return p.morningEvening;
+        return p.morningEvening || 0;
     }
 
     return 0;

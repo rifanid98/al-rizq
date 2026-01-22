@@ -17,13 +17,25 @@ export const useAuth = () => {
 
     const [isGoogleReady, setIsGoogleReady] = useState(!!(window as any).google?.accounts?.id);
 
-    const logout = useCallback(() => {
+    const logout = useCallback((onClearData?: () => void) => {
         setUser(null);
+        localStorage.removeItem('al_rizq_user');
+
+        // Clear all app-related data from localStorage
         Object.keys(localStorage).forEach(key => {
             if (key.startsWith('al_rizq_') && key !== 'al_rizq_theme') {
                 localStorage.removeItem(key);
             }
         });
+
+        // Trigger custom events so other hooks can reset their states
+        window.dispatchEvent(new Event('fasting_logs_updated'));
+        window.dispatchEvent(new Event('dzikir_logs_updated'));
+        window.dispatchEvent(new Event('prayer_logs_reset')); // New event for prayer logs
+
+        if (onClearData && typeof onClearData === 'function') {
+            onClearData();
+        }
 
         if ((window as any).google?.accounts?.id) {
             (window as any).google.accounts.id.disableAutoSelect();

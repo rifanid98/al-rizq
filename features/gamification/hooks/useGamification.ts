@@ -9,7 +9,20 @@ export const useGamification = (
     dzikirLogs: DzikirLog[],
     userConfig?: GamificationConfig
 ) => {
-    const config = userConfig || DEFAULT_GAMIFICATION_CONFIG;
+    const config = useMemo(() => {
+        if (!userConfig) return DEFAULT_GAMIFICATION_CONFIG;
+
+        // Deep merge points to ensure new point types from updates are present
+        return {
+            ...DEFAULT_GAMIFICATION_CONFIG,
+            ...userConfig,
+            points: {
+                prayer: { ...DEFAULT_GAMIFICATION_CONFIG.points.prayer, ...userConfig.points?.prayer },
+                fasting: { ...DEFAULT_GAMIFICATION_CONFIG.points.fasting, ...userConfig.points?.fasting },
+                dzikir: { ...DEFAULT_GAMIFICATION_CONFIG.points.dzikir, ...userConfig.points?.dzikir },
+            }
+        };
+    }, [userConfig]);
 
     const pointsDetail = useMemo(() => {
         let prayerPoints = 0;

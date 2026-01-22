@@ -19,7 +19,7 @@ export const useDzikir = () => {
     useEffect(() => {
         const handleUpdate = () => {
             const saved = localStorage.getItem(STORAGE_KEYS.DZIKIR_LOGS);
-            if (saved) setLogs(JSON.parse(saved));
+            setLogs(saved ? JSON.parse(saved) : []);
         };
         window.addEventListener('dzikir_logs_updated', handleUpdate);
         return () => window.removeEventListener('dzikir_logs_updated', handleUpdate);
