@@ -361,6 +361,18 @@ const App: React.FC = () => {
 
   // Handlers
   const handlePrayerClick = (name: PrayerName, scheduledTime: string) => {
+    // Reset defaults
+    setLateReason('');
+    setIsMasbuq(false);
+    setMasbuqRakaat(1);
+    setLocationType('Masjid');
+    setExecutionType('Jamaah');
+    setWeatherCondition('Cerah');
+    setHasDzikir(false);
+    setHasQobliyah(false);
+    setHasBadiyah(false);
+    setHasDua(false);
+
     if (isFlashbackMode) {
       setEditingLogId(null);
       setPendingLatePrayer({ name, scheduledTime });
@@ -371,16 +383,13 @@ const App: React.FC = () => {
     }
 
     const actualTime = getCurrentTimeStr();
-    if (isTimePassed(scheduledTime, currentDate) && isLate(scheduledTime, actualTime)) {
-      setEditingLogId(null);
-      setPendingLatePrayer({ name, scheduledTime });
-      setLateModalOpen(true);
-      setIsLateEntry(true);
-      setIsForgotMarking(false);
-    } else {
-      logPrayer(name, scheduledTime, { locationType: 'Masjid', executionType: 'Jamaah', weatherCondition: 'Cerah' });
-      setShowCelebration(true);
-    }
+    const isPrayerLate = isTimePassed(scheduledTime, currentDate) && isLate(scheduledTime, actualTime);
+
+    setEditingLogId(null);
+    setPendingLatePrayer({ name, scheduledTime });
+    setLateModalOpen(true);
+    setIsLateEntry(isPrayerLate);
+    setIsForgotMarking(false);
   };
 
   const handleEditPrayer = (log: PrayerLog) => {
@@ -421,7 +430,7 @@ const App: React.FC = () => {
       const curTime = getCurrentTimeStr();
       const isOnTime = !isLate(pendingLatePrayer.scheduledTime, curTime);
 
-      if (!editingLogId && isOnTime && locationType === 'Masjid' && executionType === 'Jamaah') {
+      if (!editingLogId && (isOnTime || isForgotMarking) && locationType === 'Masjid' && executionType === 'Jamaah') {
         setShowCelebration(true);
       }
 
