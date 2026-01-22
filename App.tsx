@@ -65,6 +65,7 @@ import { useGamification } from './features/gamification/hooks/useGamification';
 import { StarAnimationProvider, useStarAnimation } from './features/gamification/context/GamificationContext';
 import { StarAnimationLayer } from './features/gamification/components/StarAnimationLayer';
 import { Achievements } from './features/gamification/components/Achievements';
+import { BadgeUnlockModal } from './features/gamification/components/BadgeUnlockModal';
 
 const App: React.FC = () => {
   // Hooks
@@ -1267,6 +1268,11 @@ const AppContent: React.FC<any> = (props) => {
       <SyncConfirmModal isOpen={syncConfirmOpen} onConfirm={confirmCloudReplace} onCancel={keepLocalData} />
 
       <IslamicCelebration show={showCelebration} onComplete={() => setShowCelebration(false)} />
+
+      <BadgeUnlockModal
+        badge={gamification?.newlyUnlockedBadge || null}
+        onClose={() => gamification?.clearNewlyUnlocked?.()}
+      />
     </div>
   );
 };

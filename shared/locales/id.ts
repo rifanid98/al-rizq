@@ -341,6 +341,9 @@ export const id = {
         },
         badges: {
             collectionTitle: "Koleksi Badge",
+            unlocking: "Membuka...",
+            tier: "Tier",
+            congratulations: "Selamat!",
             prayer: {
                 ontime: {
                     title: "Sahabat Muadzin",

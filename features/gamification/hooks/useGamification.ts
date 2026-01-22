@@ -65,6 +65,7 @@ export const useGamification = (
     }, []);
 
     const [userBadges, setUserBadges] = useState<UserBadge[]>(getStoredBadges);
+    const [newlyUnlockedBadge, setNewlyUnlockedBadge] = useState<UserBadge | null>(null);
 
     // Sync state when storage changes externally (cross-tab or events)
     useEffect(() => {
@@ -87,6 +88,7 @@ export const useGamification = (
         const allMetrics = { ...prayerMetrics, ...fastingMetrics, ...dzikirMetrics };
 
         let hasChanges = false;
+        let unlocked: UserBadge | null = null;
 
         // We use function update to ensure we have latest state if effect runs rapidly
         setUserBadges(prev => {
@@ -106,30 +108,50 @@ export const useGamification = (
                 if (!existing) {
                     // Initialize if > 0 or if we want to show 0 progress badges (optional).
                     // Let's initialize all found metrics so UI can show them locked
-                    nextState.push({
+                    const newBadge: UserBadge = {
                         badgeId,
                         currentCount: effectiveCount,
                         unlockedTier: newTier,
                         isNew: newTier !== null,
                         unlockedAt: newTier !== null ? Date.now() : undefined
-                    });
+                    };
+                    nextState.push(newBadge);
                     hasChanges = true;
+
+                    // Trigger unlock animation for first tier unlock
+                    if (newTier !== null) {
+                        unlocked = newBadge;
+                    }
                 } else {
-                    if (effectiveCount !== existing.currentCount || newTier !== existing.unlockedTier) {
-                        nextState[existingIndex] = {
+                    const tierChanged = newTier !== existing.unlockedTier && newTier !== null;
+
+                    if (effectiveCount !== existing.currentCount || tierChanged) {
+                        const updatedBadge: UserBadge = {
                             ...existing,
                             currentCount: effectiveCount,
                             unlockedTier: newTier,
-                            isNew: existing.isNew || (newTier !== existing.unlockedTier && newTier !== null),
-                            unlockedAt: (newTier !== existing.unlockedTier && newTier !== null) ? Date.now() : existing.unlockedAt
+                            isNew: existing.isNew || tierChanged,
+                            unlockedAt: tierChanged ? Date.now() : existing.unlockedAt
                         };
+                        nextState[existingIndex] = updatedBadge;
                         hasChanges = true;
+
+                        // Trigger unlock animation for tier upgrade
+                        if (tierChanged) {
+                            unlocked = updatedBadge;
+                        }
                     }
                 }
             });
 
             if (hasChanges) {
                 localStorage.setItem(STORAGE_KEYS.BADGES, JSON.stringify(nextState));
+
+                // Set newly unlocked badge for animation (outside of state update)
+                if (unlocked) {
+                    setTimeout(() => setNewlyUnlockedBadge(unlocked), 100);
+                }
+
                 return nextState;
             }
             return prev;
@@ -145,12 +167,21 @@ export const useGamification = (
         });
     }, []);
 
+    const clearNewlyUnlocked = useCallback(() => {
+        if (newlyUnlockedBadge) {
+            markBadgeSeen(newlyUnlockedBadge.badgeId);
+        }
+        setNewlyUnlockedBadge(null);
+    }, [newlyUnlockedBadge, markBadgeSeen]);
+
     return {
         totalPoints: pointsDetail.total,
         pointsDetail,
         ...levelInfo,
         config,
         badges: userBadges,
-        markBadgeSeen
+        markBadgeSeen,
+        newlyUnlockedBadge,
+        clearNewlyUnlocked
     };
 };

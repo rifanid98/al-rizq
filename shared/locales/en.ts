@@ -340,6 +340,9 @@ export const en = {
         },
         badges: {
             collectionTitle: "Badge Collection",
+            unlocking: "Unlocking...",
+            tier: "Tier",
+            congratulations: "Congratulations!",
             prayer: {
                 ontime: {
                     title: "Muadzin's Friend",
