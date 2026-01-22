@@ -4,8 +4,8 @@ export const getCurrentTimeStr = () => {
   return now.toTimeString().slice(0, 5);
 };
 
-export const getLocalDateStr = () => {
-  const now = new Date();
+export const getLocalDateStr = (d?: Date) => {
+  const now = d || new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');

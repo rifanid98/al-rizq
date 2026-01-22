@@ -42,6 +42,7 @@ export const en = {
         fasting: "Fasting",
         dashboard: "Dashboard",
         history: "History",
+        achievements: "Achievements",
         settings: "Settings",
         dzikir: "Dhikr"
     },
@@ -324,6 +325,89 @@ export const en = {
             expert: "Expert",
             master: "Master"
         },
+        levels: {
+            muslim: "Muslim (Submitter)",
+            mukmin: "Mukmin (Believer)",
+            muhsin: "Muhsin (Excellent)",
+            muttaqin: "Muttaqin (Pious)",
+            siddiq: "Siddiq (Truthful)"
+        },
+        badges: {
+            collectionTitle: "Badge Collection",
+            prayer: {
+                ontime: {
+                    title: "Muadzin's Friend",
+                    desc: "Prayer On Time",
+                    history: "Abdullah bin Mas'ud asked: 'Which deed is most loved by Allah?' The Prophet replied: 'Prayer at its proper time'."
+                },
+                jamaah: {
+                    title: "Jamaah Warrior",
+                    desc: "Prayer in Congregation",
+                    history: "The Prophet said: 'Prayer in congregation is 27 degrees better than prayer performed alone'. (HR. Bukhari)"
+                },
+                mosque: {
+                    title: "Heart of Mosque",
+                    desc: "Prayer at Mosque",
+                    history: "Ibnu Ummi Maktum, despite being blind, was still commanded to go to the mosque if he heard the adhan, showing the importance of the mosque."
+                },
+                sunnah: {
+                    title: "Sunnah Guardian",
+                    desc: "Performed Sunnah Rawatib",
+                    history: "The Prophet said: 'Whoever prays 12 rak'ahs in a day and night, Allah will build a house for him in Paradise'. (HR. Muslim)"
+                },
+                subuh: {
+                    title: "Fajr Fighter",
+                    desc: "Fajr On Time",
+                    history: "The two rak'ahs of Fajr (Sunnah before Subuh) are better than this world and everything in it. (HR. Muslim)"
+                }
+            },
+            fasting: {
+                monthu: {
+                    title: "Mon & Thu",
+                    desc: "Routine Sunnah Fasting",
+                    history: "The Prophet said: 'Actions are presented on Mondays and Thursdays, and I love that my actions are presented while I am fasting'."
+                },
+                ayyamul: {
+                    title: "White Days",
+                    desc: "Ayyamul Bidh Fasting",
+                    history: "The Prophet's advice to Abu Hurairah: 'Fast three days every month (Ayyamul Bidh) as it is like fasting throughout the year'."
+                },
+                ramadhan: {
+                    title: "Ramadhan Hero",
+                    desc: "Full Ramadhan Fasting",
+                    history: "The Battle of Badr took place in Ramadan, proving that fasting is not a reason for weakness, but a source of spiritual strength."
+                },
+                qadha_annual: {
+                    title: "Debt Slayer {year}",
+                    desc: "Completed {year} Qadha Fasting",
+                    history: "Aisha RA used to make up missed Ramadan fasts in the month of Sha'ban, showing diligence in fulfilling obligations."
+                },
+                qadha: {
+                    title: "Debt Slayer",
+                    desc: "Paid Annual Qadha",
+                    history: "Fulfilling a debt to Allah is more deserving of being paid off. (Hadith)"
+                }
+            },
+            dzikir: {
+                morning: {
+                    title: "Morning Light",
+                    desc: "Morning Dhikr",
+                    history: "Allah says: 'And glorify Him morning and evening.' The Sahaba always started their day with remembrance."
+                },
+                evening: {
+                    title: "Evening Peace",
+                    desc: "Evening Dhikr",
+                    history: "Evening Dhikr is a fortress for a Muslim against the evils of the night, as taught by the Messenger of Allah."
+                }
+            },
+            general: {
+                istiqomah: {
+                    title: "Master Consistency",
+                    desc: "Consecutive Logins",
+                    history: "The Prophet said: 'The most beloved deeds to Allah are those done consistently, even if they are small'."
+                }
+            }
+        },
         settings: {
             title: "Gamification",
             active: "Gamification Active",
@@ -342,7 +426,7 @@ export const en = {
                 dzikir: "Dhikr",
                 dua: "Dua",
                 bonusPerfect: "Perfect Bonus",
-                bonusAllSunnah: "All Sunnah Bonus",
+                bonusAllSunnah: "Full Sunnah Bonus",
                 mondayThursday: "Mon-Thu",
                 ayyamulBidh: "Ayyamul Bidh",
                 ramadhan: "Ramadan",

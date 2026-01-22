@@ -7,6 +7,7 @@ import { getFastingRecommendation } from "../services/fastingService";
 import { Moon, Check, Info, Star, RotateCcw, Target, Settings, X, Plus, Trash2, ChevronLeft, ChevronRight, MoonStar } from "lucide-react";
 import { Button } from "../../../shared/components/ui/Button";
 import { STORAGE_KEYS } from "../../../shared/constants";
+import { getLocalDateStr } from "../../../shared/utils/helpers";
 import { useStarAnimation } from "../../gamification/context/GamificationContext";
 import { calculateFastingPoints } from "../../gamification/services/gamificationService";
 import { DEFAULT_GAMIFICATION_CONFIG, GamificationConfig } from "../../../shared/types";
@@ -109,14 +110,17 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
 
     useEffect(() => {
         if (hijriDate && currentDate) {
-            const rec = getFastingRecommendation(new Date(currentDate), hijriDate);
+            const [y, m, d] = currentDate.split('-').map(Number);
+            const dateObj = new Date(y, m - 1, d);
+            const rec = getFastingRecommendation(dateObj, hijriDate);
             setRecommendation(rec);
         }
     }, [currentDate, hijriDate, todayLog, nadzarConfig, qadhaConfig, ramadhanConfig]);
 
     // Check if today matches Nadzar criteria
     const checkIsNadzar = (date: string, type: FastingType | null) => {
-        const dateObj = new Date(date);
+        const [y, m, d] = date.split('-').map(Number);
+        const dateObj = new Date(y, m - 1, d);
         const day = dateObj.getDay();
 
         // Check days (e.g. Saturday)
@@ -132,7 +136,8 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
     };
 
     const checkIsQadha = (date: string, type: FastingType | null) => {
-        const dateObj = new Date(date);
+        const [y, m, d] = date.split('-').map(Number);
+        const dateObj = new Date(y, m - 1, d);
         const day = dateObj.getDay();
 
         if (qadhaConfig.days.includes(day)) return true;
@@ -167,8 +172,11 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
     const handleSelectType = (type: FastingType) => {
         setSelectedType(type);
         const isNadzar = checkIsNadzar(currentDate, type);
+        const isQadha = checkIsQadha(currentDate, type);
         const finalIsNadzar = isNadzar || type === 'Nadzar';
-        logFasting(currentDate, type, true, finalIsNadzar);
+        const finalIsQadha = isQadha || type === 'Qadha';
+
+        logFasting(currentDate, type, true, finalIsNadzar, finalIsQadha);
         setIsDropdownOpen(false);
 
         // Trigger animation after selection
@@ -283,7 +291,8 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
     const getRecommendationLabel = () => {
         if (!recommendation.type) return '';
         if (recommendation.type === 'Senin-Kamis') {
-            return new Date(currentDate).getDay() === 1 ? t.fasting.types.monday : t.fasting.types.thursday;
+            const [y, m, d] = currentDate.split('-').map(Number);
+            return new Date(y, m - 1, d).getDay() === 1 ? t.fasting.types.monday : t.fasting.types.thursday;
         }
         if (recommendation.type === 'Nadzar') return t.fasting.types.nadzar;
         if (recommendation.type === 'Qadha') return t.fasting.types.qadha;
@@ -297,7 +306,8 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
         if (todayLog.type === 'Nadzar') return t.fasting.types.nadzar;
         if (todayLog.type === 'Qadha') return t.fasting.types.qadha;
         if (todayLog.type === 'Senin-Kamis') {
-            return new Date(currentDate).getDay() === 1 ? t.fasting.types.monday : t.fasting.types.thursday;
+            const [y, m, d] = currentDate.split('-').map(Number);
+            return new Date(y, m - 1, d).getDay() === 1 ? t.fasting.types.monday : t.fasting.types.thursday;
         }
         if (todayLog.type === 'Ayyamul Bidh') return t.fasting.types.midMonth;
         if (todayLog.type === 'Ramadhan') return t.fasting.types.ramadhan;
@@ -620,7 +630,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                                     {Array.from({ length: 42 }).map((_, i) => {
                                                         const firstDayOfMonth = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1).getDay();
                                                         const date = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), i - firstDayOfMonth + 1);
-                                                        const dateStr = date.toISOString().split('T')[0];
+                                                        const dateStr = getLocalDateStr(date);
                                                         const isSelected = tempConfig.customDates.includes(dateStr);
                                                         const isCurrentMonth = date.getMonth() === calendarDate.getMonth();
 
