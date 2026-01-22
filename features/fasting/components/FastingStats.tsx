@@ -112,7 +112,7 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
             )}
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 max-[574px]:grid-cols-2 gap-4">
                 <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 flex flex-col items-center justify-center text-center">
                     <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{stats.sunnah}</span>
                     <span className="text-[10px] uppercase font-bold text-emerald-600/60 dark:text-emerald-400/60 mt-1">{t.fasting.stats.sunnah}</span>

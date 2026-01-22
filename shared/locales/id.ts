@@ -309,5 +309,42 @@ export const id = {
             11: "Dzulkaidah",
             12: "Dzulhijjah"
         }
+    },
+    gamification: {
+        title: "Gamifikasi",
+        level: "Level",
+        xp: "XP",
+        totalPoints: "Total Poin",
+        rank: {
+            novice: "Pemula",
+            intermediate: "Menengah",
+            advanced: "Mahir",
+            expert: "Ahli",
+            master: "Master"
+        },
+        settings: {
+            title: "Gamifikasi",
+            active: "Gamifikasi Aktif",
+            disabled: "Gamifikasi Nonaktif",
+            pointsPrayer: "Poin Sholat",
+            pointsFasting: "Poin Puasa",
+            pointsDzikir: "Poin Dzikir",
+            pts: "Pts",
+            keys: {
+                mosque: "Masjid",
+                jamaah: "Jamaah",
+                noMasbuq: "Tidak Masbuq",
+                onTime: "Tepat Waktu",
+                qobliyah: "Qobliyah",
+                badiyah: "Badiyah",
+                dzikir: "Dzikir",
+                dua: "Doa",
+                bonusPerfect: "Bonus Sempurna",
+                bonusAllSunnah: "Bonus Sunnah Lengkap",
+                mondayThursday: "Senin-Kamis",
+                ayyamulBidh: "Ayyamul Bidh",
+                morningEvening: "Pagi/Petang"
+            }
+        }
     }
 };

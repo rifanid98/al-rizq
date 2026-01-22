@@ -16,14 +16,24 @@ import { CheckCircle2, Clock, MapPin, AlertCircle, TrendingUp, ChevronDown, SunM
 import { useLanguage } from '../../../shared/hooks/useLanguage';
 import { FastingStats } from '../../fasting/components/FastingStats';
 
+import { GamificationConfig } from '../../../shared/types';
+
 interface DashboardProps {
   logs: PrayerLog[];
   fastingLogs: FastingLog[];
   dzikirLogs: DzikirLog[];
   hijriDate?: any; // To be passed from App.tsx
+  gamification: {
+    level: number;
+    progress: number;
+    totalPoints: number;
+    nextLevelXp: number;
+    currentLevelXp: number;
+    config: GamificationConfig;
+  };
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirLogs, hijriDate }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirLogs, hijriDate, gamification }) => {
   const isDark = document.documentElement.classList.contains('dark');
   const performanceRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -125,6 +135,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
 
   return (
     <div className="flex flex-col gap-8 animate-in fade-in duration-500">
+
+
+
       {/* Sub-Tabs for Dashboard */}
       <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl mx-auto">
         <button
@@ -191,7 +204,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                       {/* Total Session */}
                       <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl">
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t.dashboard.totalSessions}</p>

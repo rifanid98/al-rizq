@@ -60,13 +60,18 @@ import { getHijriDate } from './features/fasting/services/fastingService';
 import { Mosque } from './shared/components/icons/Mosque';
 import { DzikirTracker } from './features/dzikir/components/DzikirTracker';
 
+import { useGamification } from './features/gamification/hooks/useGamification';
+import { StarAnimationProvider, useStarAnimation } from './features/gamification/context/GamificationContext';
+import { StarAnimationLayer } from './features/gamification/components/StarAnimationLayer';
+
 const App: React.FC = () => {
   // Hooks
   const { user, setUser, logout, initGoogle, isGoogleReady } = useAuth();
   const {
     themeMode, cycleTheme, showPrayerBg, setShowPrayerBg, prayerBgOpacity, setPrayerBgOpacity,
     locationHistory, getCurrentSettings, restoreSettings, addToHistory, language, setLanguage,
-    prayerTimeCorrection, setPrayerTimeCorrection, setLastKnownLocation, lastKnownLocation, removeHistory
+    prayerTimeCorrection, setPrayerTimeCorrection, setLastKnownLocation, lastKnownLocation, removeHistory,
+    gamificationConfig, setGamificationConfig
   } = useSettings();
   const {
     schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule
@@ -75,6 +80,8 @@ const App: React.FC = () => {
   const { fastingLogs, clearFastingLogs } = useFastingLogs();
   const { logs: dzikirLogs } = useDzikir();
   const { isSyncing, handleUpload, handleDownload, hasBackup, handleRevert } = useSync(user?.email);
+
+  const gamification = useGamification(logs, fastingLogs, dzikirLogs, gamificationConfig);
 
   // Local States
   const [activeTab, setActiveTab] = useState<'tracker' | 'fasting' | 'dzikir' | 'dashboard' | 'history' | 'settings'>(() => {
@@ -158,6 +165,10 @@ const App: React.FC = () => {
   const googleBtnSettingsRef = useRef<HTMLDivElement>(null);
   const lastDateRef = useRef(currentDate);
   const sliderTimerRef = useRef<number | null>(null);
+
+  // Animation Refs
+  const mobileSettingsRef = useRef<HTMLButtonElement>(null);
+  const desktopSettingsRef = useRef<HTMLButtonElement>(null);
 
   const resetSliderTimer = useCallback(() => {
     if (sliderTimerRef.current) window.clearTimeout(sliderTimerRef.current);
@@ -430,7 +441,7 @@ const App: React.FC = () => {
       const curTime = getCurrentTimeStr();
       const isOnTime = !isLate(pendingLatePrayer.scheduledTime, curTime);
 
-      if (!editingLogId && (isOnTime || isForgotMarking) && locationType === 'Masjid' && executionType === 'Jamaah') {
+      if (!editingLogId && (isOnTime || isForgotMarking) && locationType === 'Masjid' && executionType === 'Jamaah' && !isMasbuq) {
         setShowCelebration(true);
       }
 
@@ -480,6 +491,154 @@ const App: React.FC = () => {
   };
 
   return (
+    <StarAnimationProvider>
+      <AppContent
+        {...{
+          user, setUser, logout, initGoogle, isGoogleReady,
+          themeMode, cycleTheme, showPrayerBg, setShowPrayerBg, prayerBgOpacity, setPrayerBgOpacity,
+          locationHistory, getCurrentSettings, restoreSettings, addToHistory, language, setLanguage,
+          prayerTimeCorrection, setPrayerTimeCorrection, setLastKnownLocation, lastKnownLocation, removeHistory,
+          gamificationConfig, setGamificationConfig,
+          schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule,
+          logs, setLogs, logPrayer, deleteLog, clearPrayerLogs,
+          fastingLogs, clearFastingLogs,
+          dzikirLogs,
+          isSyncing, handleUpload, handleDownload, hasBackup, handleRevert,
+          gamification,
+          activeTab, setActiveTab,
+          isSearching, setIsSearching,
+          isTrackerMenuOpen, setIsTrackerMenuOpen,
+          searchQuery, setSearchQuery,
+          suggestions, setSuggestions,
+          isSearchingSuggestions, setIsSearchingSuggestions,
+          showHistory, setShowHistory,
+          currentTime, setCurrentTime,
+          currentDate, setCurrentDate,
+          selectedDate, setSelectedDate,
+          isFlashbackMode,
+          lateModalOpen, setLateModalOpen,
+          pendingLatePrayer, setPendingLatePrayer,
+          lateReason, setLateReason,
+          isMasbuq, setIsMasbuq,
+          masbuqRakaat, setMasbuqRakaat,
+          locationType, setLocationType,
+          executionType, setExecutionType,
+          weatherCondition, setWeatherCondition,
+          editingLogId, setEditingLogId,
+          isLateEntry, setIsLateEntry,
+          isForgotMarking, setIsForgotMarking,
+          hasDzikir, setHasDzikir,
+          hasQobliyah, setHasQobliyah,
+          hasBadiyah, setHasBadiyah,
+          hasDua, setHasDua,
+          isSunnahExpanded, setIsSunnahExpanded,
+          syncConfirmOpen, setSyncConfirmOpen,
+          pendingCloudLogs, setPendingCloudLogs,
+          pendingCloudSettings, setPendingCloudSettings,
+          pendingFastingLogs, setPendingFastingLogs,
+          pendingLastUpdated, setPendingLastUpdated,
+          showCelebration, setShowCelebration,
+          showOpacitySlider, setShowOpacitySlider,
+          showMasbuqPicker, setShowMasbuqPicker,
+          historyDateFilter, setHistoryDateFilter,
+          currentPage, setCurrentPage,
+          ITEMS_PER_PAGE, searchTimeoutRef,
+          googleBtnSidebarRef, googleBtnHeaderRef, googleBtnSettingsRef,
+          lastDateRef, sliderTimerRef, resetSliderTimer,
+          filteredHistoryLogs, totalPages, currentHistoryLogs, applyCorrection, adjustedSchedule, adjustedYesterdaySchedule,
+          handlePrayerClick, handleEditPrayer, confirmLatePrayer, confirmCloudReplace, keepLocalData, t, mobileSettingsRef, desktopSettingsRef
+        }}
+      />
+      <StarAnimationLayer />
+    </StarAnimationProvider>
+  );
+};
+
+// Extracted AppContent to allow using useStarAnimation hook
+const AppContent: React.FC<any> = (props) => {
+  // Destructure all props back
+  const {
+    user, setUser, logout, initGoogle, isGoogleReady,
+    themeMode, cycleTheme, showPrayerBg, setShowPrayerBg, prayerBgOpacity, setPrayerBgOpacity,
+    locationHistory, getCurrentSettings, restoreSettings, addToHistory, language, setLanguage,
+    prayerTimeCorrection, setPrayerTimeCorrection, setLastKnownLocation, lastKnownLocation, removeHistory,
+    gamificationConfig, setGamificationConfig,
+    schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule,
+    logs, setLogs, logPrayer, deleteLog, clearPrayerLogs,
+    fastingLogs, clearFastingLogs,
+    dzikirLogs,
+    isSyncing, handleUpload, handleDownload, hasBackup, handleRevert,
+    gamification,
+    activeTab, setActiveTab,
+    isSearching, setIsSearching,
+    isTrackerMenuOpen, setIsTrackerMenuOpen,
+    searchQuery, setSearchQuery,
+    suggestions, setSuggestions,
+    isSearchingSuggestions, setIsSearchingSuggestions,
+    showHistory, setShowHistory,
+    currentTime, setCurrentTime,
+    currentDate, setCurrentDate,
+    selectedDate, setSelectedDate,
+    isFlashbackMode,
+    lateModalOpen, setLateModalOpen,
+    pendingLatePrayer, setPendingLatePrayer,
+    lateReason, setLateReason,
+    isMasbuq, setIsMasbuq,
+    masbuqRakaat, setMasbuqRakaat,
+    locationType, setLocationType,
+    executionType, setExecutionType,
+    weatherCondition, setWeatherCondition,
+    editingLogId, setEditingLogId,
+    isLateEntry, setIsLateEntry,
+    isForgotMarking, setIsForgotMarking,
+    hasDzikir, setHasDzikir,
+    hasQobliyah, setHasQobliyah,
+    hasBadiyah, setHasBadiyah,
+    hasDua, setHasDua,
+    isSunnahExpanded, setIsSunnahExpanded,
+    syncConfirmOpen, setSyncConfirmOpen,
+    pendingCloudLogs, setPendingCloudLogs,
+    pendingCloudSettings, setPendingCloudSettings,
+    pendingFastingLogs, setPendingFastingLogs,
+    pendingLastUpdated, setPendingLastUpdated,
+    showCelebration, setShowCelebration,
+    showOpacitySlider, setShowOpacitySlider,
+    showMasbuqPicker, setShowMasbuqPicker,
+    historyDateFilter, setHistoryDateFilter,
+    currentPage, setCurrentPage,
+    ITEMS_PER_PAGE, searchTimeoutRef,
+    googleBtnSidebarRef, googleBtnHeaderRef, googleBtnSettingsRef,
+    lastDateRef, sliderTimerRef, resetSliderTimer,
+    filteredHistoryLogs, totalPages, currentHistoryLogs, applyCorrection, adjustedSchedule, adjustedYesterdaySchedule,
+    handlePrayerClick, handleEditPrayer, confirmLatePrayer, confirmCloudReplace, keepLocalData, t, mobileSettingsRef, desktopSettingsRef
+  } = props;
+
+  const { registerTarget } = useStarAnimation();
+
+  // Register based on visibility
+  useEffect(() => {
+    // Simple logic: Register both? No, assume desktop if width > lg.
+    // Or just register the one that is mounted/visible.
+    if (window.innerWidth >= 1024 && desktopSettingsRef.current) {
+      registerTarget(desktopSettingsRef);
+    } else if (mobileSettingsRef.current) {
+      registerTarget(mobileSettingsRef);
+    }
+
+    const handleResize = () => {
+      if (window.innerWidth >= 1024 && desktopSettingsRef.current) {
+        registerTarget(desktopSettingsRef);
+      } else if (mobileSettingsRef.current) {
+        registerTarget(mobileSettingsRef);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [registerTarget]);
+
+
+  return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col lg:flex-row font-sans selection:bg-emerald-100 dark:selection:bg-emerald-900 selection:text-emerald-900 dark:selection:text-emerald-100">
       {/* Sidebar for Desktop, Bottom Nav for Mobile */}
       <nav className="fixed bottom-0 left-0 right-0 z-[100] lg:sticky lg:top-0 lg:w-72 lg:flex-shrink-0 lg:h-screen lg:z-50 bg-white dark:bg-slate-900 border-t lg:border-t-0 lg:border-r border-slate-100 dark:border-slate-800 p-6 lg:p-6 flex flex-col items-center gap-8 rounded-t-[2.5rem] lg:rounded-none shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.15)] lg:shadow-none">
@@ -524,7 +683,7 @@ const App: React.FC = () => {
 
           {/* Other Tabs */}
           {['dashboard', 'history', 'settings'].map((tab) => (
-            <button key={tab} onClick={() => { setActiveTab(tab as any); setIsTrackerMenuOpen(false); }} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${activeTab === tab ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}>
+            <button key={tab} ref={tab === 'settings' ? mobileSettingsRef : undefined} onClick={() => { setActiveTab(tab as any); setIsTrackerMenuOpen(false); }} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${activeTab === tab ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}>
               {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5" />}
               {tab === 'history' && <HistoryIcon className="w-5 h-5" />}
               {tab === 'settings' && <SettingsIcon className="w-5 h-5" />}
@@ -559,7 +718,12 @@ const App: React.FC = () => {
             <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t.common.menu || 'Menu'}</p>
             <div className="flex flex-col gap-1">
               {['dashboard', 'history', 'settings'].map((tab) => (
-                <button key={tab} onClick={() => setActiveTab(tab as any)} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === tab ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                <button
+                  key={tab}
+                  ref={tab === 'settings' ? desktopSettingsRef : undefined}
+                  onClick={() => setActiveTab(tab as any)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === tab ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                >
                   {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5" />}
                   {tab === 'history' && <HistoryIcon className="w-5 h-5" />}
                   {tab === 'settings' && <SettingsIcon className="w-5 h-5" />}
@@ -683,7 +847,7 @@ const App: React.FC = () => {
         {/* Dzikir Tab Content */}
         {activeTab === 'dzikir' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <DzikirTracker />
+            <DzikirTracker gamificationConfig={gamificationConfig} />
           </div>
         )}
 
@@ -861,7 +1025,7 @@ const App: React.FC = () => {
 
               return (
                 <>
-                  <FastingTracker currentDate={selectedDate} hijriDate={effectiveHijri} />
+                  <FastingTracker currentDate={selectedDate} hijriDate={effectiveHijri} gamificationConfig={gamificationConfig} />
                   <FastingStats hijriDate={effectiveHijri} minimal={true} />
                 </>
               );
@@ -870,7 +1034,7 @@ const App: React.FC = () => {
         )}
 
         {/* Dashboard Tab Content */}
-        {activeTab === 'dashboard' && <Dashboard logs={logs} fastingLogs={fastingLogs} dzikirLogs={dzikirLogs} hijriDate={adjustedSchedule?.hijri} />}
+        {activeTab === 'dashboard' && <Dashboard logs={logs} fastingLogs={fastingLogs} dzikirLogs={dzikirLogs} hijriDate={adjustedSchedule?.hijri} gamification={gamification} />}
 
 
         {/* History Tab Content */}
@@ -1015,6 +1179,9 @@ const App: React.FC = () => {
               clearPrayerLogs();
               clearFastingLogs();
             }}
+            gamificationConfig={gamificationConfig}
+            gamification={gamification}
+            onGamificationConfigChange={setGamificationConfig}
           />
         )}
       </main>
@@ -1022,6 +1189,7 @@ const App: React.FC = () => {
       <LatePrayerModal
         isOpen={lateModalOpen} onClose={() => { setLateModalOpen(false); setPendingLatePrayer(null); setLateReason(''); }}
         pendingLatePrayer={pendingLatePrayer} lateReason={lateReason} setLateReason={setLateReason} isMasbuq={isMasbuq} setIsMasbuq={setIsMasbuq} masbuqRakaat={masbuqRakaat} setMasbuqRakaat={setMasbuqRakaat} locationType={locationType} setLocationType={setLocationType} executionType={executionType} setExecutionType={setExecutionType} weatherCondition={weatherCondition} setWeatherCondition={setWeatherCondition} editingLogId={editingLogId} isLateEntry={isLateEntry} isForgotMarking={isForgotMarking} setIsForgotMarking={setIsForgotMarking} showMasbuqPicker={showMasbuqPicker} setShowMasbuqPicker={setShowMasbuqPicker} hasDzikir={hasDzikir} setHasDzikir={setHasDzikir} hasQobliyah={hasQobliyah} setHasQobliyah={setHasQobliyah} hasBadiyah={hasBadiyah} setHasBadiyah={setHasBadiyah} hasDua={hasDua} setHasDua={setHasDua} isSunnahExpanded={isSunnahExpanded} setIsSunnahExpanded={setIsSunnahExpanded} onConfirm={confirmLatePrayer}
+        gamificationConfig={gamificationConfig}
       />
 
       <SyncConfirmModal isOpen={syncConfirmOpen} onConfirm={confirmCloudReplace} onCancel={keepLocalData} />

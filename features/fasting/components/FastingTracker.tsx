@@ -7,10 +7,14 @@ import { getFastingRecommendation } from "../services/fastingService";
 import { Moon, Check, Info, Star, RotateCcw, Target, Settings, X, Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../../../shared/components/ui/Button";
 import { STORAGE_KEYS } from "../../../shared/constants";
+import { useStarAnimation } from "../../gamification/context/GamificationContext";
+import { calculateFastingPoints } from "../../gamification/services/gamificationService";
+import { DEFAULT_GAMIFICATION_CONFIG, GamificationConfig } from "../../../shared/types";
 
 interface FastingTrackerProps {
     currentDate: string; // YYYY-MM-DD
     hijriDate?: HijriDate;
+    gamificationConfig: GamificationConfig;
 }
 
 interface FastingPreferenceConfig {
@@ -22,9 +26,10 @@ interface FastingPreferenceConfig {
 const STORAGE_KEY_NADZAR_CONFIG = STORAGE_KEYS.NADZAR_CONFIG;
 const STORAGE_KEY_QADHA_CONFIG = STORAGE_KEYS.QADHA_CONFIG;
 
-export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hijriDate }) => {
+export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hijriDate, gamificationConfig }) => {
     const { t, language } = useLanguage();
     const { getLogForDate, logFasting, removeFastingLog } = useFastingLogs();
+    const { triggerAnimation } = useStarAnimation();
     const [recommendation, setRecommendation] = useState<{ type: string | null; labelKey: string; isForbidden?: boolean }>({ type: null, labelKey: '' });
     const [selectedType, setSelectedType] = useState<FastingType | null>(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -317,7 +322,14 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                         {!todayLog ? (
                             <div className="flex flex-col gap-3 items-center">
                                 <Button
-                                    onClick={handleToggle}
+                                    onClick={(e) => {
+                                        if (!recommendation.isForbidden && !isDropdownOpen) {
+                                            const type = selectedType || recommendation.type as FastingType || 'Senin-Kamis';
+                                            const points = calculateFastingPoints({ type: type, isCompleted: true, date: currentDate } as any, gamificationConfig);
+                                            triggerAnimation(null, points > 0 ? points : 12);
+                                        }
+                                        handleToggle();
+                                    }}
                                     disabled={!!recommendation.isForbidden}
                                     className={`rounded-2xl ${recommendation.isForbidden ? 'bg-slate-300 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'} text-white px-8 py-4 shadow-lg shadow-emerald-600/20 flex items-center gap-3 text-sm font-bold transition-all transform hover:scale-105`}
                                 >
@@ -392,197 +404,199 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                         )}
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Fasting Settings Modal */}
-            {isConfigOpen && (
-                <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="flex-1 text-lg font-black text-slate-800 dark:text-slate-100">{t.fasting.config.title}</h3>
-                            <button onClick={() => setIsConfigOpen(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                                <X className="w-6 h-6" />
-                            </button>
-                        </div>
+            {
+                isConfigOpen && (
+                    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                        <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="flex-1 text-lg font-black text-slate-800 dark:text-slate-100">{t.fasting.config.title}</h3>
+                                <button onClick={() => setIsConfigOpen(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
 
-                        {/* Tabs */}
-                        <div className="flex border-b border-slate-200 dark:border-slate-700 mb-4">
-                            <button
-                                onClick={() => setActiveConfigTab('nadzar')}
-                                className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeConfigTab === 'nadzar'
-                                    ? 'border-amber-500 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/10'
-                                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                                    }`}
-                            >
-                                {t.fasting.config.nadzar}
-                            </button>
-                            <button
-                                onClick={() => setActiveConfigTab('qadha')}
-                                className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeConfigTab === 'qadha'
-                                    ? 'border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/10'
-                                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                                    }`}
-                            >
-                                {t.fasting.config.qadha}
-                            </button>
-                        </div>
+                            {/* Tabs */}
+                            <div className="flex border-b border-slate-200 dark:border-slate-700 mb-4">
+                                <button
+                                    onClick={() => setActiveConfigTab('nadzar')}
+                                    className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeConfigTab === 'nadzar'
+                                        ? 'border-amber-500 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/10'
+                                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                                        }`}
+                                >
+                                    {t.fasting.config.nadzar}
+                                </button>
+                                <button
+                                    onClick={() => setActiveConfigTab('qadha')}
+                                    className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeConfigTab === 'qadha'
+                                        ? 'border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/10'
+                                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                                        }`}
+                                >
+                                    {t.fasting.config.qadha}
+                                </button>
+                            </div>
 
-                        {/* Content */}
-                        <div className="overflow-y-auto flex-1 pr-2">
-                            <div className="space-y-6">
-                                {/* Auto-check Types */}
-                                <div>
-                                    <h4 className="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">
-                                        {t.fasting.config.computeAs.replace('{type}', activeConfigTab === 'nadzar' ? t.fasting.config.nadzar : t.fasting.config.qadha)}
-                                    </h4>
-                                    <div className="space-y-3">
-                                        {[
-                                            { id: 'Senin-Kamis', label: t.fasting.types.mondayThursdayShort, icon: Star },
-                                            { id: 'Ayyamul Bidh', label: t.fasting.types.midMonth, icon: Moon }
-                                        ].map((item) => (
-                                            <label key={item.id} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                                                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${tempConfig.types.includes(item.id as FastingType)
-                                                    ? activeConfigTab === 'nadzar' ? 'bg-amber-500 border-amber-500' : 'bg-rose-500 border-rose-500'
-                                                    : 'border-slate-300 dark:border-slate-600'
-                                                    }`}>
-                                                    {tempConfig.types.includes(item.id as FastingType) && <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />}
-                                                </div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="hidden"
-                                                    checked={tempConfig.types.includes(item.id as FastingType)}
-                                                    onChange={() => toggleNadzarType(item.id as FastingType)}
-                                                />
-                                                <item.icon className={`w-5 h-5 ${activeConfigTab === 'nadzar' ? 'text-amber-500' : 'text-rose-500'}`} />
-                                                <span className="font-bold text-slate-700 dark:text-slate-200">{item.label}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Recurring Days */}
-                                <div>
-                                    <h4 className="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">{t.fasting.config.specialDays}</h4>
-                                    <div className="grid grid-cols-7 gap-2">
-                                        {Object.keys(t.fasting.days).map((key, idx) => {
-                                            const isSelected = tempConfig.days.includes(idx);
-                                            return (
-                                                <button
-                                                    key={idx}
-                                                    onClick={() => toggleNadzarDay(idx)}
-                                                    className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-all ${isSelected
-                                                        ? activeConfigTab === 'nadzar'
-                                                            ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30'
-                                                            : 'bg-rose-500 text-white shadow-lg shadow-rose-500/30'
-                                                        : 'bg-slate-50 dark:bg-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'
-                                                        }`}
-                                                >
-                                                    <span>{Object.values(t.fasting.days)[idx]}</span>
-                                                    {isSelected && <Check className="w-3 h-3" />}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                                {/* Custom Dates - Calendar Picker */}
-                                <div>
-                                    <h4 className="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">{t.fasting.config.specialDates}</h4>
-
-                                    {/* Calendar UI */}
-                                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
-                                        {/* Calendar Header */}
-                                        <div className="flex items-center justify-between mb-4">
-                                            <button
-                                                onClick={() => setCalendarDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
-                                                className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
-                                            >
-                                                <ChevronLeft className="w-5 h-5 text-slate-400" />
-                                            </button>
-                                            <span className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest">
-                                                {calendarDate.toLocaleString(language === 'id' ? 'id-ID' : 'en-US', { month: 'long', year: 'numeric' })}
-                                            </span>
-                                            <button
-                                                onClick={() => setCalendarDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
-                                                className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
-                                            >
-                                                <ChevronRight className="w-5 h-5 text-slate-400" />
-                                            </button>
-                                        </div>
-
-                                        {/* Calendar Grid */}
-                                        <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                                            {Object.values(t.fasting.days).map((d: string, i) => (
-                                                <div key={i} className="text-[10px] font-black text-slate-400">{d.charAt(0)}</div>
+                            {/* Content */}
+                            <div className="overflow-y-auto flex-1 pr-2">
+                                <div className="space-y-6">
+                                    {/* Auto-check Types */}
+                                    <div>
+                                        <h4 className="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">
+                                            {t.fasting.config.computeAs.replace('{type}', activeConfigTab === 'nadzar' ? t.fasting.config.nadzar : t.fasting.config.qadha)}
+                                        </h4>
+                                        <div className="space-y-3">
+                                            {[
+                                                { id: 'Senin-Kamis', label: t.fasting.types.mondayThursdayShort, icon: Star },
+                                                { id: 'Ayyamul Bidh', label: t.fasting.types.midMonth, icon: Moon }
+                                            ].map((item) => (
+                                                <label key={item.id} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${tempConfig.types.includes(item.id as FastingType)
+                                                        ? activeConfigTab === 'nadzar' ? 'bg-amber-500 border-amber-500' : 'bg-rose-500 border-rose-500'
+                                                        : 'border-slate-300 dark:border-slate-600'
+                                                        }`}>
+                                                        {tempConfig.types.includes(item.id as FastingType) && <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />}
+                                                    </div>
+                                                    <input
+                                                        type="checkbox"
+                                                        className="hidden"
+                                                        checked={tempConfig.types.includes(item.id as FastingType)}
+                                                        onChange={() => toggleNadzarType(item.id as FastingType)}
+                                                    />
+                                                    <item.icon className={`w-5 h-5 ${activeConfigTab === 'nadzar' ? 'text-amber-500' : 'text-rose-500'}`} />
+                                                    <span className="font-bold text-slate-700 dark:text-slate-200">{item.label}</span>
+                                                </label>
                                             ))}
                                         </div>
-                                        <div className="grid grid-cols-7 gap-1">
-                                            {Array.from({ length: 42 }).map((_, i) => {
-                                                const firstDayOfMonth = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1).getDay();
-                                                const date = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), i - firstDayOfMonth + 1);
-                                                const dateStr = date.toISOString().split('T')[0];
-                                                const isSelected = tempConfig.customDates.includes(dateStr);
-                                                const isCurrentMonth = date.getMonth() === calendarDate.getMonth();
+                                    </div>
 
-                                                if (!isCurrentMonth) return <div key={i} />;
-
+                                    {/* Recurring Days */}
+                                    <div>
+                                        <h4 className="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">{t.fasting.config.specialDays}</h4>
+                                        <div className="grid grid-cols-7 gap-2">
+                                            {Object.keys(t.fasting.days).map((key, idx) => {
+                                                const isSelected = tempConfig.days.includes(idx);
                                                 return (
                                                     <button
-                                                        key={i}
-                                                        onClick={() => toggleCustomDate(dateStr)}
-                                                        className={`aspect-square rounded-xl flex items-center justify-center text-xs font-bold transition-all relative
-                                                            ${isSelected
-                                                                ? activeConfigTab === 'nadzar'
-                                                                    ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30'
-                                                                    : 'bg-rose-500 text-white shadow-lg shadow-rose-500/30'
-                                                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-100 dark:border-slate-700'}
-                                                        `}
+                                                        key={idx}
+                                                        onClick={() => toggleNadzarDay(idx)}
+                                                        className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-all ${isSelected
+                                                            ? activeConfigTab === 'nadzar'
+                                                                ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30'
+                                                                : 'bg-rose-500 text-white shadow-lg shadow-rose-500/30'
+                                                            : 'bg-slate-50 dark:bg-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                                            }`}
                                                     >
-                                                        {date.getDate()}
-                                                        {isSelected && (
-                                                            <div className="absolute -top-1 -right-1">
-                                                                {activeConfigTab === 'nadzar' ? (
-                                                                    <Target className="w-3 h-3 text-amber-100" />
-                                                                ) : (
-                                                                    <RotateCcw className="w-3 h-3 text-rose-100" />
-                                                                )}
-                                                            </div>
-                                                        )}
+                                                        <span>{Object.values(t.fasting.days)[idx]}</span>
+                                                        {isSelected && <Check className="w-3 h-3" />}
                                                     </button>
                                                 );
                                             })}
                                         </div>
                                     </div>
-                                    <div className="mt-2 text-center">
-                                        <p className="text-xs text-slate-400 font-medium">
-                                            {tempConfig.customDates.length > 0
-                                                ? t.fasting.config.selectedDates.replace('{count}', tempConfig.customDates.length.toString())
-                                                : t.fasting.config.selectOnCalendar}
-                                        </p>
+
+                                    {/* Custom Dates - Calendar Picker */}
+                                    <div>
+                                        <h4 className="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">{t.fasting.config.specialDates}</h4>
+
+                                        {/* Calendar UI */}
+                                        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+                                            {/* Calendar Header */}
+                                            <div className="flex items-center justify-between mb-4">
+                                                <button
+                                                    onClick={() => setCalendarDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
+                                                    className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                                                >
+                                                    <ChevronLeft className="w-5 h-5 text-slate-400" />
+                                                </button>
+                                                <span className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest">
+                                                    {calendarDate.toLocaleString(language === 'id' ? 'id-ID' : 'en-US', { month: 'long', year: 'numeric' })}
+                                                </span>
+                                                <button
+                                                    onClick={() => setCalendarDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
+                                                    className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                                                >
+                                                    <ChevronRight className="w-5 h-5 text-slate-400" />
+                                                </button>
+                                            </div>
+
+                                            {/* Calendar Grid */}
+                                            <div className="grid grid-cols-7 gap-1 text-center mb-2">
+                                                {Object.values(t.fasting.days).map((d: string, i) => (
+                                                    <div key={i} className="text-[10px] font-black text-slate-400">{d.charAt(0)}</div>
+                                                ))}
+                                            </div>
+                                            <div className="grid grid-cols-7 gap-1">
+                                                {Array.from({ length: 42 }).map((_, i) => {
+                                                    const firstDayOfMonth = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1).getDay();
+                                                    const date = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), i - firstDayOfMonth + 1);
+                                                    const dateStr = date.toISOString().split('T')[0];
+                                                    const isSelected = tempConfig.customDates.includes(dateStr);
+                                                    const isCurrentMonth = date.getMonth() === calendarDate.getMonth();
+
+                                                    if (!isCurrentMonth) return <div key={i} />;
+
+                                                    return (
+                                                        <button
+                                                            key={i}
+                                                            onClick={() => toggleCustomDate(dateStr)}
+                                                            className={`aspect-square rounded-xl flex items-center justify-center text-xs font-bold transition-all relative
+                                                            ${isSelected
+                                                                    ? activeConfigTab === 'nadzar'
+                                                                        ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30'
+                                                                        : 'bg-rose-500 text-white shadow-lg shadow-rose-500/30'
+                                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-100 dark:border-slate-700'}
+                                                        `}
+                                                        >
+                                                            {date.getDate()}
+                                                            {isSelected && (
+                                                                <div className="absolute -top-1 -right-1">
+                                                                    {activeConfigTab === 'nadzar' ? (
+                                                                        <Target className="w-3 h-3 text-amber-100" />
+                                                                    ) : (
+                                                                        <RotateCcw className="w-3 h-3 text-rose-100" />
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                        <div className="mt-2 text-center">
+                                            <p className="text-xs text-slate-400 font-medium">
+                                                {tempConfig.customDates.length > 0
+                                                    ? t.fasting.config.selectedDates.replace('{count}', tempConfig.customDates.length.toString())
+                                                    : t.fasting.config.selectOnCalendar}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0">
-                            <button
-                                onClick={handleResetConfig}
-                                className="flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold hover:bg-rose-100 hover:text-rose-600 transition-colors"
-                            >
-                                {t.fasting.config.resetTab}
-                            </button>
-                            <button
-                                onClick={handleSaveConfig}
-                                className={`flex-1 px-4 py-3 rounded-xl text-white font-bold shadow-lg transition-transform active:scale-95 ${activeConfigTab === 'nadzar' ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20' : 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/20'
-                                    }`}
-                            >
-                                {t.fasting.config.saveConfig.replace('{type}', activeConfigTab === 'nadzar' ? t.fasting.config.nadzar : t.fasting.config.qadha)}
-                            </button>
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0">
+                                <button
+                                    onClick={handleResetConfig}
+                                    className="flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold hover:bg-rose-100 hover:text-rose-600 transition-colors"
+                                >
+                                    {t.fasting.config.resetTab}
+                                </button>
+                                <button
+                                    onClick={handleSaveConfig}
+                                    className={`flex-1 px-4 py-3 rounded-xl text-white font-bold shadow-lg transition-transform active:scale-95 ${activeConfigTab === 'nadzar' ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20' : 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/20'
+                                        }`}
+                                >
+                                    {t.fasting.config.saveConfig.replace('{type}', activeConfigTab === 'nadzar' ? t.fasting.config.nadzar : t.fasting.config.qadha)}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
         </>
     );
 };
