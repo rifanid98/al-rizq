@@ -15,7 +15,6 @@ import { PrayerLog, FastingLog, DzikirLog } from '../../../shared/types';
 import { CheckCircle2, Clock, MapPin, AlertCircle, TrendingUp, ChevronDown, SunMedium, Moon, Info, User, Star, Utensils } from 'lucide-react';
 import { useLanguage } from '../../../shared/hooks/useLanguage';
 import { FastingStats } from '../../fasting/components/FastingStats';
-
 import { GamificationConfig } from '../../../shared/types';
 
 interface DashboardProps {
@@ -135,9 +134,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
 
   return (
     <div className="flex flex-col gap-8 animate-in fade-in duration-500">
-
-
-
       {/* Sub-Tabs for Dashboard */}
       <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl mx-auto">
         <button

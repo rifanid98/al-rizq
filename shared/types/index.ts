@@ -141,8 +141,12 @@ export interface GamificationPointsConfig {
     bonusAllSunnah: number; // Qobliyah + Badiyah + Dzikir + Dua
   };
   fasting: {
+    ramadhan: number;
     mondayThursday: number; // Senin-Kamis
     ayyamulBidh: number;
+    nadzar: number;
+    qadha: number;
+    other: number;
   };
   dzikir: {
     morningEvening: number; // Pagi/Petang
@@ -170,8 +174,12 @@ export const DEFAULT_GAMIFICATION_CONFIG: GamificationConfig = {
       bonusAllSunnah: 10,
     },
     fasting: {
+      ramadhan: 20,
       mondayThursday: 10,
       ayyamulBidh: 15,
+      nadzar: 10,
+      qadha: 10,
+      other: 5,
     },
     dzikir: {
       morningEvening: 10,

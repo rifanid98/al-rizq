@@ -176,6 +176,10 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
         const finalIsNadzar = isNadzar || type === 'Nadzar';
         logFasting(currentDate, type, true, finalIsNadzar);
         setIsDropdownOpen(false);
+
+        // Trigger animation after selection
+        const points = calculateFastingPoints({ type: type, isCompleted: true, date: currentDate } as any, gamificationConfig);
+        triggerAnimation(null, points > 0 ? points : 12);
     };
 
     const openConfig = () => {
@@ -357,9 +361,13 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                 <Button
                                     onClick={(e) => {
                                         if (!recommendation.isForbidden && !isDropdownOpen) {
-                                            const type = selectedType || recommendation.type as FastingType || 'Senin-Kamis';
-                                            const points = calculateFastingPoints({ type: type, isCompleted: true, date: currentDate } as any, gamificationConfig);
-                                            triggerAnimation(null, points > 0 ? points : 12);
+                                            // Determine if this click will result in an immediate mark (has direct schedule)
+                                            const immediateType = (recommendation.type as FastingType) || (checkIsNadzar(currentDate, null) ? 'Nadzar' as FastingType : null);
+
+                                            if (immediateType) {
+                                                const points = calculateFastingPoints({ type: immediateType, isCompleted: true, date: currentDate } as any, gamificationConfig);
+                                                triggerAnimation(null, points > 0 ? points : 12);
+                                            }
                                         }
                                         handleToggle();
                                     }}

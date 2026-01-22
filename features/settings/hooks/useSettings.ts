@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '../../../shared/hooks/useLanguage';
 import { STORAGE_KEYS } from '../../../shared/constants';
-import { AppSettings, Language } from '../../../shared/types';
+import { AppSettings, Language, DEFAULT_GAMIFICATION_CONFIG } from '../../../shared/types';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -54,11 +54,9 @@ export const useSettings = () => {
     const [gamificationConfig, setGamificationConfig] = useState<Required<AppSettings>['gamificationConfig']>(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEYS.GAMIFICATION_CONFIG);
-            // Import DEFAULT_GAMIFICATION_CONFIG inside or outside. 
-            // Since we can't easily import if not already imported, let's look at imports.
-            return saved ? JSON.parse(saved) : undefined;
+            return saved ? JSON.parse(saved) : DEFAULT_GAMIFICATION_CONFIG;
         } catch (e) {
-            return undefined;
+            return DEFAULT_GAMIFICATION_CONFIG;
         }
     });
 

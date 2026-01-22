@@ -345,6 +345,10 @@ export const en = {
                 bonusAllSunnah: "All Sunnah Bonus",
                 mondayThursday: "Mon-Thu",
                 ayyamulBidh: "Ayyamul Bidh",
+                ramadhan: "Ramadan",
+                nadzar: "Nadzar",
+                qadha: "Qadha",
+                other: "Other",
                 morningEvening: "Morning/Evening"
             }
         }

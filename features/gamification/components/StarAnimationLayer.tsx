@@ -43,6 +43,11 @@ const SingleStar: React.FC<SingleStarProps> = ({ startX, startY, targetX, target
         };
     }, []);
 
+    const onCompleteRef = React.useRef(onComplete);
+    useEffect(() => {
+        onCompleteRef.current = onComplete;
+    }, [onComplete]);
+
     useEffect(() => {
         // Phase 1: Burst OUT from start position
         const timer1 = setTimeout(() => {
@@ -70,14 +75,16 @@ const SingleStar: React.FC<SingleStarProps> = ({ startX, startY, targetX, target
         }, 50 + animationConfig.burstDuration + animationConfig.flyDelay);
 
         // Cleanup
-        const timer3 = setTimeout(onComplete, 50 + animationConfig.burstDuration + animationConfig.flyDelay + animationConfig.flyDuration + 100);
+        const timer3 = setTimeout(() => {
+            onCompleteRef.current();
+        }, 50 + animationConfig.burstDuration + animationConfig.flyDelay + animationConfig.flyDuration + 100);
 
         return () => {
             clearTimeout(timer1);
             clearTimeout(timer2);
             clearTimeout(timer3);
         };
-    }, [startX, startY, targetX, targetY, burstOffset, onComplete]);
+    }, [startX, startY, targetX, targetY, burstOffset, animationConfig]);
 
     return (
         <div style={style} className="pointer-events-none text-amber-500 dark:text-amber-400 drop-shadow-md">

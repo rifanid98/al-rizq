@@ -58,6 +58,10 @@ export const calculateFastingPoints = (log: FastingLog, config: GamificationConf
     const p = config.points.fasting;
     if (log.type === 'Senin-Kamis') return p.mondayThursday;
     if (log.type === 'Ayyamul Bidh') return p.ayyamulBidh;
+    if (log.type === 'Ramadhan') return p.ramadhan;
+    if (log.type === 'Nadzar') return p.nadzar;
+    if (log.type === 'Qadha') return p.qadha;
+    if (log.type === 'Lainnya') return p.other;
 
     return 0;
 };

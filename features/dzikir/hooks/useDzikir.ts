@@ -17,6 +17,15 @@ export const useDzikir = () => {
     });
 
     useEffect(() => {
+        const handleUpdate = () => {
+            const saved = localStorage.getItem(STORAGE_KEYS.DZIKIR_LOGS);
+            if (saved) setLogs(JSON.parse(saved));
+        };
+        window.addEventListener('dzikir_logs_updated', handleUpdate);
+        return () => window.removeEventListener('dzikir_logs_updated', handleUpdate);
+    }, []);
+
+    useEffect(() => {
         localStorage.setItem(STORAGE_KEYS.DZIKIR_LOGS, JSON.stringify(logs));
     }, [logs]);
 
@@ -66,11 +75,15 @@ export const useDzikir = () => {
                 timestamp: Date.now()
             };
 
-            if (existingLog) {
-                return prev.map(l => l.id === existingLog.id ? newLog : l);
-            } else {
-                return [...prev, newLog];
-            }
+            const updatedLogs = existingLog
+                ? prev.map(l => l.id === existingLog.id ? newLog : l)
+                : [...prev, newLog];
+
+            // Manually trigger storage update and event to ensure other hook instances see it
+            localStorage.setItem(STORAGE_KEYS.DZIKIR_LOGS, JSON.stringify(updatedLogs));
+            window.dispatchEvent(new Event('dzikir_logs_updated'));
+
+            return updatedLogs;
         });
     }, []);
 
