@@ -22,7 +22,11 @@ export const useDzikir = () => {
             setLogs(saved ? JSON.parse(saved) : []);
         };
         window.addEventListener('dzikir_logs_updated', handleUpdate);
-        return () => window.removeEventListener('dzikir_logs_updated', handleUpdate);
+        window.addEventListener('app_data_reset', handleUpdate);
+        return () => {
+            window.removeEventListener('dzikir_logs_updated', handleUpdate);
+            window.removeEventListener('app_data_reset', handleUpdate);
+        };
     }, []);
 
     useEffect(() => {
@@ -87,12 +91,19 @@ export const useDzikir = () => {
         });
     }, []);
 
+    const clearLogs = useCallback(() => {
+        setLogs([]);
+        localStorage.removeItem(STORAGE_KEYS.DZIKIR_LOGS);
+        window.dispatchEvent(new Event('dzikir_logs_updated'));
+    }, []);
+
     return {
         logs,
         getCategories,
         getCategory,
         getSuggestedCategory,
         getLog,
-        toggleItem
+        toggleItem,
+        clearLogs
     };
 };
