@@ -80,7 +80,7 @@ const App: React.FC = () => {
   } = usePrayerSchedule();
   const { logs, setLogs, logPrayer, deleteLog, clearLogs: clearPrayerLogs } = usePrayerLogs();
   const { fastingLogs, clearFastingLogs } = useFastingLogs();
-  const { logs: dzikirLogs } = useDzikir();
+  const { logs: dzikirLogs, clearLogs: clearDzikirLogs } = useDzikir();
   const { isSyncing, handleUpload, handleDownload, hasBackup, handleRevert } = useSync(user?.email);
 
   const gamification = useGamification(logs, fastingLogs, dzikirLogs, gamificationConfig);
@@ -150,6 +150,8 @@ const App: React.FC = () => {
   const [pendingCloudLogs, setPendingCloudLogs] = useState<PrayerLog[] | null>(null);
   const [pendingCloudSettings, setPendingCloudSettings] = useState<AppSettings | null>(null);
   const [pendingFastingLogs, setPendingFastingLogs] = useState<any[] | null>(null);
+  const [pendingDzikirLogs, setPendingDzikirLogs] = useState<any[] | null>(null);
+  const [pendingBadges, setPendingBadges] = useState<any[] | null>(null);
   const [pendingLastUpdated, setPendingLastUpdated] = useState<number | null>(null);
 
   const [showCelebration, setShowCelebration] = useState(false);
@@ -270,7 +272,7 @@ const App: React.FC = () => {
       localStorage.setItem('al_rizq_user', JSON.stringify(userData));
 
       const cloudData = await handleDownload(userData.email);
-      if (cloudData && (cloudData.logs?.length > 0 || cloudData.settings || cloudData.fastingLogs?.length > 0)) {
+      if (cloudData && (cloudData.logs?.length > 0 || cloudData.settings || cloudData.fastingLogs?.length > 0 || cloudData.dzikirLogs?.length > 0 || cloudData.badges?.length > 0)) {
         if (logs.length === 0 && fastingLogs.length === 0) {
           if (cloudData.logs) {
             setLogs(cloudData.logs);
@@ -282,11 +284,21 @@ const App: React.FC = () => {
             localStorage.setItem(STORAGE_KEYS.FASTING_LOGS, JSON.stringify(cloudData.fastingLogs));
             window.dispatchEvent(new Event('fasting_logs_updated'));
           }
+          if (cloudData.dzikirLogs) {
+            localStorage.setItem(STORAGE_KEYS.DZIKIR_LOGS, JSON.stringify(cloudData.dzikirLogs));
+            window.dispatchEvent(new Event('dzikir_logs_updated'));
+          }
+          if (cloudData.badges) {
+            localStorage.setItem(STORAGE_KEYS.BADGES, JSON.stringify(cloudData.badges));
+            window.dispatchEvent(new Event('gamification_updated'));
+          }
           localStorage.setItem(STORAGE_KEYS.LAST_SYNC, cloudData.last_updated.toString());
         } else {
           setPendingCloudLogs(cloudData.logs);
           setPendingCloudSettings(cloudData.settings || null);
           setPendingFastingLogs(cloudData.fastingLogs || null);
+          setPendingDzikirLogs(cloudData.dzikirLogs || null);
+          setPendingBadges(cloudData.badges || null);
           setPendingLastUpdated(cloudData.last_updated);
           setSyncConfirmOpen(true);
         }
@@ -467,11 +479,15 @@ const App: React.FC = () => {
     }
   };
   const confirmCloudReplace = () => {
-    if (pendingCloudLogs || pendingCloudSettings || pendingFastingLogs) {
+    if (pendingCloudLogs || pendingCloudSettings || pendingFastingLogs || pendingDzikirLogs || pendingBadges) {
       // Backup current local state
       localStorage.setItem(STORAGE_KEYS.LOGS_BACKUP, JSON.stringify(logs));
       const currentFasting = localStorage.getItem(STORAGE_KEYS.FASTING_LOGS);
       if (currentFasting) localStorage.setItem('al_rizq_fasting_logs_backup', currentFasting);
+      const currentDzikir = localStorage.getItem(STORAGE_KEYS.DZIKIR_LOGS);
+      if (currentDzikir) localStorage.setItem('al_rizq_dzikir_logs_backup', currentDzikir);
+      const currentBadges = localStorage.getItem(STORAGE_KEYS.BADGES);
+      if (currentBadges) localStorage.setItem('al_rizq_badges_backup', currentBadges);
       localStorage.setItem('al_rizq_backup_source', 'download');
 
       if (pendingCloudLogs) {
@@ -485,6 +501,14 @@ const App: React.FC = () => {
         localStorage.setItem(STORAGE_KEYS.FASTING_LOGS, JSON.stringify(pendingFastingLogs));
       }
 
+      if (pendingDzikirLogs) {
+        localStorage.setItem(STORAGE_KEYS.DZIKIR_LOGS, JSON.stringify(pendingDzikirLogs));
+      }
+
+      if (pendingBadges) {
+        localStorage.setItem(STORAGE_KEYS.BADGES, JSON.stringify(pendingBadges));
+      }
+
       if (pendingLastUpdated) localStorage.setItem(STORAGE_KEYS.LAST_SYNC, pendingLastUpdated.toString());
 
       // Trigger reload to ensure all hooks update with new storage data
@@ -494,6 +518,8 @@ const App: React.FC = () => {
     setPendingCloudLogs(null);
     setPendingCloudSettings(null);
     setPendingFastingLogs(null);
+    setPendingDzikirLogs(null);
+    setPendingBadges(null);
   };
 
   const keepLocalData = () => {
@@ -501,7 +527,9 @@ const App: React.FC = () => {
     setPendingCloudLogs(null);
     setPendingCloudSettings(null);
     setPendingFastingLogs(null);
-    handleUpload(logs, getCurrentSettings(), fastingLogs);
+    setPendingDzikirLogs(null);
+    setPendingBadges(null);
+    handleUpload(logs, getCurrentSettings(), fastingLogs, dzikirLogs);
   };
 
   return (
@@ -517,7 +545,7 @@ const App: React.FC = () => {
           schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule,
           logs, setLogs, logPrayer, deleteLog, clearPrayerLogs,
           fastingLogs, clearFastingLogs,
-          dzikirLogs,
+          dzikirLogs, clearDzikirLogs,
           isSyncing, handleUpload, handleDownload, hasBackup, handleRevert,
           gamification,
           activeTab, setActiveTab,
@@ -581,7 +609,7 @@ const AppContent: React.FC<any> = (props) => {
     schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule,
     logs, setLogs, logPrayer, deleteLog, clearPrayerLogs,
     fastingLogs, clearFastingLogs,
-    dzikirLogs,
+    dzikirLogs, clearDzikirLogs,
     isSyncing, handleUpload, handleDownload, hasBackup, handleRevert,
     gamification,
     activeTab, setActiveTab,
@@ -1184,6 +1212,7 @@ const AppContent: React.FC<any> = (props) => {
             user={user}
             logs={logs}
             fastingLogs={fastingLogs}
+            dzikirLogs={dzikirLogs}
             isSyncing={isSyncing}
             hasBackup={hasBackup}
             themeMode={themeMode}
@@ -1203,8 +1232,24 @@ const AppContent: React.FC<any> = (props) => {
             restoreSettings={restoreSettings}
             googleBtnRef={googleBtnSettingsRef}
             onClearData={() => {
-              clearPrayerLogs();
-              clearFastingLogs();
+              if (window.confirm(t.settings.dangerZone.confirmClear || 'Hapus semua data?')) {
+                // Clear logs via hook methods
+                clearPrayerLogs();
+                clearFastingLogs();
+                clearDzikirLogs();
+
+                // Clear all localStorage keys starting with al_rizq_
+                Object.keys(localStorage).forEach(key => {
+                  if (key.startsWith('al_rizq_')) {
+                    localStorage.removeItem(key);
+                  }
+                });
+
+                // Dispatch reset event for all hooks to update their state
+                window.dispatchEvent(new Event('app_data_reset'));
+
+                window.location.reload();
+              }
             }}
             gamificationConfig={gamificationConfig}
             gamification={gamification}

@@ -23,15 +23,19 @@ export const useAuth = () => {
 
         // Clear all app-related data from localStorage
         Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('al_rizq_') && key !== 'al_rizq_theme') {
+            if (key.startsWith('al_rizq_')) {
                 localStorage.removeItem(key);
             }
         });
 
         // Trigger custom events so other hooks can reset their states
+        window.dispatchEvent(new Event('app_data_reset'));
         window.dispatchEvent(new Event('fasting_logs_updated'));
         window.dispatchEvent(new Event('dzikir_logs_updated'));
-        window.dispatchEvent(new Event('prayer_logs_reset')); // New event for prayer logs
+        window.dispatchEvent(new Event('prayer_logs_reset'));
+        window.dispatchEvent(new Event('gamification_updated'));
+        window.dispatchEvent(new Event('fasting_config_updated'));
+        window.dispatchEvent(new Event('ramadhan_config_updated'));
 
         if (onClearData && typeof onClearData === 'function') {
             onClearData();

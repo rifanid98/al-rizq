@@ -42,7 +42,9 @@ export const STORAGE_KEYS = {
   QADHA_CONFIG: 'al_rizq_qadha_config',
   DZIKIR_LOGS: 'al_rizq_dzikir_logs',
   LAST_KNOWN_LOCATION: 'al_rizq_last_location',
-  RAMADHAN_CONFIG: 'al_rizq_ramadhan_config'
+  RAMADHAN_CONFIG: 'al_rizq_ramadhan_config',
+  BADGES: 'al_rizq_badges',
+  GAMIFICATION_CONFIG: 'al_rizq_gamification_config'
 };
 
 export const CURRENT_VERSION = '1.2.1';

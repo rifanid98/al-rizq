@@ -18,7 +18,11 @@ export const usePrayerLogs = () => {
     useEffect(() => {
         const handleReset = () => setLogs([]);
         window.addEventListener('prayer_logs_reset', handleReset);
-        return () => window.removeEventListener('prayer_logs_reset', handleReset);
+        window.addEventListener('app_data_reset', handleReset);
+        return () => {
+            window.removeEventListener('prayer_logs_reset', handleReset);
+            window.removeEventListener('app_data_reset', handleReset);
+        };
     }, []);
 
     useEffect(() => {

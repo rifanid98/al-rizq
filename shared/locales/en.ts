@@ -42,7 +42,7 @@ export const en = {
         fasting: "Fasting",
         dashboard: "Dashboard",
         history: "History",
-        achievements: "Achievements",
+        achievements: "Achieves",
         settings: "Settings",
         dzikir: "Dhikr"
     },
@@ -103,6 +103,12 @@ export const en = {
             notificationsSubtitle: "Active (Kemenag Source)",
             privacy: "Privacy",
             privacySubtitle: "Local Data & Cloud Sync"
+        },
+        dangerZone: {
+            title: "Danger Zone",
+            clearData: "Clear All Data",
+            clearDataDesc: "Delete all prayer, fasting, dzikir logs and settings from this device",
+            confirmClear: "Are you sure you want to delete ALL data? This action cannot be undone."
         }
     },
     dzikir: {

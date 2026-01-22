@@ -1,20 +1,27 @@
-import { PrayerLog, AppSettings, FastingLog } from '../../../shared/types';
+import { PrayerLog, AppSettings, FastingLog, DzikirLog } from '../../../shared/types';
 import { STORAGE_KEYS } from '../../../shared/constants';
 import { supabase } from '../../../shared/services/supabaseClient';
 
 /**
  * Upload local data to Supabase
- * We wrap both logs and settings into the existing 'logs' column 
- * since adding a new column 'settings' might require manual DB migration.
+ * We wrap everything into the existing 'logs' column 
+ * since adding many columns might require manual DB migration.
  */
-export const uploadToCloud = async (email: string, logs: PrayerLog[], settings?: AppSettings, fastingLogs?: FastingLog[]): Promise<number> => {
+export const uploadToCloud = async (
+    email: string,
+    logs: PrayerLog[],
+    settings: AppSettings,
+    fastingLogs: FastingLog[],
+    dzikirLogs: DzikirLog[],
+    badges: any[]
+): Promise<number> => {
     const timestamp = Date.now();
 
     const { error } = await supabase
         .from('user_backups')
         .upsert({
             email: email,
-            logs: { logs, settings, fastingLogs }, // Wrap into the existing 'logs' column
+            logs: { logs, settings, fastingLogs, dzikirLogs, badges }, // Wrap all into the existing 'logs' column
             last_updated: timestamp
         }, { onConflict: 'email' });
 
@@ -29,7 +36,14 @@ export const uploadToCloud = async (email: string, logs: PrayerLog[], settings?:
 /**
  * Download data from Supabase for a specific user
  */
-export const downloadFromCloud = async (email: string): Promise<{ logs: PrayerLog[], settings?: AppSettings, fastingLogs?: FastingLog[], last_updated: number } | null> => {
+export const downloadFromCloud = async (email: string): Promise<{
+    logs: PrayerLog[],
+    settings: AppSettings,
+    fastingLogs: FastingLog[],
+    dzikirLogs: DzikirLog[],
+    badges: any[],
+    last_updated: number
+} | null> => {
     const { data, error } = await supabase
         .from('user_backups')
         .select('logs, last_updated')
@@ -44,23 +58,29 @@ export const downloadFromCloud = async (email: string): Promise<{ logs: PrayerLo
 
     // Backward compatibility check
     let logs: PrayerLog[] = [];
-    let settings: AppSettings | undefined = undefined;
+    let settings: any = {};
     let fastingLogs: FastingLog[] = [];
+    let dzikirLogs: DzikirLog[] = [];
+    let badges: any[] = [];
 
     if (Array.isArray(data.logs)) {
         // Old format: logs is just an array
         logs = data.logs;
     } else if (data.logs && typeof data.logs === 'object') {
-        // New format: logs is { logs, settings }
+        // New format: logs is { logs, settings, ... }
         logs = data.logs.logs || [];
-        settings = data.logs.settings;
+        settings = data.logs.settings || {};
         fastingLogs = data.logs.fastingLogs || [];
+        dzikirLogs = data.logs.dzikirLogs || [];
+        badges = data.logs.badges || [];
     }
 
     return {
         logs,
         settings,
         fastingLogs,
+        dzikirLogs,
+        badges,
         last_updated: data.last_updated
     };
 };

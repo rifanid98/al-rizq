@@ -31,12 +31,13 @@ interface SettingsProps {
     user: UserProfile | null;
     logs: PrayerLog[];
     fastingLogs: FastingLog[];
+    dzikirLogs: any[];
     isSyncing: boolean;
     hasBackup: boolean;
     themeMode: 'light' | 'dark' | 'system';
     showPrayerBg: boolean;
     prayerBgOpacity: number;
-    onUpload: (logs: PrayerLog[], settings: AppSettings, fastingLogs: FastingLog[]) => Promise<void>;
+    onUpload: (logs: PrayerLog[], settings: AppSettings, fastingLogs: FastingLog[], dzikirLogs: any[]) => Promise<void>;
     onDownload: () => Promise<any>;
     onRevert: (logs: PrayerLog[]) => Promise<any>;
     onLogout: () => void;
@@ -67,6 +68,7 @@ export const Settings: React.FC<SettingsProps> = ({
     user,
     logs,
     fastingLogs,
+    dzikirLogs,
     isSyncing,
     hasBackup,
     themeMode,
@@ -192,7 +194,7 @@ export const Settings: React.FC<SettingsProps> = ({
                             <Button
                                 variant="ghost"
                                 disabled={!user || isSyncing}
-                                onClick={() => onUpload(logs, getCurrentSettings(), fastingLogs)}
+                                onClick={() => onUpload(logs, getCurrentSettings(), fastingLogs, dzikirLogs)}
                                 className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 sm:py-6 flex flex-row sm:flex-col items-center justify-start sm:justify-center gap-4 sm:gap-2 h-auto hover:border-emerald-500 transition-all group px-6 sm:px-4"
                             >
                                 <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform shrink-0">
@@ -216,6 +218,14 @@ export const Settings: React.FC<SettingsProps> = ({
                                         if (result.fastingLogs) {
                                             localStorage.setItem(STORAGE_KEYS.FASTING_LOGS, JSON.stringify(result.fastingLogs));
                                             window.dispatchEvent(new Event('fasting_logs_updated'));
+                                        }
+                                        if (result.dzikirLogs) {
+                                            localStorage.setItem(STORAGE_KEYS.DZIKIR_LOGS, JSON.stringify(result.dzikirLogs));
+                                            window.dispatchEvent(new Event('dzikir_logs_updated'));
+                                        }
+                                        if (result.badges) {
+                                            localStorage.setItem(STORAGE_KEYS.BADGES, JSON.stringify(result.badges));
+                                            window.dispatchEvent(new Event('gamification_updated'));
                                         }
                                         localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(result.logs));
                                         localStorage.setItem(STORAGE_KEYS.LAST_SYNC, result.last_updated.toString());
@@ -245,6 +255,14 @@ export const Settings: React.FC<SettingsProps> = ({
                                         if (result.fastingLogs) {
                                             localStorage.setItem(STORAGE_KEYS.FASTING_LOGS, JSON.stringify(result.fastingLogs));
                                             window.dispatchEvent(new Event('fasting_logs_updated'));
+                                        }
+                                        if (result.dzikirLogs) {
+                                            localStorage.setItem(STORAGE_KEYS.DZIKIR_LOGS, JSON.stringify(result.dzikirLogs));
+                                            window.dispatchEvent(new Event('dzikir_logs_updated'));
+                                        }
+                                        if (result.badges) {
+                                            localStorage.setItem(STORAGE_KEYS.BADGES, JSON.stringify(result.badges));
+                                            window.dispatchEvent(new Event('gamification_updated'));
                                         }
                                     }
                                 }}

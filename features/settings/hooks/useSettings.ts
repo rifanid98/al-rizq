@@ -100,6 +100,20 @@ export const useSettings = () => {
         }
     }, [gamificationConfig]);
 
+    useEffect(() => {
+        const handleReset = () => {
+            setThemeMode('system');
+            setShowPrayerBg(true);
+            setPrayerBgOpacity(10);
+            setPrayerTimeCorrection({ global: 0, fajr: 0, dhuhr: 0, asr: 0, maghrib: 0, isha: 0 });
+            setLocationHistory([]);
+            setLastKnownLocation('');
+            setGamificationConfig(DEFAULT_GAMIFICATION_CONFIG);
+            setLanguage('id'); // Default language
+        };
+        window.addEventListener('app_data_reset', handleReset);
+        return () => window.removeEventListener('app_data_reset', handleReset);
+    }, [setLanguage]);
 
     const addToHistory = useCallback((address: string) => {
         setLocationHistory(prev => {

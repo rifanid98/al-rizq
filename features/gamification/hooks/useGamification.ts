@@ -1,11 +1,9 @@
-
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { PrayerLog, FastingLog, DzikirLog, GamificationConfig, DEFAULT_GAMIFICATION_CONFIG } from '../../../shared/types';
 import { calculatePrayerPoints, calculateFastingPoints, calculateDzikirPoints, getLevel } from '../services/gamificationService';
 import { calculatePrayerMetrics, calculateFastingMetrics, calculateDzikirMetrics, determineTier, getBadgeDefinition } from '../services/badgeService';
 import { UserBadge } from '../../../shared/types/gamification';
-
-const STORAGE_KEY_BADGES = 'al_rizq_badges';
+import { STORAGE_KEYS } from '../../../shared/constants';
 
 export const useGamification = (
     logs: PrayerLog[],
@@ -57,14 +55,29 @@ export const useGamification = (
     }, [pointsDetail.total]);
 
     // --- BADGE LOGIC ---
-    const [userBadges, setUserBadges] = useState<UserBadge[]>(() => {
+    const getStoredBadges = useCallback(() => {
         try {
-            const saved = localStorage.getItem(STORAGE_KEY_BADGES);
+            const saved = localStorage.getItem(STORAGE_KEYS.BADGES);
             return saved ? JSON.parse(saved) : [];
         } catch {
             return [];
         }
-    });
+    }, []);
+
+    const [userBadges, setUserBadges] = useState<UserBadge[]>(getStoredBadges);
+
+    // Sync state when storage changes externally (cross-tab or events)
+    useEffect(() => {
+        const handleUpdate = () => {
+            setUserBadges(getStoredBadges());
+        };
+        window.addEventListener('gamification_updated', handleUpdate);
+        window.addEventListener('app_data_reset', handleUpdate);
+        return () => {
+            window.removeEventListener('gamification_updated', handleUpdate);
+            window.removeEventListener('app_data_reset', handleUpdate);
+        };
+    }, [getStoredBadges]);
 
     useEffect(() => {
         const prayerMetrics = calculatePrayerMetrics(logs);
@@ -116,7 +129,7 @@ export const useGamification = (
             });
 
             if (hasChanges) {
-                localStorage.setItem(STORAGE_KEY_BADGES, JSON.stringify(nextState));
+                localStorage.setItem(STORAGE_KEYS.BADGES, JSON.stringify(nextState));
                 return nextState;
             }
             return prev;
@@ -127,7 +140,7 @@ export const useGamification = (
     const markBadgeSeen = useCallback((badgeId: string) => {
         setUserBadges(prev => {
             const next = prev.map(b => b.badgeId === badgeId ? { ...b, isNew: false } : b);
-            localStorage.setItem(STORAGE_KEY_BADGES, JSON.stringify(next));
+            localStorage.setItem(STORAGE_KEYS.BADGES, JSON.stringify(next));
             return next;
         });
     }, []);

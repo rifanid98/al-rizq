@@ -42,7 +42,7 @@ export const id = {
         fasting: "Puasa",
         dashboard: "Statistik",
         history: "Riwayat",
-        achievements: "Pencapaian",
+        achievements: "Capaian",
         settings: "Pengaturan",
         dzikir: "Dzikir"
     },
@@ -104,6 +104,12 @@ export const id = {
             notificationsSubtitle: "Aktif (Kemenag Source)",
             privacy: "Privasi",
             privacySubtitle: "Data Lokal & Cloud Sync"
+        },
+        dangerZone: {
+            title: "Zona Berbahaya",
+            clearData: "Hapus Semua Data",
+            clearDataDesc: "Hapus semua log sholat, puasa, dzikir, dan pengaturan dari perangkat ini",
+            confirmClear: "Apakah Anda yakin ingin menghapus SEMUA data? Tindakan ini tidak dapat dibatalkan."
         }
     },
     dzikir: {

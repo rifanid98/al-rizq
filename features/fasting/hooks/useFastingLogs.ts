@@ -27,7 +27,11 @@ export const useFastingLogs = () => {
     useEffect(() => {
         const handleUpdate = () => setRefreshSignal(prev => prev + 1);
         window.addEventListener(FASTING_LOGS_UPDATED, handleUpdate);
-        return () => window.removeEventListener(FASTING_LOGS_UPDATED, handleUpdate);
+        window.addEventListener('app_data_reset', handleUpdate);
+        return () => {
+            window.removeEventListener(FASTING_LOGS_UPDATED, handleUpdate);
+            window.removeEventListener('app_data_reset', handleUpdate);
+        };
     }, []);
 
     const logFasting = useCallback((date: string, type: FastingType, isCompleted: boolean = true, isNadzar: boolean = false, isQadha: boolean = false) => {
