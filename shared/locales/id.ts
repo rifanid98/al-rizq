@@ -42,6 +42,7 @@ export const id = {
         fasting: "Puasa",
         dashboard: "Statistik",
         history: "Riwayat",
+        achievements: "Pencapaian",
         settings: "Pengaturan",
         dzikir: "Dzikir"
     },
@@ -324,6 +325,88 @@ export const id = {
             advanced: "Mahir",
             expert: "Ahli",
             master: "Master"
+        },
+        levels: {
+            muslim: "Muslim (Pemula)",
+            mukmin: "Mukmin (Beriman)",
+            muhsin: "Muhsin (Baik)",
+            muttaqin: "Muttaqin (Bertakwa)",
+            siddiq: "Siddiq (Benar)"
+        },
+        badges: {
+            collectionTitle: "Koleksi Badge",
+            prayer: {
+                ontime: {
+                    title: "Sahabat Muadzin",
+                    desc: "Sholat Tepat Waktu",
+                    history: "Abdullah bin Mas'ud bertanya: 'Amalan apa yang paling dicintai Allah?' Rasulullah menjawab: 'Sholat pada waktunya'."
+                },
+                jamaah: {
+                    title: "Pejuang Jamaah",
+                    desc: "Sholat Berjamaah",
+                    history: "Rasulullah bersabda: 'Shalat berjamaah lebih utama 27 derajat dibandingkan shalat sendirian'. (HR. Bukhari)"
+                },
+                mosque: {
+                    title: "Jantung Masjid",
+                    desc: "Sholat di Masjid",
+                    history: "Seorang buta (Ibnu Ummi Maktum) tetap diperintahkan ke masjid jika mendengar adzan, menunjukkan pentingnya memakmurkan masjid."
+                },
+                sunnah: {
+                    title: "Penjaga Sunnah",
+                    desc: "Mengerjakan Sunnah Rawatib",
+                    history: "Rasulullah bersabda: 'Barangsiapa shalat 12 rakaat sehari semalam, Allah akan bangunkan rumah di surga'. (HR. Muslim)"
+                },
+                subuh: {
+                    title: "Pejuang Subuh",
+                    desc: "Subuh Tepat Waktu",
+                    history: "Dua rakaat fajar (sebelum Subuh) lebih baik daripada dunia dan seisinya. (HR. Muslim)"
+                }
+            },
+            fasting: {
+                monthu: {
+                    title: "Senin Kamis",
+                    desc: "Puasa Sunnah Rutin",
+                    history: "Rasulullah bersabda: 'Amalan diperlihatkan pada hari Senin dan Kamis, aku ingin amalku diperlihatkan saat aku berpuasa'."
+                },
+                ayyamul: {
+                    title: "Hari Putih",
+                    desc: "Puasa Ayyamul Bidh",
+                    history: "Wasiat Rasulullah kepada Abu Hurairah: 'Puasa tiga hari setiap bulan (Ayyamul Bidh) seperti puasa sepanjang masa'."
+                },
+                ramadhan: {
+                    title: "Pahlawan Ramadhan",
+                    desc: "Puasa Penuh Ramadhan",
+                    history: "Perang Badar terjadi di bulan Ramadhan, membuktikan puasa bukan alasan untuk lemah, tapi sumber kekuatan ruhiyah."
+                },
+                qadha_annual: {
+                    title: "Debt Slayer {year}",
+                    desc: "Menyelesaikan seluruh utang puasa (Qadha) tahun {year}."
+                },
+                qadha: {
+                    title: "Penakluk Qadha",
+                    desc: "Konsisten melunasi utang puasa tahunan.",
+                    history: "Aisyah RA biasa mengqadha puasa Ramadhan di bulan Sya'ban, menunjukkan kesungguhan menunaikan kewajiban sebelum Ramadhan berikutnya."
+                }
+            },
+            dzikir: {
+                morning: {
+                    title: "Cahaya Pagi",
+                    desc: "Dzikir Pagi",
+                    history: "Allah berfirman: 'Dan bertasbihlah kepada-Nya di waktu pagi dan petang'. Para sahabat selalu memulai hari dengan dzikir."
+                },
+                evening: {
+                    title: "Ketenangan Senja",
+                    desc: "Dzikir Petang",
+                    history: "Dzikir petang adalah benteng perlindungan seorang muslim dari kejahatan malam, seperti yang diajarkan Rasulullah."
+                }
+            },
+            general: {
+                istiqomah: {
+                    title: "Master Istiqomah",
+                    desc: "Login Berturut-turut",
+                    history: "Rasulullah bersabda: 'Amalan yang paling dicintai Allah adalah yang dilakukan secara terus-menerus meskipun sedikit'."
+                }
+            }
         },
         settings: {
             title: "Gamifikasi",

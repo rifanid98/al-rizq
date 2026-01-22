@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../../../shared/components/ui/Button';
 import { GamificationSettings } from '../../gamification/components/GamificationSettings';
-import { GamificationStats } from '../../gamification/components/GamificationStats';
+import { UserBadge } from '../../../shared/types/gamification';
 import { PrayerLog, AppSettings, UserProfile, FastingLog, GamificationConfig, DEFAULT_GAMIFICATION_CONFIG } from '../../../shared/types';
 import { STORAGE_KEYS, CURRENT_VERSION } from '../../../shared/constants';
 import { useLanguage } from '../../../shared/hooks/useLanguage';
@@ -58,6 +58,7 @@ interface SettingsProps {
         nextLevelXp: number;
         currentLevelXp: number;
         config: GamificationConfig;
+        badges: UserBadge[];
     };
     onGamificationConfigChange?: (config: GamificationConfig) => void;
 }
@@ -94,18 +95,7 @@ export const Settings: React.FC<SettingsProps> = ({
 
     return (
         <div className="space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Gamification Stats Section */}
-            {gamification && gamificationConfig?.enabled && (
-                <div className="animate-in fade-in slide-in-from-top-4 duration-1000">
-                    <GamificationStats
-                        level={gamification.level}
-                        progress={gamification.progress}
-                        totalPoints={gamification.totalPoints}
-                        nextLevelXp={gamification.nextLevelXp}
-                        currentLevelXp={gamification.currentLevelXp}
-                    />
-                </div>
-            )}
+
 
             {/* Profile Section */}
             <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden relative group">

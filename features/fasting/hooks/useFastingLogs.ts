@@ -30,7 +30,7 @@ export const useFastingLogs = () => {
         return () => window.removeEventListener(FASTING_LOGS_UPDATED, handleUpdate);
     }, []);
 
-    const logFasting = useCallback((date: string, type: FastingType, isCompleted: boolean = true, isNadzar: boolean = false) => {
+    const logFasting = useCallback((date: string, type: FastingType, isCompleted: boolean = true, isNadzar: boolean = false, isQadha: boolean = false) => {
         const currentLogs = getStoredLogs();
         // Remove existing log for this date if any
         const filtered = currentLogs.filter(l => l.date !== date);
@@ -39,7 +39,8 @@ export const useFastingLogs = () => {
             date,
             type,
             isCompleted,
-            isNadzar
+            isNadzar,
+            isQadha
         };
         const updatedLogs = [...filtered, newLog];
 
@@ -77,7 +78,7 @@ export const useFastingLogs = () => {
             }
 
             // Qadha Count
-            if (l.type === 'Qadha') {
+            if (l.type === 'Qadha' || l.isQadha) {
                 qadha++;
             }
 

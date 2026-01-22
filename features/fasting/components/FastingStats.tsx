@@ -177,10 +177,15 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
                 </div>
 
                 <div className="grid grid-cols-7 gap-2">
-                    {/* Empty cells for start of month padding - simplified for MVP, ideally calculate offset */}
-                    {Array.from({ length: new Date(currentMonthForecast[0].date).getDay() === 0 ? 6 : new Date(currentMonthForecast[0].date).getDay() - 1 }).map((_, i) => (
-                        <div key={`empty-${i}`} />
-                    ))}
+                    {/* Empty cells for start of month padding */}
+                    {(() => {
+                        const [year, month, day] = currentMonthForecast[0].date.split('-').map(Number);
+                        const firstDay = new Date(year, month - 1, day).getDay();
+                        const padding = firstDay === 0 ? 6 : firstDay - 1;
+                        return Array.from({ length: padding }).map((_, i) => (
+                            <div key={`empty-${i}`} />
+                        ));
+                    })()}
 
                     {currentMonthForecast.map((day) => {
                         const log = getFastedLog(day.date);
@@ -209,7 +214,7 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
                                     ${isToday && !isDayFasted && !isRecommended ? 'bg-slate-100 dark:bg-slate-800 ring-2 ring-slate-200 dark:ring-slate-700' : ''}
                                 `}>
                                     {(!isDayFasted && (!isRecommended || day.recommendation.isForbidden)) && (
-                                        <span className="relative z-0 text-lg font-black">{new Date(day.date).getDate()}</span>
+                                        <span className="relative z-0 text-lg font-black">{day.date.split('-')[2]}</span>
                                     )}
 
                                     {isDayFasted ? (

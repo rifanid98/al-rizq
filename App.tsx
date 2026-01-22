@@ -26,7 +26,8 @@ import {
   SunMedium,
   Settings as SettingsIcon,
   UtensilsCrossed,
-  Star
+  Star,
+  Award
 } from 'lucide-react';
 
 // Shared
@@ -63,6 +64,7 @@ import { DzikirTracker } from './features/dzikir/components/DzikirTracker';
 import { useGamification } from './features/gamification/hooks/useGamification';
 import { StarAnimationProvider, useStarAnimation } from './features/gamification/context/GamificationContext';
 import { StarAnimationLayer } from './features/gamification/components/StarAnimationLayer';
+import { Achievements } from './features/gamification/components/Achievements';
 
 const App: React.FC = () => {
   // Hooks
@@ -84,7 +86,7 @@ const App: React.FC = () => {
   const gamification = useGamification(logs, fastingLogs, dzikirLogs, gamificationConfig);
 
   // Local States
-  const [activeTab, setActiveTab] = useState<'tracker' | 'fasting' | 'dzikir' | 'dashboard' | 'history' | 'settings'>(() => {
+  const [activeTab, setActiveTab] = useState<'tracker' | 'fasting' | 'dzikir' | 'dashboard' | 'history' | 'achievements' | 'settings'>(() => {
     return (localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) as any) || 'tracker';
   });
 
@@ -231,15 +233,27 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // Auto-refresh schedule when date changes (midnight or clock change)
+  useEffect(() => {
+    if (schedule && schedule.date !== currentDate && !isLoading) {
+      console.log("Date changed, refreshing schedule...");
+      getSchedule();
+    }
+  }, [currentDate, schedule, getSchedule, isLoading]);
+
   // Clock & Midnight check
   useEffect(() => {
     const updateTimeAndDate = () => {
       setCurrentTime(getCurrentTimeStr());
       const today = getLocalDateStr();
       if (today !== lastDateRef.current) {
+        const oldToday = lastDateRef.current;
         lastDateRef.current = today;
         setCurrentDate(today);
         setHistoryDateFilter(today);
+
+        // If user was looking at "Today", follow the date change
+        setSelectedDate(prev => prev === oldToday ? today : prev);
       }
     };
     updateTimeAndDate();
@@ -493,6 +507,7 @@ const App: React.FC = () => {
   return (
     <StarAnimationProvider>
       <AppContent
+        key={currentDate}
         {...{
           user, setUser, logout, initGoogle, isGoogleReady,
           themeMode, cycleTheme, showPrayerBg, setShowPrayerBg, prayerBgOpacity, setPrayerBgOpacity,
@@ -682,10 +697,11 @@ const AppContent: React.FC<any> = (props) => {
           </div>
 
           {/* Other Tabs */}
-          {['dashboard', 'history', 'settings'].map((tab) => (
+          {['dashboard', 'history', 'achievements', 'settings'].map((tab) => (
             <button key={tab} ref={tab === 'settings' ? mobileSettingsRef : undefined} onClick={() => { setActiveTab(tab as any); setIsTrackerMenuOpen(false); }} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${activeTab === tab ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}>
               {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5" />}
               {tab === 'history' && <HistoryIcon className="w-5 h-5" />}
+              {tab === 'achievements' && <Award className="w-5 h-5" />}
               {tab === 'settings' && <SettingsIcon className="w-5 h-5" />}
               <span className="text-[10px] uppercase font-black tracking-wider">{t.tabs[tab as keyof typeof t.tabs]}</span>
             </button>
@@ -717,7 +733,7 @@ const AppContent: React.FC<any> = (props) => {
           <div>
             <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t.common.menu || 'Menu'}</p>
             <div className="flex flex-col gap-1">
-              {['dashboard', 'history', 'settings'].map((tab) => (
+              {['dashboard', 'history', 'achievements', 'settings'].map((tab) => (
                 <button
                   key={tab}
                   ref={tab === 'settings' ? desktopSettingsRef : undefined}
@@ -726,6 +742,7 @@ const AppContent: React.FC<any> = (props) => {
                 >
                   {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5" />}
                   {tab === 'history' && <HistoryIcon className="w-5 h-5" />}
+                  {tab === 'achievements' && <Award className="w-5 h-5" />}
                   {tab === 'settings' && <SettingsIcon className="w-5 h-5" />}
                   <span className="text-sm capitalize">{t.tabs[tab as keyof typeof t.tabs]}</span>
                 </button>
@@ -776,7 +793,7 @@ const AppContent: React.FC<any> = (props) => {
           <div className="flex justify-between items-start flex-1">
             <div>
               <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
-                {activeTab === 'tracker' ? t.tracker.title : activeTab === 'fasting' ? t.tabs.fasting : activeTab === 'dzikir' ? t.tabs.dzikir : activeTab === 'dashboard' ? t.tabs.dashboard : activeTab === 'history' ? t.tabs.history : t.tabs.settings}
+                {activeTab === 'tracker' ? t.tracker.title : activeTab === 'fasting' ? t.tabs.fasting : activeTab === 'dzikir' ? t.tabs.dzikir : activeTab === 'dashboard' ? t.tabs.dashboard : activeTab === 'history' ? t.tabs.history : activeTab === 'achievements' ? t.tabs.achievements : t.tabs.settings}
               </h2>
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-3">
                 <span className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-[10px] lg:text-xs font-bold text-slate-600 dark:text-slate-400 shadow-sm w-fit">
@@ -1021,7 +1038,10 @@ const AppContent: React.FC<any> = (props) => {
             {(() => {
               const effectiveHijri = (isFlashbackMode && adjustedYesterdaySchedule?.hijri)
                 ? adjustedYesterdaySchedule.hijri
-                : (adjustedSchedule?.hijri && !isFlashbackMode ? adjustedSchedule.hijri : getHijriDate(new Date(selectedDate)));
+                : (adjustedSchedule?.hijri && !isFlashbackMode ? adjustedSchedule.hijri : (() => {
+                  const [y, m, d] = selectedDate.split('-').map(Number);
+                  return getHijriDate(new Date(y, m - 1, d));
+                })());
 
               return (
                 <>
@@ -1036,6 +1056,13 @@ const AppContent: React.FC<any> = (props) => {
         {/* Dashboard Tab Content */}
         {activeTab === 'dashboard' && <Dashboard logs={logs} fastingLogs={fastingLogs} dzikirLogs={dzikirLogs} hijriDate={adjustedSchedule?.hijri} gamification={gamification} />}
 
+
+        {/* Achievements Tab Content */}
+        {activeTab === 'achievements' && gamification && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <Achievements gamification={gamification} logs={logs} />
+          </div>
+        )}
 
         {/* History Tab Content */}
         {activeTab === 'history' && (

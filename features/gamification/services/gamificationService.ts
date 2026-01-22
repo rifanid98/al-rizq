@@ -56,14 +56,19 @@ export const calculateFastingPoints = (log: FastingLog, config: GamificationConf
     if (!config.enabled || !log.isCompleted) return 0;
 
     const p = config.points.fasting;
-    if (log.type === 'Senin-Kamis') return p.mondayThursday || 0;
-    if (log.type === 'Ayyamul Bidh') return p.ayyamulBidh || 0;
-    if (log.type === 'Ramadhan') return p.ramadhan || 0;
-    if (log.type === 'Nadzar') return p.nadzar || 0;
-    if (log.type === 'Qadha') return p.qadha || 0;
-    if (log.type === 'Lainnya') return p.other || 0;
+    let points = 0;
+    if (log.type === 'Senin-Kamis') points = p.mondayThursday || 0;
+    else if (log.type === 'Ayyamul Bidh') points = p.ayyamulBidh || 0;
+    else if (log.type === 'Ramadhan') points = p.ramadhan || 0;
+    else if (log.type === 'Nadzar') points = p.nadzar || 0;
+    else if (log.type === 'Qadha') points = p.qadha || 0;
+    else points = p.other || 0;
 
-    return 0;
+    // Additional points for specific flags if type wasn't already the same
+    if (log.isNadzar && log.type !== 'Nadzar') points = Math.max(points, p.nadzar || 0);
+    if (log.isQadha && log.type !== 'Qadha') points = Math.max(points, p.qadha || 0);
+
+    return points;
 };
 
 export const calculateDzikirPoints = (log: DzikirLog, config: GamificationConfig = DEFAULT_GAMIFICATION_CONFIG): number => {

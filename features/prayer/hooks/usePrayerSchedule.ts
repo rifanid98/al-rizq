@@ -9,7 +9,19 @@ export const usePrayerSchedule = () => {
     const [schedule, setSchedule] = useState<DailySchedule | null>(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEYS.SCHEDULE);
-            return saved ? JSON.parse(saved) : null;
+            if (!saved) return null;
+
+            const parsed: DailySchedule = JSON.parse(saved);
+            const today = getLocalDateStr();
+
+            // If the cached schedule is for a different date, ignore it
+            if (parsed.date !== today) {
+                console.log("Cached schedule is stale, clearing...");
+                localStorage.removeItem(STORAGE_KEYS.SCHEDULE);
+                return null;
+            }
+
+            return parsed;
         } catch (e) {
             console.error("Failed to parse prayer schedule", e);
             return null;

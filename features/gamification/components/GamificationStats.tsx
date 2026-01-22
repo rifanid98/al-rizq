@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Star, Trophy, Sparkles } from 'lucide-react';
 import { useLanguage } from '../../../shared/hooks/useLanguage';
+import { getTierByLevel, getTierColorClass } from '../constants/levels';
 
 interface GamificationStatsProps {
     level: number;
@@ -9,17 +10,44 @@ interface GamificationStatsProps {
     totalPoints: number;
     nextLevelXp: number;
     currentLevelXp: number;
+    levelName?: string;
+    levelTier?: LevelTier;
 }
+
+import { LevelTier } from '../../../shared/types/gamification';
 
 export const GamificationStats: React.FC<GamificationStatsProps> = ({
     level,
     progress,
     totalPoints,
     nextLevelXp,
-    currentLevelXp
+    currentLevelXp,
+    levelName
 }) => {
     const { t } = useLanguage();
     const [displayedPoints, setDisplayedPoints] = useState(0);
+
+    // Get Tier Info
+    const currentTier = getTierByLevel(level);
+    const theme = currentTier.colorTheme;
+
+    // Resolve Rank Name
+    // Key format: 'levels.muslim' -> access t.gamification.levels.muslim
+    const rankKey = currentTier.nameKey.split('.')[1]; // e.g., 'muslim'
+    const rankName = levelName || (t.gamification.levels as any)[rankKey] || rankKey;
+
+    // Dynamic Gradient Map
+    const getGradient = (theme: string) => {
+        switch (theme) {
+            case 'emerald': return 'from-emerald-400 to-teal-600 shadow-emerald-500/20';
+            case 'cyan': return 'from-cyan-400 to-blue-600 shadow-cyan-500/20';
+            case 'amber': return 'from-amber-400 to-orange-600 shadow-amber-500/20';
+            case 'violet': return 'from-violet-400 to-fuchsia-600 shadow-violet-500/20';
+            default: return 'from-slate-400 to-zinc-600 shadow-slate-500/20';
+        }
+    };
+
+    const cardClass = getGradient(theme);
 
     // Animate points counting up
     useEffect(() => {
@@ -39,7 +67,7 @@ export const GamificationStats: React.FC<GamificationStatsProps> = ({
     }, [totalPoints]);
 
     return (
-        <div className="relative overflow-hidden bg-gradient-to-br from-amber-400 to-orange-500 rounded-[2.5rem] p-6 text-white shadow-lg shadow-amber-500/20 mb-6">
+        <div className={`relative overflow-hidden bg-gradient-to-br ${cardClass} rounded-[2.5rem] p-6 text-white shadow-lg mb-8 transition-all duration-500`}>
             {/* Background patterns */}
             <div className="absolute top-0 right-0 p-8 opacity-10 transform translate-x-1/3 -translate-y-1/3 pointer-events-none">
                 <Star className="w-64 h-64 fill-current" />
@@ -57,7 +85,7 @@ export const GamificationStats: React.FC<GamificationStatsProps> = ({
                         </div>
                         <div>
                             <p className="text-[10px] font-black uppercase tracking-widest text-white/80">{t.gamification.level} {level}</p>
-                            <h3 className="text-xl font-black tracking-tight">{t.gamification.rank.novice}</h3>
+                            <h3 className="text-2xl font-black tracking-tight">{rankName}</h3>
                         </div>
                     </div>
 
@@ -78,14 +106,14 @@ export const GamificationStats: React.FC<GamificationStatsProps> = ({
                 </div>
 
                 {/* Right: Star Points */}
-                <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md px-6 py-4 rounded-3xl border border-white/20 shadow-inner">
+                <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md px-6 py-4 rounded-3xl border border-white/20 shadow-inner min-w-[180px] justify-between">
                     <div className="relative">
-                        <Star className="w-12 h-12 text-yellow-200 fill-yellow-200 animate-pulse drop-shadow-[0_0_15px_rgba(253,224,71,0.6)]" />
-                        <Sparkles className="absolute -top-2 -right-2 w-6 h-6 text-white animate-bounce" />
+                        <Star className="w-10 h-10 text-yellow-200 fill-yellow-200 animate-pulse drop-shadow-[0_0_15px_rgba(253,224,71,0.6)]" />
+                        <Sparkles className="absolute -top-2 -right-2 w-5 h-5 text-white animate-bounce" />
                     </div>
                     <div className="text-right">
                         <p className="text-[10px] font-black uppercase tracking-widest text-white/80">{t.gamification.totalPoints}</p>
-                        <p className="text-4xl font-black tabular-nums tracking-tighter drop-shadow-md">
+                        <p className="text-3xl font-black tabular-nums tracking-tighter drop-shadow-md">
                             {displayedPoints.toLocaleString()}
                         </p>
                     </div>
