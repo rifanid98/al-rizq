@@ -53,7 +53,7 @@ export const id = {
             subtitle: 'Kustomisasi Antarmuka',
             theme: 'Tema',
             changeTheme: 'Ganti',
-            background: 'Background',
+            background: 'Latar Belakang',
             bgDescription: 'Tampilkan background waktu sholat',
             backgroundSubtitle: 'Tampilkan gambar tematik',
             opacity: 'Opasitas',

@@ -81,6 +81,7 @@ export interface AppSettings {
     maghrib: number;
     isha: number;
   };
+  lastKnownLocation?: string;
 }
 
 export interface AppState {

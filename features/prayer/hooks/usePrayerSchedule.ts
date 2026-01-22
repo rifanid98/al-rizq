@@ -75,5 +75,14 @@ export const usePrayerSchedule = () => {
         }
     }, [schedule]);
 
+    useEffect(() => {
+        if (!schedule) {
+            const lastLocation = localStorage.getItem(STORAGE_KEYS.LAST_KNOWN_LOCATION);
+            if (lastLocation) {
+                getSchedule({ address: lastLocation });
+            }
+        }
+    }, []);
+
     return { schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule };
 };

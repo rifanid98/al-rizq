@@ -66,7 +66,7 @@ const App: React.FC = () => {
   const {
     themeMode, cycleTheme, showPrayerBg, setShowPrayerBg, prayerBgOpacity, setPrayerBgOpacity,
     locationHistory, getCurrentSettings, restoreSettings, addToHistory, language, setLanguage,
-    prayerTimeCorrection, setPrayerTimeCorrection
+    prayerTimeCorrection, setPrayerTimeCorrection, setLastKnownLocation, lastKnownLocation, removeHistory
   } = useSettings();
   const {
     schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule
@@ -318,6 +318,28 @@ const App: React.FC = () => {
       setYesterdaySchedule(null);
     }
   }, [currentDate, schedule, getSchedule]);
+
+  // Sync location to settings
+  useEffect(() => {
+    if (schedule?.location && schedule.location !== lastKnownLocation) {
+      setLastKnownLocation(schedule.location);
+    }
+  }, [schedule?.location, lastKnownLocation, setLastKnownLocation]);
+
+  // Sync settings location to schedule (handle restore)
+  useEffect(() => {
+    // Only fetch if lastKnownLocation exists, differs from current schedule, 
+    // AND we are not currently loading (to avoid race conditions)
+    if (lastKnownLocation && (!schedule || schedule.location !== lastKnownLocation) && !isLoading) {
+      // We need to be careful not to create a loop if getSchedule returns a different string 
+      // than what we requested. However, even if it does, the first effect should update 
+      // lastKnownLocation to match, stabilizing the system.
+      // The loop happens if getSchedule() -> updates schedule -> Effect A -> updates lastKnown -> Effect B -> getSchedule()
+      // If schedule.location matches lastKnownLocation, Effect A won't trigger.
+      getSchedule({ address: lastKnownLocation });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastKnownLocation]);
 
   // Live Search Suggestions
   useEffect(() => {
@@ -635,7 +657,8 @@ const App: React.FC = () => {
               <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
                 <button onClick={() => setIsSearching(!isSearching)} className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden min-w-0">
                   <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1">{adjustedSchedule?.location || t.tracker.searchLocation}</span>
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1 block max-w-none lg:max-w-[300px] text-left">{adjustedSchedule?.location || t.tracker.searchLocation}</span>
+
                   <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isSearching ? 'rotate-90' : ''}`} />
                 </button>
                 <Button variant="ghost" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0" onClick={() => getSchedule()} isLoading={isLoading && !isSearching}>
@@ -671,7 +694,11 @@ const App: React.FC = () => {
                     className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-slate-100 font-bold placeholder:text-slate-400"
                     autoFocus
                   />
-                  {isSearchingSuggestions && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500 animate-spin" />}
+                  {isSearchingSuggestions && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                      <Loader2 className="w-5 h-5 text-emerald-500 animate-spin" />
+                    </div>
+                  )}
                 </div>
 
                 {suggestions.length > 0 && (
@@ -689,10 +716,15 @@ const App: React.FC = () => {
                     <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">{t.tracker.locationHistory}</p>
                     <div className="space-y-1">
                       {locationHistory.map((loc, i) => (
-                        <button key={i} onClick={() => { getSchedule({ address: loc }); setIsSearching(false); }} className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 flex items-center justify-between group">
-                          <div className="flex items-center gap-3"><Clock className="w-4 h-4 text-slate-300" /> {loc}</div>
-                          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
-                        </button>
+                        <div key={i} className="flex items-center gap-1 group">
+                          <button onClick={() => { getSchedule({ address: loc }); setIsSearching(false); }} className="flex-1 text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 flex items-center justify-between transition-colors">
+                            <div className="flex items-center gap-3"><Clock className="w-4 h-4 text-slate-300" /> {loc}</div>
+                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
+                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); removeHistory(loc); }} className="p-3 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl text-slate-300 hover:text-rose-500 transition-colors">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
                       ))}
                     </div>
                   </div>
