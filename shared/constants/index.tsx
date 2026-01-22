@@ -45,4 +45,4 @@ export const STORAGE_KEYS = {
   RAMADHAN_CONFIG: 'al_rizq_ramadhan_config'
 };
 
-export const CURRENT_VERSION = '1.1.1';
+export const CURRENT_VERSION = '1.2.1';
