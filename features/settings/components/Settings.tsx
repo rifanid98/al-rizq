@@ -21,9 +21,10 @@ import {
     LayoutGrid
 } from 'lucide-react';
 import { Button } from '../../../shared/components/ui/Button';
-import { PrayerLog, AppSettings, UserProfile, FastingLog } from '../../../shared/types';
+import { GamificationSettings } from '../../gamification/components/GamificationSettings';
+import { GamificationStats } from '../../gamification/components/GamificationStats';
+import { PrayerLog, AppSettings, UserProfile, FastingLog, GamificationConfig, DEFAULT_GAMIFICATION_CONFIG } from '../../../shared/types';
 import { STORAGE_KEYS } from '../../../shared/constants';
-
 import { useLanguage } from '../../../shared/hooks/useLanguage';
 
 interface SettingsProps {
@@ -49,6 +50,16 @@ interface SettingsProps {
     restoreSettings: (s: AppSettings) => void;
     googleBtnRef: React.RefObject<HTMLDivElement | null>;
     onClearData: () => void;
+    gamificationConfig?: GamificationConfig;
+    gamification?: {
+        level: number;
+        progress: number;
+        totalPoints: number;
+        nextLevelXp: number;
+        currentLevelXp: number;
+        config: GamificationConfig;
+    };
+    onGamificationConfigChange?: (config: GamificationConfig) => void;
 }
 
 export const Settings: React.FC<SettingsProps> = ({
@@ -73,7 +84,10 @@ export const Settings: React.FC<SettingsProps> = ({
     setLogs,
     restoreSettings,
     googleBtnRef,
-    onClearData
+    onClearData,
+    gamificationConfig,
+    gamification,
+    onGamificationConfigChange
 }) => {
     const { t, language, setLanguage } = useLanguage();
     const [showIndividualCorrection, setShowIndividualCorrection] = React.useState(false);
@@ -137,6 +151,25 @@ export const Settings: React.FC<SettingsProps> = ({
             </section>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Gamification Section */}
+                <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col order-first lg:col-span-2">
+                    {gamification && gamificationConfig?.enabled && (
+                        <div className="mb-8">
+                            <GamificationStats
+                                level={gamification.level}
+                                progress={gamification.progress}
+                                totalPoints={gamification.totalPoints}
+                                nextLevelXp={gamification.nextLevelXp}
+                                currentLevelXp={gamification.currentLevelXp}
+                            />
+                        </div>
+                    )}
+                    <GamificationSettings
+                        config={gamificationConfig || DEFAULT_GAMIFICATION_CONFIG}
+                        onChange={onGamificationConfigChange || (() => { })}
+                    />
+                </section>
+
                 {/* Sync Section */}
                 <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
                     <div className="flex items-center gap-4 mb-8">
@@ -396,7 +429,7 @@ export const Settings: React.FC<SettingsProps> = ({
 
                 {/* Additional Links/Info */}
                 <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center group">
-                    <div className="flex lg:hidden lg:group-[:nth-child(even):last-child]:flex items-center gap-4 mb-8">
+                    <div className="flex items-center gap-4 mb-8">
                         <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-950/50 rounded-2xl flex items-center justify-center text-indigo-600">
                             <LayoutGrid className="w-6 h-6" />
                         </div>

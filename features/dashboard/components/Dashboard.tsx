@@ -16,14 +16,24 @@ import { CheckCircle2, Clock, MapPin, AlertCircle, TrendingUp, ChevronDown, SunM
 import { useLanguage } from '../../../shared/hooks/useLanguage';
 import { FastingStats } from '../../fasting/components/FastingStats';
 
+import { GamificationConfig } from '../../../shared/types';
+
 interface DashboardProps {
   logs: PrayerLog[];
   fastingLogs: FastingLog[];
   dzikirLogs: DzikirLog[];
   hijriDate?: any; // To be passed from App.tsx
+  gamification: {
+    level: number;
+    progress: number;
+    totalPoints: number;
+    nextLevelXp: number;
+    currentLevelXp: number;
+    config: GamificationConfig;
+  };
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirLogs, hijriDate }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirLogs, hijriDate, gamification }) => {
   const isDark = document.documentElement.classList.contains('dark');
   const performanceRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -125,6 +135,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
 
   return (
     <div className="flex flex-col gap-8 animate-in fade-in duration-500">
+
+
+
       {/* Sub-Tabs for Dashboard */}
       <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl mx-auto">
         <button

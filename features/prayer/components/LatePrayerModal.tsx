@@ -5,6 +5,9 @@ import { PrayerName, PrayerLog } from '../../../shared/types';
 import { PRAYER_RAKAAT } from '../../../shared/constants';
 import { Button } from '../../../shared/components/ui/Button';
 import { useLanguage } from '../../../shared/hooks/useLanguage';
+import { useStarAnimation } from '../../gamification/context/GamificationContext';
+import { calculatePrayerPoints } from '../../gamification/services/gamificationService';
+import { DEFAULT_GAMIFICATION_CONFIG, GamificationConfig } from '../../../shared/types';
 
 interface LatePrayerModalProps {
     isOpen: boolean;
@@ -39,6 +42,7 @@ interface LatePrayerModalProps {
     isSunnahExpanded: boolean;
     setIsSunnahExpanded: (val: boolean) => void;
     onConfirm: () => void;
+    gamificationConfig: GamificationConfig;
 }
 
 export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
@@ -73,9 +77,19 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
     setHasDua,
     isSunnahExpanded,
     setIsSunnahExpanded,
-    onConfirm
+    onConfirm,
+    gamificationConfig
 }) => {
     const { t } = useLanguage();
+    const { triggerAnimation } = useStarAnimation();
+
+    // Import needed logic dynamically or statically above. 
+    // Since we can't easily add top-level imports without context loss in this tool sometimes, 
+    // let's try assuming they are available or add them.
+    // Ideally we should have added imports at top.
+    // For now, let's just use the count passed.
+    // Wait, the user wants exact points. We need to calculate it.
+
     if (!isOpen || !pendingLatePrayer) return null;
 
     return (
@@ -317,7 +331,26 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                         </Button>
                         <Button
                             className="flex-1 h-14 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-emerald-500/20"
-                            onClick={onConfirm}
+                            onClick={(e) => {
+                                // Calculate expected points
+                                const potentialLog: any = {
+                                    prayerName: pendingLatePrayer.name,
+                                    // Match logPrayer logic: if it's a forgot marking, it counts as Tepat Waktu for points
+                                    status: isForgotMarking ? 'Tepat Waktu' : (isLateEntry ? 'Terlambat' : 'Tepat Waktu'),
+                                    locationType: locationType,
+                                    executionType: executionType,
+                                    isMasbuq: isMasbuq,
+                                    hasQobliyah: hasQobliyah,
+                                    hasBadiyah: hasBadiyah,
+                                    hasDzikir: hasDzikir,
+                                    hasDua: hasDua
+                                };
+                                const points = calculatePrayerPoints(potentialLog, gamificationConfig);
+
+                                // Trigger animation
+                                triggerAnimation(e.currentTarget.getBoundingClientRect(), points > 0 ? points : 12);
+                                onConfirm();
+                            }}
                         >
                             {t.common.save}
                         </Button>

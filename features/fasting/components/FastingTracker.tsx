@@ -7,10 +7,14 @@ import { getFastingRecommendation } from "../services/fastingService";
 import { Moon, Check, Info, Star, RotateCcw, Target, Settings, X, Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../../../shared/components/ui/Button";
 import { STORAGE_KEYS } from "../../../shared/constants";
+import { useStarAnimation } from "../../gamification/context/GamificationContext";
+import { calculateFastingPoints } from "../../gamification/services/gamificationService";
+import { DEFAULT_GAMIFICATION_CONFIG, GamificationConfig } from "../../../shared/types";
 
 interface FastingTrackerProps {
     currentDate: string; // YYYY-MM-DD
     hijriDate?: HijriDate;
+    gamificationConfig: GamificationConfig;
 }
 
 interface FastingPreferenceConfig {
@@ -22,9 +26,10 @@ interface FastingPreferenceConfig {
 const STORAGE_KEY_NADZAR_CONFIG = STORAGE_KEYS.NADZAR_CONFIG;
 const STORAGE_KEY_QADHA_CONFIG = STORAGE_KEYS.QADHA_CONFIG;
 
-export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hijriDate }) => {
+export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hijriDate, gamificationConfig }) => {
     const { t, language } = useLanguage();
     const { getLogForDate, logFasting, removeFastingLog } = useFastingLogs();
+    const { triggerAnimation } = useStarAnimation();
     const [recommendation, setRecommendation] = useState<{ type: string | null; labelKey: string; isForbidden?: boolean }>({ type: null, labelKey: '' });
     const [selectedType, setSelectedType] = useState<FastingType | null>(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -317,7 +322,14 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                         {!todayLog ? (
                             <div className="flex flex-col gap-3 items-center">
                                 <Button
-                                    onClick={handleToggle}
+                                    onClick={(e) => {
+                                        if (!recommendation.isForbidden && !isDropdownOpen) {
+                                            const type = selectedType || recommendation.type as FastingType || 'Senin-Kamis';
+                                            const points = calculateFastingPoints({ type: type, isCompleted: true, date: currentDate } as any, gamificationConfig);
+                                            triggerAnimation(e.currentTarget.getBoundingClientRect(), points > 0 ? points : 12);
+                                        }
+                                        handleToggle();
+                                    }}
                                     disabled={!!recommendation.isForbidden}
                                     className={`rounded-2xl ${recommendation.isForbidden ? 'bg-slate-300 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'} text-white px-8 py-4 shadow-lg shadow-emerald-600/20 flex items-center gap-3 text-sm font-bold transition-all transform hover:scale-105`}
                                 >

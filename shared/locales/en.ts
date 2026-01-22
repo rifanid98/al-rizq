@@ -308,5 +308,40 @@ export const en = {
             11: "Dzulkaidah",
             12: "Dzulhijjah"
         }
+    },
+    gamification: {
+        title: "Gamification",
+        level: "Level",
+        xp: "XP",
+        totalPoints: "Total Points",
+        rank: {
+            novice: "Novice",
+            intermediate: "Intermediate",
+            advanced: "Advanced",
+            expert: "Expert",
+            master: "Master"
+        },
+        settings: {
+            title: "Gamification",
+            pointsPrayer: "Prayer Points",
+            pointsFasting: "Fasting Points",
+            pointsDzikir: "Dhikr Points",
+            pts: "Pts",
+            keys: {
+                mosque: "Mosque",
+                jamaah: "Jamaah",
+                noMasbuq: "No Masbuq",
+                onTime: "On Time",
+                qobliyah: "Qobliyah",
+                badiyah: "Badiyah",
+                dzikir: "Dhikr",
+                dua: "Dua",
+                bonusPerfect: "Perfect Bonus",
+                bonusAllSunnah: "All Sunnah Bonus",
+                mondayThursday: "Mon-Thu",
+                ayyamulBidh: "Ayyamul Bidh",
+                morningEvening: "Morning/Evening"
+            }
+        }
     }
 };

@@ -82,6 +82,7 @@ export interface AppSettings {
     isha: number;
   };
   lastKnownLocation?: string;
+  gamificationConfig?: GamificationConfig;
 }
 
 export interface AppState {
@@ -121,3 +122,55 @@ export interface DzikirLog {
   isCompleted: boolean;
   timestamp: number;
 }
+
+export interface GamificationPointsConfig {
+  prayer: {
+    mosque: number;
+    jamaah: number;
+    noMasbuq: number;
+    onTime: number;
+    qobliyah: number;
+    badiyah: number;
+    dzikir: number;
+    dua: number; // "marked praying" mapped to Dua
+    bonusPerfect: number; // Mosque + Jamaah + NoMasbuq + OnTime
+    bonusAllSunnah: number; // Qobliyah + Badiyah + Dzikir + Dua
+  };
+  fasting: {
+    mondayThursday: number; // Senin-Kamis
+    ayyamulBidh: number;
+  };
+  dzikir: {
+    morningEvening: number; // Pagi/Petang
+  };
+}
+
+export interface GamificationConfig {
+  enabled: boolean;
+  points: GamificationPointsConfig;
+}
+
+export const DEFAULT_GAMIFICATION_CONFIG: GamificationConfig = {
+  enabled: true,
+  points: {
+    prayer: {
+      mosque: 5,
+      jamaah: 5,
+      noMasbuq: 5,
+      onTime: 5,
+      qobliyah: 5,
+      badiyah: 5,
+      dzikir: 5,
+      dua: 5,
+      bonusPerfect: 10,
+      bonusAllSunnah: 10,
+    },
+    fasting: {
+      mondayThursday: 10,
+      ayyamulBidh: 15,
+    },
+    dzikir: {
+      morningEvening: 10,
+    },
+  },
+};

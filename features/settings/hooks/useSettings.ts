@@ -51,6 +51,17 @@ export const useSettings = () => {
         return localStorage.getItem(STORAGE_KEYS.LAST_KNOWN_LOCATION) || '';
     });
 
+    const [gamificationConfig, setGamificationConfig] = useState<Required<AppSettings>['gamificationConfig']>(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEYS.GAMIFICATION_CONFIG);
+            // Import DEFAULT_GAMIFICATION_CONFIG inside or outside. 
+            // Since we can't easily import if not already imported, let's look at imports.
+            return saved ? JSON.parse(saved) : undefined;
+        } catch (e) {
+            return undefined;
+        }
+    });
+
     const { language, setLanguage } = useLanguage();
 
     useEffect(() => {
@@ -85,6 +96,12 @@ export const useSettings = () => {
         }
     }, [lastKnownLocation]);
 
+    useEffect(() => {
+        if (gamificationConfig) {
+            localStorage.setItem(STORAGE_KEYS.GAMIFICATION_CONFIG, JSON.stringify(gamificationConfig));
+        }
+    }, [gamificationConfig]);
+
 
     const addToHistory = useCallback((address: string) => {
         setLocationHistory(prev => {
@@ -118,9 +135,10 @@ export const useSettings = () => {
             nadzarConfig: nadzar ? JSON.parse(nadzar) : undefined,
             qadhaConfig: qadha ? JSON.parse(qadha) : undefined,
             prayerTimeCorrection: prayerTimeCorrection,
-            lastKnownLocation: lastKnownLocation
+            lastKnownLocation: lastKnownLocation,
+            gamificationConfig: gamificationConfig
         };
-    }, [themeMode, locationHistory, showPrayerBg, prayerBgOpacity, language, prayerTimeCorrection, lastKnownLocation]);
+    }, [themeMode, locationHistory, showPrayerBg, prayerBgOpacity, language, prayerTimeCorrection, lastKnownLocation, gamificationConfig]);
 
     const restoreSettings = useCallback((s: AppSettings) => {
         if (s.theme) setThemeMode(s.theme);
@@ -129,6 +147,7 @@ export const useSettings = () => {
         if (s.prayerBgOpacity !== undefined) setPrayerBgOpacity(s.prayerBgOpacity);
         if (s.prayerTimeCorrection) setPrayerTimeCorrection(s.prayerTimeCorrection as any);
         if (s.lastKnownLocation) setLastKnownLocation(s.lastKnownLocation);
+        if (s.gamificationConfig) setGamificationConfig(s.gamificationConfig);
 
         if (s.nadzarConfig) {
             localStorage.setItem(STORAGE_KEYS.NADZAR_CONFIG, JSON.stringify(s.nadzarConfig));
@@ -152,6 +171,7 @@ export const useSettings = () => {
         if (s.prayerBgOpacity !== undefined) localStorage.setItem('al_rizq_bg_opacity', JSON.stringify(s.prayerBgOpacity));
         if (s.prayerTimeCorrection) localStorage.setItem('al_rizq_prayer_correction', JSON.stringify(s.prayerTimeCorrection));
         if (s.lastKnownLocation) localStorage.setItem(STORAGE_KEYS.LAST_KNOWN_LOCATION, s.lastKnownLocation);
+        if (s.gamificationConfig) localStorage.setItem(STORAGE_KEYS.GAMIFICATION_CONFIG, JSON.stringify(s.gamificationConfig));
     }, []);
 
     return {
@@ -173,6 +193,8 @@ export const useSettings = () => {
         setPrayerTimeCorrection,
         lastKnownLocation,
         setLastKnownLocation,
-        removeHistory
+        removeHistory,
+        gamificationConfig,
+        setGamificationConfig
     };
 };

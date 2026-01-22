@@ -4,10 +4,18 @@ import { useDzikir } from '../hooks/useDzikir';
 import { useLanguage } from '../../../shared/hooks/useLanguage';
 import { Check, Sun, Moon, List, ChevronDown, Maximize2, Minimize2, CheckCircle, ArrowDown, ChevronsUp, ChevronsDown } from 'lucide-react';
 import { getLocalDateStr } from '../../../shared/utils/helpers';
+import { useStarAnimation } from '../../gamification/context/GamificationContext';
+import { calculateDzikirPoints } from '../../gamification/services/gamificationService';
+import { DEFAULT_GAMIFICATION_CONFIG, GamificationConfig } from '../../../shared/types';
 
-export const DzikirTracker: React.FC = () => {
+interface DzikirTrackerProps {
+    gamificationConfig: GamificationConfig;
+}
+
+export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig }) => {
     const { getCategories, getCategory, getSuggestedCategory, getLog, toggleItem } = useDzikir();
     const { t } = useLanguage();
+    const { triggerAnimation } = useStarAnimation();
 
     const [activeCategoryId, setActiveCategoryId] = useState<string>(getSuggestedCategory());
     const [expandedItems, setExpandedItems] = useState<string[]>([]);
@@ -171,6 +179,10 @@ export const DzikirTracker: React.FC = () => {
                                 <div
                                     onClick={(e) => {
                                         e.stopPropagation();
+                                        if (!isChecked && completedItems.length === list.length - 1) {
+                                            const points = calculateDzikirPoints({ categoryId: activeCategory.id, isCompleted: true, date: date } as any, gamificationConfig);
+                                            triggerAnimation(e.currentTarget.getBoundingClientRect(), points > 0 ? points : 12);
+                                        }
                                         toggleItem(item.id, activeCategory.id, date);
                                     }}
                                     className={`mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors cursor-pointer shrink-0 ${isChecked
