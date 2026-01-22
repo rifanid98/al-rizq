@@ -87,6 +87,27 @@ export const getFastingRecommendation = (date: Date, hijri: HijriDate): {
     labelKey: string,
     isForbidden?: boolean
 } => {
+    // Check for custom Ramadhan range from localStorage
+    const savedRamadhan = localStorage.getItem('al_rizq_ramadhan_config');
+    if (savedRamadhan) {
+        try {
+            const { startDate, endDate } = JSON.parse(savedRamadhan);
+            if (startDate && endDate) {
+                // Fix: Normalize dates to YYYY-MM-DD for comparison
+                const yearStr = date.getFullYear();
+                const monthStr = String(date.getMonth() + 1).padStart(2, '0');
+                const dayStr = String(date.getDate()).padStart(2, '0');
+                const localDateStr = `${yearStr}-${monthStr}-${dayStr}`;
+
+                if (localDateStr >= startDate && localDateStr <= endDate) {
+                    return { type: 'Ramadhan', labelKey: 'fasting.types.ramadhan' };
+                }
+            }
+        } catch (e) {
+            console.error('Error parsing Ramadhan config:', e);
+        }
+    }
+
     if (isRamadhan(hijri)) {
         return { type: 'Ramadhan', labelKey: 'fasting.types.ramadhan' };
     }

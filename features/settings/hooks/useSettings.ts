@@ -126,6 +126,7 @@ export const useSettings = () => {
     const getCurrentSettings = useCallback((): AppSettings => {
         const nadzar = localStorage.getItem(STORAGE_KEYS.NADZAR_CONFIG);
         const qadha = localStorage.getItem(STORAGE_KEYS.QADHA_CONFIG);
+        const ramadhan = localStorage.getItem(STORAGE_KEYS.RAMADHAN_CONFIG);
         return {
             theme: themeMode,
             locationHistory: locationHistory,
@@ -134,6 +135,7 @@ export const useSettings = () => {
             language: language,
             nadzarConfig: nadzar ? JSON.parse(nadzar) : undefined,
             qadhaConfig: qadha ? JSON.parse(qadha) : undefined,
+            ramadhanConfig: ramadhan ? JSON.parse(ramadhan) : undefined,
             prayerTimeCorrection: prayerTimeCorrection,
             lastKnownLocation: lastKnownLocation,
             gamificationConfig: gamificationConfig
@@ -156,6 +158,10 @@ export const useSettings = () => {
         if (s.qadhaConfig) {
             localStorage.setItem(STORAGE_KEYS.QADHA_CONFIG, JSON.stringify(s.qadhaConfig));
             window.dispatchEvent(new Event('fasting_config_updated'));
+        }
+        if (s.ramadhanConfig) {
+            localStorage.setItem(STORAGE_KEYS.RAMADHAN_CONFIG, JSON.stringify(s.ramadhanConfig));
+            window.dispatchEvent(new Event('ramadhan_config_updated'));
         }
 
         if (s.language) {

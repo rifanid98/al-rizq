@@ -4,9 +4,10 @@ import { useLanguage } from "../../../shared/hooks/useLanguage";
 import { useFastingLogs } from "../hooks/useFastingLogs";
 import { getMonthForecast } from "../services/fastingService";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Calendar as CalendarIcon, Info, Star, RotateCcw, Moon, Target, TrendingUp } from 'lucide-react';
+import { Calendar as CalendarIcon, Info, Star, RotateCcw, Moon, Target, TrendingUp, MoonStar } from 'lucide-react';
 import { HijriDate, FastingType } from '../../../shared/types';
 import { getLocalDateStr } from '../../../shared/utils/helpers';
+import { STORAGE_KEYS } from '../../../shared/constants';
 
 interface NadzarConfig {
     types: FastingType[];
@@ -14,8 +15,6 @@ interface NadzarConfig {
     customDates: string[];
 }
 
-const STORAGE_KEY_NADZAR_CONFIG = 'al_rizq_nadzar_config';
-const STORAGE_KEY_QADHA_CONFIG = 'al_rizq_qadha_config';
 
 interface FastingStatsProps {
     hijriDate?: HijriDate;
@@ -33,22 +32,28 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
     // Qadha Config State
     const [qadhaConfig, setQadhaConfig] = useState<NadzarConfig>({ types: [], days: [], customDates: [] });
 
+    const [configVersion, setConfigVersion] = useState(0);
+
     useEffect(() => {
         const loadConfig = () => {
-            const savedNadzar = localStorage.getItem(STORAGE_KEY_NADZAR_CONFIG);
+            const savedNadzar = localStorage.getItem(STORAGE_KEYS.NADZAR_CONFIG);
             if (savedNadzar) setNadzarConfig(JSON.parse(savedNadzar));
 
-            const savedQadha = localStorage.getItem(STORAGE_KEY_QADHA_CONFIG);
+            const savedQadha = localStorage.getItem(STORAGE_KEYS.QADHA_CONFIG);
             if (savedQadha) setQadhaConfig(JSON.parse(savedQadha));
+
+            setConfigVersion(v => v + 1);
         };
 
         loadConfig();
 
         window.addEventListener('nadzar_config_updated', loadConfig);
         window.addEventListener('qadha_config_updated', loadConfig);
+        window.addEventListener('ramadhan_config_updated', loadConfig);
         return () => {
             window.removeEventListener('nadzar_config_updated', loadConfig);
             window.removeEventListener('qadha_config_updated', loadConfig);
+            window.removeEventListener('ramadhan_config_updated', loadConfig);
         };
     }, []);
 
@@ -79,7 +84,8 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
     const currentMonthForecast = useMemo(() => {
         const now = new Date();
         return getMonthForecast(now.getFullYear(), now.getMonth());
-    }, []);
+    }, [configVersion]);
+
 
     // Helper to check if a date is fasted and get type
     const getFastedLog = (date: string) => fastingLogs.find(l => l.date === date);
@@ -233,7 +239,8 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
                                             {log?.type === 'Nadzar' && <Target className="w-[60%] h-[60%]" />}
                                             {log?.type === 'Qadha' && <RotateCcw className="w-[60%] h-[60%] text-white" />}
                                             {log?.type === 'Senin-Kamis' && <Star className="w-[60%] h-[60%]" />}
-                                            {['Ayyamul Bidh', 'Ramadhan', 'Lainnya'].includes(log?.type || '') && <Moon className="w-[60%] h-[60%]" />}
+                                            {log?.type === 'Ramadhan' && <MoonStar className="w-[60%] h-[60%]" />}
+                                            {['Ayyamul Bidh', 'Lainnya'].includes(log?.type || '') && <Moon className="w-[60%] h-[60%]" />}
                                         </div>
                                     ) : (
                                         isRecommended && !day.recommendation.isForbidden && (
@@ -241,7 +248,8 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
                                                 {effectiveType === 'Nadzar' && <Target className="w-[60%] h-[60%] text-amber-500" />}
                                                 {effectiveType === 'Qadha' && <RotateCcw className="w-[60%] h-[60%] text-white" />}
                                                 {effectiveType === 'Senin-Kamis' && <Star className="w-[60%] h-[60%] text-emerald-500" />}
-                                                {['Ayyamul Bidh', 'Ramadhan', 'Lainnya'].includes(effectiveType || '') && <Moon className="w-[60%] h-[60%] text-sky-500" />}
+                                                {effectiveType === 'Ramadhan' && <MoonStar className="w-[60%] h-[60%] text-emerald-500" />}
+                                                {['Ayyamul Bidh', 'Lainnya'].includes(effectiveType || '') && <Moon className="w-[60%] h-[60%] text-sky-500" />}
                                             </div>
                                         )
                                     )}
