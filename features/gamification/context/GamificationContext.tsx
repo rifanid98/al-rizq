@@ -31,7 +31,13 @@ export const StarAnimationProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     }, []);
 
+    const lastTriggerTime = useRef<number>(0);
+
     const triggerAnimation = useCallback((_startRect?: DOMRect | null, count: number = 5) => {
+        const now = Date.now();
+        if (now - lastTriggerTime.current < 1000) return; // 1s cooldown
+        lastTriggerTime.current = now;
+
         if (!targetRef.current) return;
 
         const targetRect = targetRef.current.getBoundingClientRect();

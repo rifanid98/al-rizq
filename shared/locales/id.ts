@@ -346,6 +346,10 @@ export const id = {
                 bonusAllSunnah: "Bonus Sunnah Lengkap",
                 mondayThursday: "Senin-Kamis",
                 ayyamulBidh: "Ayyamul Bidh",
+                ramadhan: "Ramadhan",
+                nadzar: "Nadzar",
+                qadha: "Qadha",
+                other: "Lainnya",
                 morningEvening: "Pagi/Petang"
             }
         }
