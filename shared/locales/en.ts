@@ -28,7 +28,14 @@ export const en = {
         prayer: "Prayer",
         statusLabel: "Status",
         change: "Change",
-        confirmDeleteAll: "Are you sure you want to delete all history? This action cannot be undone."
+        menu: "Menu",
+        confirmDeleteAll: "Are you sure you want to delete all history? This action cannot be undone.",
+        errors: {
+            geolocationDenied: "Location permission denied. Please search for location manually.",
+            locationUnavailable: "Location unavailable.",
+            timeout: "Location request timed out."
+        },
+        trackerCategory: "Worship Tracker"
     },
     tabs: {
         tracker: "Prayer",
@@ -67,6 +74,7 @@ export const en = {
         },
         sync: {
             title: "Cloud Synchronization",
+            subtitle: "Data Synchronization",
             lastSync: "Last Sync",
             notSynced: "Never",
             upload: "Upload to Cloud",
@@ -88,11 +96,20 @@ export const en = {
             en: "English"
         },
         additional: {
+            title: "Miscellaneous",
+            subtitle: "Other Settings",
             notifications: "Notifications",
             notificationsSubtitle: "Active (Kemenag Source)",
             privacy: "Privacy",
             privacySubtitle: "Local Data & Cloud Sync"
         }
+    },
+    dzikir: {
+        title: "Dhikr",
+        morning: "Morning",
+        evening: "Evening",
+        morningDesc: "Read after Dawn prayer until sunrise",
+        eveningDesc: "Read after Afternoon prayer until sunset",
     },
     tracker: {
         title: "Prayer",
@@ -241,6 +258,55 @@ export const en = {
             streak: "Streak"
         },
         distribution: "Fasting Distribution",
-        history: "Monthly History"
+        history: "Monthly History",
+        config: {
+            title: "Fasting Settings",
+            nadzar: "Vow (Nadzar)",
+            qadha: "Makeup (Qadha)",
+            computeAs: "Compute as {type} if:",
+            specialDays: "Special days:",
+            specialDates: "Special Dates:",
+            resetTab: "Reset This Tab",
+            saveConfig: "Save {type}",
+            selectedDates: "{count} dates selected",
+            selectOnCalendar: "Select date on calendar"
+        },
+        days: {
+            sun: "SUN",
+            mon: "MON",
+            tue: "TUE",
+            wed: "WED",
+            thu: "THU",
+            fri: "FRI",
+            sat: "SAT"
+        },
+        months: {
+            jan: "January",
+            feb: "February",
+            mar: "March",
+            apr: "April",
+            may: "May",
+            jun: "June",
+            jul: "July",
+            aug: "August",
+            sep: "September",
+            oct: "October",
+            nov: "November",
+            dec: "December"
+        },
+        hijriMonths: {
+            1: "Muharram",
+            2: "Safar",
+            3: "Rabi'ul Awal",
+            4: "Rabi'ul Akhir",
+            5: "Jumadil Awal",
+            6: "Jumadil Akhir",
+            7: "Rajab",
+            8: "Sya'ban",
+            9: "Ramadan",
+            10: "Syawal",
+            11: "Dzulkaidah",
+            12: "Dzulhijjah"
+        }
     }
 };

@@ -1,11 +1,13 @@
 
 import React, { useState } from 'react';
 import { useDzikir } from '../hooks/useDzikir';
+import { useLanguage } from '../../../shared/hooks/useLanguage';
 import { Check, Sun, Moon, List, ChevronDown, Maximize2, Minimize2, CheckCircle, ArrowDown, ChevronsUp, ChevronsDown } from 'lucide-react';
 import { getLocalDateStr } from '../../../shared/utils/helpers';
 
 export const DzikirTracker: React.FC = () => {
     const { getCategories, getCategory, getSuggestedCategory, getLog, toggleItem } = useDzikir();
+    const { t } = useLanguage();
 
     const [activeCategoryId, setActiveCategoryId] = useState<string>(getSuggestedCategory());
     const [expandedItems, setExpandedItems] = useState<string[]>([]);
@@ -106,7 +108,7 @@ export const DzikirTracker: React.FC = () => {
                                 }`}
                         >
                             {getIcon(cat.id)}
-                            {cat.title.replace('Dzikir ', '')}
+                            {cat.id === 'pagi' ? t.dzikir.morning : cat.id === 'petang' ? t.dzikir.evening : cat.title}
                         </button>
                     ))}
                 </div>
@@ -144,9 +146,9 @@ export const DzikirTracker: React.FC = () => {
             </div>
 
             {/* Description */}
-            {activeCategory.description && (
+            {(activeCategory.description || (activeCategory.id === 'pagi' || activeCategory.id === 'petang')) && (
                 <div className="bg-emerald-50 dark:bg-emerald-900/10 px-4 py-3 rounded-xl border border-emerald-100 dark:border-emerald-900/30 text-xs text-emerald-800 dark:text-emerald-200">
-                    {activeCategory.description}
+                    {activeCategory.id === 'pagi' ? t.dzikir.morningDesc : activeCategory.id === 'petang' ? t.dzikir.eveningDesc : activeCategory.description}
                 </div>
             )}
 

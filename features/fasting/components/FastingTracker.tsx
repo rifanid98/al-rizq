@@ -23,7 +23,7 @@ const STORAGE_KEY_NADZAR_CONFIG = STORAGE_KEYS.NADZAR_CONFIG;
 const STORAGE_KEY_QADHA_CONFIG = STORAGE_KEYS.QADHA_CONFIG;
 
 export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hijriDate }) => {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const { getLogForDate, logFasting, removeFastingLog } = useFastingLogs();
     const [recommendation, setRecommendation] = useState<{ type: string | null; labelKey: string; isForbidden?: boolean }>({ type: null, labelKey: '' });
     const [selectedType, setSelectedType] = useState<FastingType | null>(null);
@@ -282,7 +282,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                         <div>
                             <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">{t.fasting.title}</h3>
                             <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                                {hijriDate.day} {hijriDate.month.en} {hijriDate.year} {hijriDate.designation.abbreviated}
+                                {hijriDate.day} {t.fasting.hijriMonths[hijriDate.month.number as keyof typeof t.fasting.hijriMonths]} {hijriDate.year} {hijriDate.designation.abbreviated}
                             </p>
                         </div>
                     </div>
@@ -399,7 +399,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                 <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="flex-1 text-lg font-black text-slate-800 dark:text-slate-100">Pengaturan Puasa</h3>
+                            <h3 className="flex-1 text-lg font-black text-slate-800 dark:text-slate-100">{t.fasting.config.title}</h3>
                             <button onClick={() => setIsConfigOpen(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                                 <X className="w-6 h-6" />
                             </button>
@@ -414,7 +414,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                     : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                                     }`}
                             >
-                                Nadzar
+                                {t.fasting.config.nadzar}
                             </button>
                             <button
                                 onClick={() => setActiveConfigTab('qadha')}
@@ -423,7 +423,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                     : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                                     }`}
                             >
-                                Qadha / Hutang
+                                {t.fasting.config.qadha}
                             </button>
                         </div>
 
@@ -433,7 +433,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                 {/* Auto-check Types */}
                                 <div>
                                     <h4 className="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">
-                                        Hitung sebagai {activeConfigTab === 'nadzar' ? 'Nadzar' : 'Qadha'} jika:
+                                        {t.fasting.config.computeAs.replace('{type}', activeConfigTab === 'nadzar' ? t.fasting.config.nadzar : t.fasting.config.qadha)}
                                     </h4>
                                     <div className="space-y-3">
                                         {[
@@ -462,9 +462,9 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
 
                                 {/* Recurring Days */}
                                 <div>
-                                    <h4 className="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">Hari-hari tertentu:</h4>
+                                    <h4 className="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">{t.fasting.config.specialDays}</h4>
                                     <div className="grid grid-cols-7 gap-2">
-                                        {['Ahad', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map((day, idx) => {
+                                        {Object.keys(t.fasting.days).map((key, idx) => {
                                             const isSelected = tempConfig.days.includes(idx);
                                             return (
                                                 <button
@@ -477,7 +477,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                                         : 'bg-slate-50 dark:bg-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'
                                                         }`}
                                                 >
-                                                    <span>{day}</span>
+                                                    <span>{Object.values(t.fasting.days)[idx]}</span>
                                                     {isSelected && <Check className="w-3 h-3" />}
                                                 </button>
                                             );
@@ -487,7 +487,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
 
                                 {/* Custom Dates - Calendar Picker */}
                                 <div>
-                                    <h4 className="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">Tanggal Khusus:</h4>
+                                    <h4 className="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">{t.fasting.config.specialDates}</h4>
 
                                     {/* Calendar UI */}
                                     <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
@@ -500,7 +500,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                                 <ChevronLeft className="w-5 h-5 text-slate-400" />
                                             </button>
                                             <span className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest">
-                                                {calendarDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' })}
+                                                {calendarDate.toLocaleString(language === 'id' ? 'id-ID' : 'en-US', { month: 'long', year: 'numeric' })}
                                             </span>
                                             <button
                                                 onClick={() => setCalendarDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
@@ -512,8 +512,8 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
 
                                         {/* Calendar Grid */}
                                         <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                                            {['M', 'S', 'S', 'R', 'K', 'J', 'S'].map((d, i) => (
-                                                <div key={i} className="text-[10px] font-black text-slate-400">{d}</div>
+                                            {Object.values(t.fasting.days).map((d: string, i) => (
+                                                <div key={i} className="text-[10px] font-black text-slate-400">{d.charAt(0)}</div>
                                             ))}
                                         </div>
                                         <div className="grid grid-cols-7 gap-1">
@@ -556,8 +556,8 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                     <div className="mt-2 text-center">
                                         <p className="text-xs text-slate-400 font-medium">
                                             {tempConfig.customDates.length > 0
-                                                ? `${tempConfig.customDates.length} tanggal dipilih`
-                                                : "Pilih tanggal di kalender"}
+                                                ? t.fasting.config.selectedDates.replace('{count}', tempConfig.customDates.length.toString())
+                                                : t.fasting.config.selectOnCalendar}
                                         </p>
                                     </div>
                                 </div>
@@ -570,14 +570,14 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                 onClick={handleResetConfig}
                                 className="flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold hover:bg-rose-100 hover:text-rose-600 transition-colors"
                             >
-                                Reset Tab Ini
+                                {t.fasting.config.resetTab}
                             </button>
                             <button
                                 onClick={handleSaveConfig}
                                 className={`flex-1 px-4 py-3 rounded-xl text-white font-bold shadow-lg transition-transform active:scale-95 ${activeConfigTab === 'nadzar' ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20' : 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/20'
                                     }`}
                             >
-                                Simpan {activeConfigTab === 'nadzar' ? 'Nadzar' : 'Qadha'}
+                                {t.fasting.config.saveConfig.replace('{type}', activeConfigTab === 'nadzar' ? t.fasting.config.nadzar : t.fasting.config.qadha)}
                             </button>
                         </div>
                     </div>

@@ -7,8 +7,13 @@ import { STORAGE_KEYS } from '../../../shared/constants';
 
 export const usePrayerSchedule = () => {
     const [schedule, setSchedule] = useState<DailySchedule | null>(() => {
-        const saved = localStorage.getItem(STORAGE_KEYS.SCHEDULE);
-        return saved ? JSON.parse(saved) : null;
+        try {
+            const saved = localStorage.getItem(STORAGE_KEYS.SCHEDULE);
+            return saved ? JSON.parse(saved) : null;
+        } catch (e) {
+            console.error("Failed to parse prayer schedule", e);
+            return null;
+        }
     });
     const [yesterdaySchedule, setYesterdaySchedule] = useState<DailySchedule | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -69,6 +74,15 @@ export const usePrayerSchedule = () => {
             localStorage.setItem(STORAGE_KEYS.SCHEDULE, JSON.stringify(schedule));
         }
     }, [schedule]);
+
+    useEffect(() => {
+        if (!schedule) {
+            const lastLocation = localStorage.getItem(STORAGE_KEYS.LAST_KNOWN_LOCATION);
+            if (lastLocation) {
+                getSchedule({ address: lastLocation });
+            }
+        }
+    }, []);
 
     return { schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule };
 };

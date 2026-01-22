@@ -7,8 +7,13 @@ import { DZIKIR_CATEGORIES } from '../data/dzikirContent';
 
 export const useDzikir = () => {
     const [logs, setLogs] = useState<DzikirLog[]>(() => {
-        const saved = localStorage.getItem(STORAGE_KEYS.DZIKIR_LOGS);
-        return saved ? JSON.parse(saved) : [];
+        try {
+            const saved = localStorage.getItem(STORAGE_KEYS.DZIKIR_LOGS);
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            console.error("Failed to parse dzikir logs", e);
+            return [];
+        }
     });
 
     useEffect(() => {

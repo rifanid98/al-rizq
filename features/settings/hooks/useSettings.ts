@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
+import { useLanguage } from '../../../shared/hooks/useLanguage';
 import { STORAGE_KEYS } from '../../../shared/constants';
 import { AppSettings, Language } from '../../../shared/types';
 
@@ -11,32 +12,46 @@ export const useSettings = () => {
     });
 
     const [showPrayerBg, setShowPrayerBg] = useState<boolean>(() => {
-        const saved = localStorage.getItem('al_rizq_show_bg');
-        return saved !== null ? JSON.parse(saved) : true;
+        try {
+            const saved = localStorage.getItem('al_rizq_show_bg');
+            return saved !== null ? JSON.parse(saved) : true;
+        } catch (e) {
+            return true;
+        }
     });
 
     const [prayerBgOpacity, setPrayerBgOpacity] = useState<number>(() => {
-        const saved = localStorage.getItem('al_rizq_bg_opacity');
-        return saved !== null ? JSON.parse(saved) : 10;
+        try {
+            const saved = localStorage.getItem('al_rizq_bg_opacity');
+            return saved !== null ? JSON.parse(saved) : 10;
+        } catch (e) {
+            return 10;
+        }
     });
 
     const [prayerTimeCorrection, setPrayerTimeCorrection] = useState<Required<AppSettings['prayerTimeCorrection']>>(() => {
-        const saved = localStorage.getItem('al_rizq_prayer_correction');
-        return saved ? JSON.parse(saved) : { global: 0, fajr: 0, dhuhr: 0, asr: 0, maghrib: 0, isha: 0 };
+        try {
+            const saved = localStorage.getItem('al_rizq_prayer_correction');
+            return saved ? JSON.parse(saved) : { global: 0, fajr: 0, dhuhr: 0, asr: 0, maghrib: 0, isha: 0 };
+        } catch (e) {
+            return { global: 0, fajr: 0, dhuhr: 0, asr: 0, maghrib: 0, isha: 0 };
+        }
     });
 
     const [locationHistory, setLocationHistory] = useState<string[]>(() => {
-        const savedHistory = localStorage.getItem(STORAGE_KEYS.LOCATION_HISTORY);
-        return savedHistory ? JSON.parse(savedHistory) : [];
+        try {
+            const savedHistory = localStorage.getItem(STORAGE_KEYS.LOCATION_HISTORY);
+            return savedHistory ? JSON.parse(savedHistory) : [];
+        } catch (e) {
+            return [];
+        }
     });
 
-    const [language, setLanguage] = useState<Language>(() => {
-        const saved = localStorage.getItem('al_rizq_language');
-        if (saved === 'id' || saved === 'en') return saved;
-        if (saved?.startsWith('id')) return 'id';
-        if (saved?.startsWith('en')) return 'en';
-        return 'id';
+    const [lastKnownLocation, setLastKnownLocation] = useState<string>(() => {
+        return localStorage.getItem(STORAGE_KEYS.LAST_KNOWN_LOCATION) || '';
     });
+
+    const { language, setLanguage } = useLanguage();
 
     useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -65,12 +80,23 @@ export const useSettings = () => {
     }, [prayerTimeCorrection]);
 
     useEffect(() => {
-        localStorage.setItem('al_rizq_language', language);
-    }, [language]);
+        if (lastKnownLocation) {
+            localStorage.setItem(STORAGE_KEYS.LAST_KNOWN_LOCATION, lastKnownLocation);
+        }
+    }, [lastKnownLocation]);
+
 
     const addToHistory = useCallback((address: string) => {
         setLocationHistory(prev => {
             const updated = [address, ...prev.filter(a => a !== address)].slice(0, 10);
+            localStorage.setItem(STORAGE_KEYS.LOCATION_HISTORY, JSON.stringify(updated));
+            return updated;
+        });
+    }, []);
+
+    const removeHistory = useCallback((address: string) => {
+        setLocationHistory(prev => {
+            const updated = prev.filter(a => a !== address);
             localStorage.setItem(STORAGE_KEYS.LOCATION_HISTORY, JSON.stringify(updated));
             return updated;
         });
@@ -91,9 +117,10 @@ export const useSettings = () => {
             language: language,
             nadzarConfig: nadzar ? JSON.parse(nadzar) : undefined,
             qadhaConfig: qadha ? JSON.parse(qadha) : undefined,
-            prayerTimeCorrection: prayerTimeCorrection
+            prayerTimeCorrection: prayerTimeCorrection,
+            lastKnownLocation: lastKnownLocation
         };
-    }, [themeMode, locationHistory, showPrayerBg, prayerBgOpacity, language, prayerTimeCorrection]);
+    }, [themeMode, locationHistory, showPrayerBg, prayerBgOpacity, language, prayerTimeCorrection, lastKnownLocation]);
 
     const restoreSettings = useCallback((s: AppSettings) => {
         if (s.theme) setThemeMode(s.theme);
@@ -101,6 +128,7 @@ export const useSettings = () => {
         if (s.showPrayerBg !== undefined) setShowPrayerBg(s.showPrayerBg);
         if (s.prayerBgOpacity !== undefined) setPrayerBgOpacity(s.prayerBgOpacity);
         if (s.prayerTimeCorrection) setPrayerTimeCorrection(s.prayerTimeCorrection as any);
+        if (s.lastKnownLocation) setLastKnownLocation(s.lastKnownLocation);
 
         if (s.nadzarConfig) {
             localStorage.setItem(STORAGE_KEYS.NADZAR_CONFIG, JSON.stringify(s.nadzarConfig));
@@ -123,6 +151,7 @@ export const useSettings = () => {
         if (s.showPrayerBg !== undefined) localStorage.setItem('al_rizq_show_bg', JSON.stringify(s.showPrayerBg));
         if (s.prayerBgOpacity !== undefined) localStorage.setItem('al_rizq_bg_opacity', JSON.stringify(s.prayerBgOpacity));
         if (s.prayerTimeCorrection) localStorage.setItem('al_rizq_prayer_correction', JSON.stringify(s.prayerTimeCorrection));
+        if (s.lastKnownLocation) localStorage.setItem(STORAGE_KEYS.LAST_KNOWN_LOCATION, s.lastKnownLocation);
     }, []);
 
     return {
@@ -141,6 +170,9 @@ export const useSettings = () => {
         language,
         setLanguage,
         prayerTimeCorrection,
-        setPrayerTimeCorrection
+        setPrayerTimeCorrection,
+        lastKnownLocation,
+        setLastKnownLocation,
+        removeHistory
     };
 };

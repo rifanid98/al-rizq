@@ -401,8 +401,8 @@ export const Settings: React.FC<SettingsProps> = ({
                             <LayoutGrid className="w-6 h-6" />
                         </div>
                         <div>
-                            <h4 className="text-lg font-black text-slate-800 dark:text-slate-100">Miscellaneous</h4>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">Other Settings</p>
+                            <h4 className="text-lg font-black text-slate-800 dark:text-slate-100">{t.settings.additional.title}</h4>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">{t.settings.additional.subtitle}</p>
                         </div>
                     </div>
 

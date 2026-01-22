@@ -6,8 +6,13 @@ import { getLocalDateStr, calculateDelay, isLate } from '../../../shared/utils/h
 
 export const usePrayerLogs = () => {
     const [logs, setLogs] = useState<PrayerLog[]>(() => {
-        const saved = localStorage.getItem(STORAGE_KEYS.LOGS);
-        return saved ? JSON.parse(saved) : [];
+        try {
+            const saved = localStorage.getItem(STORAGE_KEYS.LOGS);
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            console.error("Failed to parse prayer logs", e);
+            return [];
+        }
     });
 
     useEffect(() => {

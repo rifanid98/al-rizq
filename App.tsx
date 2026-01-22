@@ -51,7 +51,7 @@ import { LatePrayerModal } from './features/prayer/components/LatePrayerModal';
 import { SyncConfirmModal } from './features/sync/components/SyncConfirmModal';
 import { Dashboard } from './features/dashboard/components/Dashboard';
 import { Settings } from './features/settings/components/Settings';
-import { LanguageProvider } from './shared/hooks/useLanguage';
+import { useLanguage } from './shared/hooks/useLanguage';
 import IslamicCelebration from './features/prayer/components/IslamicCelebration';
 import { translations } from './shared/locales';
 import { FastingTracker } from './features/fasting/components/FastingTracker';
@@ -66,7 +66,7 @@ const App: React.FC = () => {
   const {
     themeMode, cycleTheme, showPrayerBg, setShowPrayerBg, prayerBgOpacity, setPrayerBgOpacity,
     locationHistory, getCurrentSettings, restoreSettings, addToHistory, language, setLanguage,
-    prayerTimeCorrection, setPrayerTimeCorrection
+    prayerTimeCorrection, setPrayerTimeCorrection, setLastKnownLocation, lastKnownLocation, removeHistory
   } = useSettings();
   const {
     schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule
@@ -302,7 +302,7 @@ const App: React.FC = () => {
   }, [user, initGoogle, isGoogleReady]);
 
   // Translations
-  const t = useMemo(() => translations[language as keyof typeof translations] || translations['id'], [language]);
+  const { t } = useLanguage();
 
   // Yesterday schedule for flashback
   useEffect(() => {
@@ -318,6 +318,28 @@ const App: React.FC = () => {
       setYesterdaySchedule(null);
     }
   }, [currentDate, schedule, getSchedule]);
+
+  // Sync location to settings
+  useEffect(() => {
+    if (schedule?.location && schedule.location !== lastKnownLocation) {
+      setLastKnownLocation(schedule.location);
+    }
+  }, [schedule?.location, lastKnownLocation, setLastKnownLocation]);
+
+  // Sync settings location to schedule (handle restore)
+  useEffect(() => {
+    // Only fetch if lastKnownLocation exists, differs from current schedule, 
+    // AND we are not currently loading (to avoid race conditions)
+    if (lastKnownLocation && (!schedule || schedule.location !== lastKnownLocation) && !isLoading) {
+      // We need to be careful not to create a loop if getSchedule returns a different string 
+      // than what we requested. However, even if it does, the first effect should update 
+      // lastKnownLocation to match, stabilizing the system.
+      // The loop happens if getSchedule() -> updates schedule -> Effect A -> updates lastKnown -> Effect B -> getSchedule()
+      // If schedule.location matches lastKnownLocation, Effect A won't trigger.
+      getSchedule({ address: lastKnownLocation });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastKnownLocation]);
 
   // Live Search Suggestions
   useEffect(() => {
@@ -449,546 +471,554 @@ const App: React.FC = () => {
   };
 
   return (
-    <LanguageProvider language={language} setLanguage={setLanguage}>
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col lg:flex-row font-sans selection:bg-emerald-100 dark:selection:bg-emerald-900 selection:text-emerald-900 dark:selection:text-emerald-100">
-        {/* Sidebar for Desktop, Bottom Nav for Mobile */}
-        <nav className="fixed bottom-0 left-0 right-0 z-[100] lg:sticky lg:top-0 lg:w-72 lg:h-screen lg:z-50 bg-white dark:bg-slate-900 border-t lg:border-t-0 lg:border-r border-slate-100 dark:border-slate-800 p-6 lg:p-6 flex flex-col items-center gap-8 lg:relative rounded-t-[2.5rem] lg:rounded-none shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.15)] lg:shadow-none">
-          <div className="hidden lg:flex items-center gap-3 self-start px-2">
-            <img src="/favicon.png" alt="Al-Rizq Logo" className="w-10 h-10 rounded-2xl" />
-            <h1 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">AL-RIZQ <span className="text-emerald-600">APP</span></h1>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col lg:flex-row font-sans selection:bg-emerald-100 dark:selection:bg-emerald-900 selection:text-emerald-900 dark:selection:text-emerald-100">
+      {/* Sidebar for Desktop, Bottom Nav for Mobile */}
+      <nav className="fixed bottom-0 left-0 right-0 z-[100] lg:sticky lg:top-0 lg:w-72 lg:flex-shrink-0 lg:h-screen lg:z-50 bg-white dark:bg-slate-900 border-t lg:border-t-0 lg:border-r border-slate-100 dark:border-slate-800 p-6 lg:p-6 flex flex-col items-center gap-8 rounded-t-[2.5rem] lg:rounded-none shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.15)] lg:shadow-none">
+        <div className="hidden lg:flex items-center gap-3 self-start px-2">
+          <img src="/favicon.png" alt="Al-Rizq Logo" className="w-10 h-10 rounded-2xl" />
+          <h1 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">AL-RIZQ <span className="text-emerald-600">APP</span></h1>
+        </div>
+
+        {/* Mobile Bottom Nav */}
+        {/* Mobile Bottom Nav */}
+        <div className="lg:hidden flex w-full justify-around items-center relative">
+          {/* Tracker Group Button */}
+          <div className="relative group">
+            <button
+              onClick={() => setIsTrackerMenuOpen(!isTrackerMenuOpen)}
+              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${['tracker', 'fasting', 'dzikir'].includes(activeTab) ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}
+            >
+              <div className={`p-1 rounded-full ${['tracker', 'fasting', 'dzikir'].includes(activeTab) ? 'bg-emerald-100' : ''}`}>
+                <Mosque className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] uppercase font-black tracking-wider">{t.tabs.tracker}</span>
+            </button>
+
+            {/* Floating Sub-menu for Mobile Tracker */}
+            <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-2 flex flex-col gap-1 min-w-[140px] transition-all transform origin-bottom ${isTrackerMenuOpen ? 'scale-100 opacity-100 z-50 pointer-events-auto' : 'scale-0 opacity-0 pointer-events-none'}`}>
+              {/* Prayer */}
+              <button onClick={(e) => { e.stopPropagation(); setActiveTab('tracker'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'tracker' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                <Mosque className="w-4 h-4" /> <span className="text-xs">{t.common.prayer}</span>
+              </button>
+              {/* Fasting */}
+              <button onClick={(e) => { e.stopPropagation(); setActiveTab('fasting'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'fasting' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                <UtensilsCrossed className="w-4 h-4" /> <span className="text-xs">{t.tabs.fasting}</span>
+              </button>
+              {/* Dzikir */}
+              <button onClick={(e) => { e.stopPropagation(); setActiveTab('dzikir'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'dzikir' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                <Star className="w-4 h-4" /> <span className="text-xs">{t.tabs.dzikir}</span>
+              </button>
+              {/* Arrow */}
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-slate-900 border-b border-r border-slate-200 dark:border-slate-800 rotate-45"></div>
+            </div>
           </div>
 
-          {/* Mobile Bottom Nav */}
-          {/* Mobile Bottom Nav */}
-          <div className="lg:hidden flex w-full justify-around items-center relative">
-            {/* Tracker Group Button */}
-            <div className="relative group">
-              <button
-                onClick={() => setIsTrackerMenuOpen(!isTrackerMenuOpen)}
-                className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${['tracker', 'fasting', 'dzikir'].includes(activeTab) ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}
-              >
-                <div className={`p-1 rounded-full ${['tracker', 'fasting', 'dzikir'].includes(activeTab) ? 'bg-emerald-100' : ''}`}>
-                  <Mosque className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] uppercase font-black tracking-wider">Tracker</span>
-              </button>
+          {/* Other Tabs */}
+          {['dashboard', 'history', 'settings'].map((tab) => (
+            <button key={tab} onClick={() => { setActiveTab(tab as any); setIsTrackerMenuOpen(false); }} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${activeTab === tab ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}>
+              {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5" />}
+              {tab === 'history' && <HistoryIcon className="w-5 h-5" />}
+              {tab === 'settings' && <SettingsIcon className="w-5 h-5" />}
+              <span className="text-[10px] uppercase font-black tracking-wider">{t.tabs[tab as keyof typeof t.tabs]}</span>
+            </button>
+          ))}
 
-              {/* Floating Sub-menu for Mobile Tracker */}
-              <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-2 flex flex-col gap-1 min-w-[140px] transition-all transform origin-bottom ${isTrackerMenuOpen ? 'scale-100 opacity-100 z-50 pointer-events-auto' : 'scale-0 opacity-0 pointer-events-none'}`}>
-                {/* Prayer */}
-                <button onClick={(e) => { e.stopPropagation(); setActiveTab('tracker'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'tracker' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-                  <Mosque className="w-4 h-4" /> <span className="text-xs">{t.common.prayer}</span>
-                </button>
-                {/* Fasting */}
-                <button onClick={(e) => { e.stopPropagation(); setActiveTab('fasting'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'fasting' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-                  <UtensilsCrossed className="w-4 h-4" /> <span className="text-xs">{t.tabs.fasting}</span>
-                </button>
-                {/* Dzikir */}
-                <button onClick={(e) => { e.stopPropagation(); setActiveTab('dzikir'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'dzikir' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-                  <Star className="w-4 h-4" /> <span className="text-xs">{t.tabs.dzikir}</span>
-                </button>
-                {/* Arrow */}
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-slate-900 border-b border-r border-slate-200 dark:border-slate-800 rotate-45"></div>
-              </div>
+          {/* Backdrop for closing menu */}
+          {isTrackerMenuOpen && (
+            <div className="fixed inset-0 z-0" onClick={() => setIsTrackerMenuOpen(false)} />
+          )}
+        </div>
+
+        {/* Desktop Sidebar Nav (Unchanged or vertically grouped) */}
+        <div className="hidden lg:flex flex-col w-full gap-2">
+          <div className="mb-2">
+            <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t.common.trackerCategory}</p>
+            <div className="flex flex-col gap-1">
+              <button onClick={() => setActiveTab('tracker')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'tracker' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                <Mosque className="w-5 h-5" /> <span className="text-sm">{t.common.prayer}</span>
+              </button>
+              <button onClick={() => setActiveTab('fasting')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'fasting' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                <UtensilsCrossed className="w-5 h-5" /> <span className="text-sm">{t.tabs.fasting}</span>
+              </button>
+              <button onClick={() => setActiveTab('dzikir')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'dzikir' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                <Star className="w-5 h-5" /> <span className="text-sm">{t.tabs.dzikir}</span>
+              </button>
             </div>
+          </div>
 
-            {/* Other Tabs */}
-            {['dashboard', 'history', 'settings'].map((tab) => (
-              <button key={tab} onClick={() => { setActiveTab(tab as any); setIsTrackerMenuOpen(false); }} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${activeTab === tab ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}>
-                {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5" />}
-                {tab === 'history' && <HistoryIcon className="w-5 h-5" />}
-                {tab === 'settings' && <SettingsIcon className="w-5 h-5" />}
-                <span className="text-[10px] uppercase font-black tracking-wider">{t.tabs[tab as keyof typeof t.tabs]}</span>
+          <div>
+            <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t.common.menu || 'Menu'}</p>
+            <div className="flex flex-col gap-1">
+              {['dashboard', 'history', 'settings'].map((tab) => (
+                <button key={tab} onClick={() => setActiveTab(tab as any)} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === tab ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                  {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5" />}
+                  {tab === 'history' && <HistoryIcon className="w-5 h-5" />}
+                  {tab === 'settings' && <SettingsIcon className="w-5 h-5" />}
+                  <span className="text-sm capitalize">{t.tabs[tab as keyof typeof t.tabs]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="hidden lg:block w-full px-2 mt-auto border-t border-slate-100 dark:border-slate-800 pt-6 space-y-6">
+          <button onClick={cycleTheme} className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-emerald-500 transition-all group">
+            <div className="flex flex-col items-start">
+              <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">{t.settings.appearance.title}</span>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-100 capitalize">{t.settings.themes[themeMode]}</span>
+            </div>
+            {themeMode === 'light' && <Sun className="w-4 h-4 text-amber-500" />}
+            {themeMode === 'dark' && <Moon className="w-4 h-4 text-emerald-400" />}
+            {themeMode === 'system' && <Monitor className="w-4 h-4 text-slate-400" />}
+          </button>
+
+          <div className="flex flex-col gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">{t.settings.appearance.background}</span>
+              <button
+                onClick={() => setShowPrayerBg(!showPrayerBg)}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${showPrayerBg ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
+              >
+                <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${showPrayerBg ? 'translate-x-5' : 'translate-x-1'}`} />
               </button>
-            ))}
-
-            {/* Backdrop for closing menu */}
-            {isTrackerMenuOpen && (
-              <div className="fixed inset-0 z-0" onClick={() => setIsTrackerMenuOpen(false)} />
+            </div>
+            {showPrayerBg && (
+              <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-1 duration-300">
+                <input
+                  type="range" min="0" max="40" step="5" value={prayerBgOpacity}
+                  onChange={(e) => setPrayerBgOpacity(parseInt(e.target.value))}
+                  className="flex-1 h-1 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                />
+                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 w-6 text-right">{prayerBgOpacity}%</span>
+              </div>
             )}
           </div>
 
-          {/* Desktop Sidebar Nav (Unchanged or vertically grouped) */}
-          <div className="hidden lg:flex flex-col w-full gap-2">
-            <div className="mb-2">
-              <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Ibadah Tracker</p>
-              <div className="flex flex-col gap-1">
-                <button onClick={() => setActiveTab('tracker')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'tracker' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-                  <Mosque className="w-5 h-5" /> <span className="text-sm">{t.common.prayer}</span>
-                </button>
-                <button onClick={() => setActiveTab('fasting')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'fasting' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-                  <UtensilsCrossed className="w-5 h-5" /> <span className="text-sm">{t.tabs.fasting}</span>
-                </button>
-                <button onClick={() => setActiveTab('dzikir')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'dzikir' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-                  <Star className="w-5 h-5" /> <span className="text-sm">{t.tabs.dzikir}</span>
-                </button>
-              </div>
-            </div>
+          <AuthStatus user={user} onLogout={logout} googleBtnRef={googleBtnSidebarRef} mode="sidebar" />
+        </div>
+      </nav>
 
+      <main className="flex-1 p-4 lg:p-10 max-w-6xl mx-auto w-full lg:min-w-0 pb-48 lg:pb-0">
+        <header className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 lg:mb-10 gap-6">
+          <div className="flex justify-between items-start flex-1">
             <div>
-              <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Menu</p>
-              <div className="flex flex-col gap-1">
-                {['dashboard', 'history', 'settings'].map((tab) => (
-                  <button key={tab} onClick={() => setActiveTab(tab as any)} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === tab ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-                    {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5" />}
-                    {tab === 'history' && <HistoryIcon className="w-5 h-5" />}
-                    {tab === 'settings' && <SettingsIcon className="w-5 h-5" />}
-                    <span className="text-sm capitalize">{t.tabs[tab as keyof typeof t.tabs]}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="hidden lg:block w-full px-2 mt-auto border-t border-slate-100 dark:border-slate-800 pt-6 space-y-6">
-            <button onClick={cycleTheme} className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-emerald-500 transition-all group">
-              <div className="flex flex-col items-start">
-                <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">{t.settings.appearance.title}</span>
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-100 capitalize">{themeMode}</span>
-              </div>
-              {themeMode === 'light' && <Sun className="w-4 h-4 text-amber-500" />}
-              {themeMode === 'dark' && <Moon className="w-4 h-4 text-emerald-400" />}
-              {themeMode === 'system' && <Monitor className="w-4 h-4 text-slate-400" />}
-            </button>
-
-            <div className="flex flex-col gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">{t.settings.appearance.background}</span>
-                <button
-                  onClick={() => setShowPrayerBg(!showPrayerBg)}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${showPrayerBg ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
-                >
-                  <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${showPrayerBg ? 'translate-x-5' : 'translate-x-1'}`} />
-                </button>
-              </div>
-              {showPrayerBg && (
-                <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-1 duration-300">
-                  <input
-                    type="range" min="0" max="40" step="5" value={prayerBgOpacity}
-                    onChange={(e) => setPrayerBgOpacity(parseInt(e.target.value))}
-                    className="flex-1 h-1 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                  />
-                  <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 w-6 text-right">{prayerBgOpacity}%</span>
-                </div>
-              )}
-            </div>
-
-            <AuthStatus user={user} onLogout={logout} googleBtnRef={googleBtnSidebarRef} mode="sidebar" />
-          </div>
-        </nav>
-
-        <main className="flex-1 p-4 lg:p-10 max-w-6xl mx-auto w-full pb-48 lg:pb-0">
-          <header className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 lg:mb-10 gap-6">
-            <div className="flex justify-between items-start flex-1">
-              <div>
-                <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
-                  {activeTab === 'tracker' ? t.tracker.title : activeTab === 'fasting' ? t.tabs.fasting : activeTab === 'dzikir' ? t.tabs.dzikir : activeTab === 'dashboard' ? t.tabs.dashboard : activeTab === 'history' ? t.tabs.history : t.tabs.settings}
-                </h2>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-3">
-                  <span className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-[10px] lg:text-xs font-bold text-slate-600 dark:text-slate-400 shadow-sm w-fit">
-                    <Calendar className="w-3 h-3 lg:w-3.5 lg:h-3.5 text-emerald-600" /> {formatDate(selectedDate, language === 'id' ? 'id-ID' : 'en-US')}
-                  </span>
-                  {activeTab === 'tracker' && (isFlashbackMode ? adjustedYesterdaySchedule : adjustedSchedule) && (
-                    <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 rounded-full text-[10px] lg:text-xs font-bold text-emerald-700 dark:text-emerald-400 shadow-sm w-fit animate-in fade-in slide-in-from-left-2 duration-500">
-                      <Info className="w-3 h-3 text-emerald-600" /> {(isFlashbackMode ? adjustedYesterdaySchedule : adjustedSchedule)?.sources?.[0]?.title || 'Kemenag RI'}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex lg:hidden items-center gap-2 shrink-0">
-                <button onClick={cycleTheme} className="p-2 lg:p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
-                  {themeMode === 'light' && <Sun className="w-4 h-4 lg:w-5 lg:h-5 text-amber-500" />}
-                  {themeMode === 'dark' && <Moon className="w-4 h-4 lg:w-5 lg:h-5 text-emerald-400" />}
-                  {themeMode === 'system' && <Monitor className="w-4 h-4 lg:w-5 lg:h-5 text-slate-400" />}
-                </button>
-
-                <div className="flex items-center gap-2 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl relative">
-                  <button
-                    onClick={() => {
-                      if (!showPrayerBg) {
-                        setShowPrayerBg(true); setShowOpacitySlider(true); resetSliderTimer();
-                      } else {
-                        setShowPrayerBg(false); setShowOpacitySlider(false);
-                        if (sliderTimerRef.current) window.clearTimeout(sliderTimerRef.current);
-                      }
-                    }}
-                    className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors focus:outline-none ${showPrayerBg ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
-                  >
-                    <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${showPrayerBg ? 'translate-x-5' : 'translate-x-1'}`} />
-                  </button>
-                  {showPrayerBg && showOpacitySlider && (
-                    <div className="absolute top-full right-0 mt-3 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-[100] flex items-center gap-4 min-w-[200px] animate-in slide-in-from-top-2 duration-300" onMouseEnter={() => { if (sliderTimerRef.current) window.clearTimeout(sliderTimerRef.current); }} onMouseLeave={resetSliderTimer}>
-                      <div className="flex-1 flex flex-col gap-2">
-                        <div className="flex justify-between items-center"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.settings.appearance.opacity}</span><span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">{prayerBgOpacity}%</span></div>
-                        <input type="range" min="0" max="40" step="5" value={prayerBgOpacity} onChange={(e) => { setPrayerBgOpacity(parseInt(e.target.value)); resetSliderTimer(); }} className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500" />
-                      </div>
-                      <button onClick={() => setShowOpacitySlider(false)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 transition-colors"><X className="w-4 h-4" /></button>
-                    </div>
-                  )}
-                </div>
-                <AuthStatus user={user} onLogout={logout} googleBtnRef={googleBtnHeaderRef} mode="header" />
-              </div>
-            </div>
-
-            <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2 lg:gap-3 w-full lg:w-auto">
-              {activeTab === 'tracker' && (
-                <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
-                  <button onClick={() => setIsSearching(!isSearching)} className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden min-w-0">
-                    <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1">{adjustedSchedule?.location || t.tracker.searchLocation}</span>
-                    <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isSearching ? 'rotate-90' : ''}`} />
-                  </button>
-                  <Button variant="ghost" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0" onClick={() => getSchedule()} isLoading={isLoading && !isSearching}>
-                    <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                  </Button>
-                </div>
-              )}
-
-
-            </div>
-          </header>
-
-          {/* Dzikir Tab Content */}
-          {activeTab === 'dzikir' && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <DzikirTracker />
-            </div>
-          )}
-
-          {/* Tracker Tab Content */}
-          {activeTab === 'tracker' && (
-            <div className="space-y-6 lg:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              {isSearching && (
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-xl animate-in zoom-in-95 duration-300 relative z-40">
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                      <Search className={`w-4 h-4 ${isSearching ? 'text-emerald-500 animate-pulse' : 'text-slate-400'}`} />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder={t.tracker.searchLocation}
-                      value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-slate-100 font-bold placeholder:text-slate-400"
-                      autoFocus
-                    />
-                    {isSearchingSuggestions && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500 animate-spin" />}
-                  </div>
-
-                  {suggestions.length > 0 && (
-                    <div className="mt-4 space-y-1 border-t border-slate-100 dark:border-slate-800 pt-4">
-                      {suggestions.map((loc, i) => (
-                        <button key={i} onClick={() => { getSchedule({ address: loc }); addToHistory(loc); setIsSearching(false); setSearchQuery(''); }} className="w-full text-left px-4 py-3 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-3 transition-colors group">
-                          <MapPin className="w-4 h-4 text-slate-300 group-hover:text-emerald-500" /> {loc}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {locationHistory.length > 0 && !searchQuery && (
-                    <div className="mt-6">
-                      <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">{t.tracker.locationHistory}</p>
-                      <div className="space-y-1">
-                        {locationHistory.map((loc, i) => (
-                          <button key={i} onClick={() => { getSchedule({ address: loc }); setIsSearching(false); }} className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 flex items-center justify-between group">
-                            <div className="flex items-center gap-3"><Clock className="w-4 h-4 text-slate-300" /> {loc}</div>
-                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {error && (
-                <div className="bg-rose-50 dark:bg-rose-950/20 p-6 rounded-3xl border border-rose-100 dark:border-rose-900/50 flex items-center gap-4 text-rose-800 dark:text-rose-300 animate-in shake-x duration-500">
-                  <AlertCircle className="w-6 h-6 shrink-0" />
-                  <p className="font-bold text-sm flex-1">{error}</p>
-                  <button onClick={() => setError(null)} className="p-2 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-xl transition-colors"><X className="w-5 h-5" /></button>
-                </div>
-              )}
-
-
-
-              {!isFlashbackMode && (
-                <div className="flex flex-col md:flex-row gap-4">
-                  <button onClick={() => setSelectedDate(getYesterdayDateStr())} className="flex-1 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-amber-500 transition-all group flex items-center justify-between shadow-sm">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
-                        <Clock3 className="w-6 h-6 text-amber-600" />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">{t.tracker.flashback}</p>
-                        <p className="text-sm font-black text-slate-800 dark:text-slate-100">{t.tracker.flashbackQuestion}</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                  <div className="flex-1 bg-emerald-600 dark:bg-emerald-900/40 p-5 rounded-3xl flex items-center justify-between text-white shadow-lg shadow-emerald-500/20">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
-                        <Clock className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-emerald-100 opacity-60 mb-0.5">{t.tracker.currentTime}</p>
-                        <p className="text-2xl font-black tabular-nums">{currentTime}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {isFlashbackMode && (
-                <div className="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-[2rem] border border-amber-200 dark:border-amber-900/50 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20">
-                      <RotateCcw className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-black text-amber-900 dark:text-amber-400">{t.tracker.flashbackActive}</h3>
-                      <p className="text-sm font-bold text-amber-700 dark:text-amber-500/80">{t.tracker.showingScheduleFor} <span className="underline">{formatDate(selectedDate)}</span></p>
-                    </div>
-                  </div>
-                  <button onClick={() => { setSelectedDate(currentDate); setYesterdaySchedule(null); }} className="px-6 py-3 bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 font-black rounded-2xl text-xs uppercase tracking-widest shadow-sm border border-amber-200 dark:border-amber-900/50 hover:bg-amber-500 hover:text-white transition-all">{t.common.backToToday}</button>
-                </div>
-              )}
-
-              {/* Fasting Tracker moved to own tab */}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {PRAYER_ORDER.map((name) => {
-                  const activeSchedule = isFlashbackMode ? adjustedYesterdaySchedule : adjustedSchedule;
-                  const prayer = activeSchedule?.prayers.find(p => p.name === name);
-                  const loggedToday = logs.find(l => l.date === selectedDate && l.prayerName === name);
-                  const isPassed = isFlashbackMode ? true : (prayer ? isTimePassed(prayer.time, currentDate) : false);
-
-                  return (
-                    <PrayerCard
-                      key={name} name={name} time={prayer?.time || '--:--'} loggedToday={loggedToday} isPassed={isPassed} isFlashbackMode={isFlashbackMode} showPrayerBg={showPrayerBg} prayerBgOpacity={prayerBgOpacity}
-                      onPrayerClick={handlePrayerClick} onEditPrayer={handleEditPrayer}
-                    />
-                  );
-                })}
-              </div>
-
-            </div>
-          )}
-
-
-          {/* Fasting Tab Content */}
-          {activeTab === 'fasting' && (
-            <div className="space-y-6 lg:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              {/* Flashback Control */}
-              {!isFlashbackMode && (
-                <div className="flex flex-col md:flex-row gap-4">
-                  <button onClick={() => setSelectedDate(getYesterdayDateStr())} className="flex-1 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-amber-500 transition-all group flex items-center justify-between shadow-sm">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
-                        <Clock3 className="w-6 h-6 text-amber-600" />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">{t.tracker.flashback}</p>
-                        <p className="text-sm font-black text-slate-800 dark:text-slate-100">{t.tracker.flashbackQuestion}</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </div>
-              )}
-
-              {/* Flashback Banner */}
-              {isFlashbackMode && (
-                <div className="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-[2rem] border border-amber-200 dark:border-amber-900/50 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20">
-                      <RotateCcw className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-black text-amber-900 dark:text-amber-400">{t.tracker.flashbackActive}</h3>
-                      <p className="text-sm font-bold text-amber-700 dark:text-amber-500/80">{t.tracker.showingScheduleFor} <span className="underline">{formatDate(selectedDate)}</span></p>
-                    </div>
-                  </div>
-                  <button onClick={() => { setSelectedDate(currentDate); setYesterdaySchedule(null); }} className="px-6 py-3 bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 font-black rounded-2xl text-xs uppercase tracking-widest shadow-sm border border-amber-200 dark:border-amber-900/50 hover:bg-amber-500 hover:text-white transition-all">{t.common.backToToday}</button>
-                </div>
-              )}
-
-              {/* Use schedule.hijri or fallback to calculating it locally */}
-              {(() => {
-                const effectiveHijri = (isFlashbackMode && adjustedYesterdaySchedule?.hijri)
-                  ? adjustedYesterdaySchedule.hijri
-                  : (adjustedSchedule?.hijri && !isFlashbackMode ? adjustedSchedule.hijri : getHijriDate(new Date(selectedDate)));
-
-                return (
-                  <>
-                    <FastingTracker currentDate={selectedDate} hijriDate={effectiveHijri} />
-                    <FastingStats hijriDate={effectiveHijri} minimal={true} />
-                  </>
-                );
-              })()}
-            </div>
-          )}
-
-          {/* Dashboard Tab Content */}
-          {activeTab === 'dashboard' && <Dashboard logs={logs} fastingLogs={fastingLogs} dzikirLogs={dzikirLogs} hijriDate={adjustedSchedule?.hijri} />}
-
-
-          {/* History Tab Content */}
-          {activeTab === 'history' && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 rounded-2xl p-4 flex items-center gap-3">
-                <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl text-emerald-600">
-                  <Calendar className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600/60 mb-0.5">{t.history.activeFilter}</p>
-                  <p className="text-sm font-black text-emerald-700 dark:text-emerald-400">
-                    {t.common.showing}: {formatDate(historyDateFilter || getLocalDateStr(), language === 'id' ? 'id-ID' : 'en-US')}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-                <div className="flex items-center gap-3 flex-1 max-w-md">
-                  <div className="relative flex-1 group">
-                    <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
-                    <input type="date" value={historyDateFilter} placeholder={t.history.pickDate} onChange={(e) => { setHistoryDateFilter(e.target.value); setCurrentPage(1); }} className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500 transition-all" />
-                    {historyDateFilter && <button onClick={() => { setHistoryDateFilter(''); setCurrentPage(1); }} className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400"><X className="w-3.5 h-3.5" /></button>}
-                  </div>
-                  <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-sm shrink-0">
-                    <button
-                      onClick={() => {
-                        const d = new Date(historyDateFilter || getLocalDateStr());
-                        d.setDate(d.getDate() - 1);
-                        setHistoryDateFilter(d.toISOString().split('T')[0]);
-                        setCurrentPage(1);
-                      }}
-                      className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-all hover:text-emerald-500"
-                      title={t.common.prev}
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <div className="w-[1px] h-4 bg-slate-100 dark:bg-slate-800 mx-1" />
-                    <button
-                      onClick={() => {
-                        setHistoryDateFilter(getLocalDateStr());
-                        setCurrentPage(1);
-                      }}
-                      className="px-2 py-1 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg text-[10px] font-black uppercase tracking-widest text-emerald-600 transition-all"
-                      title={t.common.backToToday}
-                    >
-                      {t.common.today}
-                    </button>
-                    <div className="w-[1px] h-4 bg-slate-100 dark:bg-slate-800 mx-1" />
-                    <button
-                      onClick={() => {
-                        const d = new Date(historyDateFilter || getLocalDateStr());
-                        d.setDate(d.getDate() + 1);
-                        setHistoryDateFilter(d.toISOString().split('T')[0]);
-                        setCurrentPage(1);
-                      }}
-                      className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-all hover:text-emerald-500"
-                      title={t.common.next}
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-              </div>
-
-              <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-slate-50 dark:bg-slate-800/50">
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.date}</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.prayer}</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.time}</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.statusLabel}</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.location}</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.tracker.execution.title}</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.tracker.weather.title}</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.tracker.masbuq}</th>
-                        <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.history.notes}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentHistoryLogs.map((log) => (
-                        <tr key={log.id} className="border-t border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
-                          <td className="px-6 lg:px-8 py-5"><p className="text-xs font-bold text-slate-800 dark:text-slate-100">{formatDate(log.date, language === 'id' ? 'id-ID' : 'en-US')}</p></td>
-                          <td className="px-6 lg:px-8 py-5"><span className="text-xs font-black uppercase tracking-widest text-emerald-600">{log.prayerName}</span></td>
-                          <td className="px-6 lg:px-8 py-5"><p className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.actualTime}</p></td>
-                          <td className="px-6 lg:px-8 py-5">
-                            <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase ${log.status === 'Tepat Waktu' || log.status === 'Ontime' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-500'}`}>
-                              {log.status === 'Tepat Waktu' || log.status === 'Ontime' ? t.tracker.status.ontime : t.tracker.status.late} {log.delayMinutes > 0 && `(${log.delayMinutes}m)`}
-                            </span>
-                          </td>
-                          <td className="px-6 lg:px-8 py-5">{log.locationType ? <div className="flex items-center gap-1.5">{log.locationType === 'Masjid' ? <MapPin className="w-3 h-3 text-emerald-600" /> : <Home className="w-3 h-3 text-slate-400" />}<span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.locationType === 'Masjid' ? t.tracker.execution.atMosque : t.tracker.execution.atHome}</span></div> : <span className="text-sm text-slate-300">-</span>}</td>
-                          <td className="px-6 lg:px-8 py-5">{log.executionType ? <div className="flex items-center gap-1.5">{log.executionType === 'Jamaah' ? <Users className="w-3 h-3 text-emerald-600" /> : <User className="w-3 h-3 text-slate-400" />}<span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.executionType === 'Jamaah' ? t.tracker.execution.jamaah : t.tracker.execution.munfarid}</span></div> : <span className="text-sm text-slate-300">-</span>}</td>
-                          <td className="px-6 lg:px-8 py-5">{log.weatherCondition ? <div className="flex items-center gap-1.5">{log.weatherCondition === 'Hujan' ? <CloudRain className="w-3 h-3 text-blue-500" /> : <SunMedium className="w-3 h-3 text-amber-500" />}<span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.weatherCondition === 'Hujan' ? t.tracker.weather.rainy : t.tracker.weather.clear}</span></div> : <span className="text-sm text-slate-300">-</span>}</td>
-                          <td className="px-6 lg:px-8 py-5">{log.isMasbuq ? <span className="px-2 py-1 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 rounded-lg text-[10px] font-black uppercase whitespace-nowrap">{t.tracker.masbuq} ({log.masbuqRakaat})</span> : <span className="text-sm text-slate-300">-</span>}</td>
-                          <td className="px-6 lg:px-8 py-5 text-sm text-slate-500 dark:text-slate-400 max-w-[200px] truncate">{log.reason || '-'}</td>
-                        </tr>
-                      ))}
-                      {currentHistoryLogs.length === 0 && (
-                        <tr><td colSpan={9} className="px-8 py-12 text-center text-slate-400"><div className="flex flex-col items-center gap-3"><CalendarDays className="w-12 h-12 opacity-30" /><p className="text-sm font-bold">{t.common.noDataByDate}</p></div></td></tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                {totalPages > 1 && (
-                  <div className="flex items-center justify-between p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                    <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all"><ChevronLeft className="w-3.5 h-3.5" />{t.common.prev}</button>
-                    <span className="text-xs font-bold text-slate-500">{t.common.page} {currentPage} {t.common.of} {totalPages}</span>
-                    <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all">{t.common.next}<ChevronRight className="w-3.5 h-3.5" /></button>
+              <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
+                {activeTab === 'tracker' ? t.tracker.title : activeTab === 'fasting' ? t.tabs.fasting : activeTab === 'dzikir' ? t.tabs.dzikir : activeTab === 'dashboard' ? t.tabs.dashboard : activeTab === 'history' ? t.tabs.history : t.tabs.settings}
+              </h2>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-3">
+                <span className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-[10px] lg:text-xs font-bold text-slate-600 dark:text-slate-400 shadow-sm w-fit">
+                  <Calendar className="w-3 h-3 lg:w-3.5 lg:h-3.5 text-emerald-600" /> {formatDate(selectedDate, language === 'id' ? 'id-ID' : 'en-US')}
+                </span>
+                {activeTab === 'tracker' && (isFlashbackMode ? adjustedYesterdaySchedule : adjustedSchedule) && (
+                  <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 rounded-full text-[10px] lg:text-xs font-bold text-emerald-700 dark:text-emerald-400 shadow-sm w-fit animate-in fade-in slide-in-from-left-2 duration-500">
+                    <Info className="w-3 h-3 text-emerald-600" /> {(isFlashbackMode ? adjustedYesterdaySchedule : adjustedSchedule)?.sources?.[0]?.title || 'Kemenag RI'}
                   </div>
                 )}
               </div>
             </div>
-          )}
-          {/* Settings Tab Content */}
-          {activeTab === 'settings' && (
-            <Settings
-              user={user}
-              logs={logs}
-              fastingLogs={fastingLogs}
-              isSyncing={isSyncing}
-              hasBackup={hasBackup}
-              themeMode={themeMode}
-              showPrayerBg={showPrayerBg}
-              prayerBgOpacity={prayerBgOpacity}
-              prayerTimeCorrection={prayerTimeCorrection}
-              onCorrectionChange={setPrayerTimeCorrection}
-              onUpload={handleUpload}
-              onDownload={handleDownload}
-              onRevert={handleRevert}
-              onLogout={logout}
-              onCycleTheme={cycleTheme}
-              onToggleBg={() => setShowPrayerBg(!showPrayerBg)}
-              onOpacityChange={setPrayerBgOpacity}
-              getCurrentSettings={getCurrentSettings}
-              setLogs={setLogs}
-              restoreSettings={restoreSettings}
-              googleBtnRef={googleBtnSettingsRef}
-              onClearData={() => {
-                clearPrayerLogs();
-                clearFastingLogs();
-              }}
-            />
-          )}
-        </main>
 
-        <LatePrayerModal
-          isOpen={lateModalOpen} onClose={() => { setLateModalOpen(false); setPendingLatePrayer(null); setLateReason(''); }}
-          pendingLatePrayer={pendingLatePrayer} lateReason={lateReason} setLateReason={setLateReason} isMasbuq={isMasbuq} setIsMasbuq={setIsMasbuq} masbuqRakaat={masbuqRakaat} setMasbuqRakaat={setMasbuqRakaat} locationType={locationType} setLocationType={setLocationType} executionType={executionType} setExecutionType={setExecutionType} weatherCondition={weatherCondition} setWeatherCondition={setWeatherCondition} editingLogId={editingLogId} isLateEntry={isLateEntry} isForgotMarking={isForgotMarking} setIsForgotMarking={setIsForgotMarking} showMasbuqPicker={showMasbuqPicker} setShowMasbuqPicker={setShowMasbuqPicker} hasDzikir={hasDzikir} setHasDzikir={setHasDzikir} hasQobliyah={hasQobliyah} setHasQobliyah={setHasQobliyah} hasBadiyah={hasBadiyah} setHasBadiyah={setHasBadiyah} hasDua={hasDua} setHasDua={setHasDua} isSunnahExpanded={isSunnahExpanded} setIsSunnahExpanded={setIsSunnahExpanded} onConfirm={confirmLatePrayer}
-        />
+            <div className="flex lg:hidden items-center gap-2 shrink-0">
+              <button onClick={cycleTheme} className="p-2 lg:p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
+                {themeMode === 'light' && <Sun className="w-4 h-4 lg:w-5 lg:h-5 text-amber-500" />}
+                {themeMode === 'dark' && <Moon className="w-4 h-4 lg:w-5 lg:h-5 text-emerald-400" />}
+                {themeMode === 'system' && <Monitor className="w-4 h-4 lg:w-5 lg:h-5 text-slate-400" />}
+              </button>
 
-        <SyncConfirmModal isOpen={syncConfirmOpen} onConfirm={confirmCloudReplace} onCancel={keepLocalData} />
+              <div className="flex items-center gap-2 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl relative">
+                <button
+                  onClick={() => {
+                    if (!showPrayerBg) {
+                      setShowPrayerBg(true); setShowOpacitySlider(true); resetSliderTimer();
+                    } else {
+                      setShowPrayerBg(false); setShowOpacitySlider(false);
+                      if (sliderTimerRef.current) window.clearTimeout(sliderTimerRef.current);
+                    }
+                  }}
+                  className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors focus:outline-none ${showPrayerBg ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
+                >
+                  <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${showPrayerBg ? 'translate-x-5' : 'translate-x-1'}`} />
+                </button>
+                {showPrayerBg && showOpacitySlider && (
+                  <div className="absolute top-full right-0 mt-3 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-[100] flex items-center gap-4 min-w-[200px] animate-in slide-in-from-top-2 duration-300" onMouseEnter={() => { if (sliderTimerRef.current) window.clearTimeout(sliderTimerRef.current); }} onMouseLeave={resetSliderTimer}>
+                    <div className="flex-1 flex flex-col gap-2">
+                      <div className="flex justify-between items-center"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.settings.appearance.opacity}</span><span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">{prayerBgOpacity}%</span></div>
+                      <input type="range" min="0" max="40" step="5" value={prayerBgOpacity} onChange={(e) => { setPrayerBgOpacity(parseInt(e.target.value)); resetSliderTimer(); }} className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500" />
+                    </div>
+                    <button onClick={() => setShowOpacitySlider(false)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 transition-colors"><X className="w-4 h-4" /></button>
+                  </div>
+                )}
+              </div>
+              <AuthStatus user={user} onLogout={logout} googleBtnRef={googleBtnHeaderRef} mode="header" />
+            </div>
+          </div>
 
-        <IslamicCelebration show={showCelebration} onComplete={() => setShowCelebration(false)} />
-      </div>
-    </LanguageProvider>
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2 lg:gap-3 w-full lg:w-auto">
+            {activeTab === 'tracker' && (
+              <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
+                <button onClick={() => setIsSearching(!isSearching)} className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden min-w-0">
+                  <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1 block max-w-none lg:max-w-[300px] text-left">{adjustedSchedule?.location || t.tracker.searchLocation}</span>
+
+                  <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isSearching ? 'rotate-90' : ''}`} />
+                </button>
+                <Button variant="ghost" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0" onClick={() => getSchedule()} isLoading={isLoading && !isSearching}>
+                  <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
+            )}
+
+
+          </div>
+        </header>
+
+        {/* Dzikir Tab Content */}
+        {activeTab === 'dzikir' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <DzikirTracker />
+          </div>
+        )}
+
+        {/* Tracker Tab Content */}
+        {activeTab === 'tracker' && (
+          <div className="space-y-6 lg:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {isSearching && (
+              <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-xl animate-in zoom-in-95 duration-300 relative z-40">
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                    <Search className={`w-4 h-4 ${isSearching ? 'text-emerald-500 animate-pulse' : 'text-slate-400'}`} />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder={t.tracker.searchLocation}
+                    value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-slate-100 font-bold placeholder:text-slate-400"
+                    autoFocus
+                  />
+                  {isSearchingSuggestions && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                      <Loader2 className="w-5 h-5 text-emerald-500 animate-spin" />
+                    </div>
+                  )}
+                </div>
+
+                {suggestions.length > 0 && (
+                  <div className="mt-4 space-y-1 border-t border-slate-100 dark:border-slate-800 pt-4">
+                    {suggestions.map((loc, i) => (
+                      <button key={i} onClick={() => { getSchedule({ address: loc }); addToHistory(loc); setIsSearching(false); setSearchQuery(''); }} className="w-full text-left px-4 py-3 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-3 transition-colors group">
+                        <MapPin className="w-4 h-4 text-slate-300 group-hover:text-emerald-500" /> {loc}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {locationHistory.length > 0 && !searchQuery && (
+                  <div className="mt-6">
+                    <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">{t.tracker.locationHistory}</p>
+                    <div className="space-y-1">
+                      {locationHistory.map((loc, i) => (
+                        <div key={i} className="flex items-center gap-1 group">
+                          <button onClick={() => { getSchedule({ address: loc }); setIsSearching(false); }} className="flex-1 text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 flex items-center justify-between transition-colors">
+                            <div className="flex items-center gap-3"><Clock className="w-4 h-4 text-slate-300" /> {loc}</div>
+                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
+                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); removeHistory(loc); }} className="p-3 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl text-slate-300 hover:text-rose-500 transition-colors">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-rose-50 dark:bg-rose-950/20 p-6 rounded-3xl border border-rose-100 dark:border-rose-900/50 flex items-center gap-4 text-rose-800 dark:text-rose-300 animate-in shake-x duration-500">
+                <AlertCircle className="w-6 h-6 shrink-0" />
+                <p className="font-bold text-sm flex-1">{error}</p>
+                <button onClick={() => setError(null)} className="p-2 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-xl transition-colors"><X className="w-5 h-5" /></button>
+              </div>
+            )}
+
+
+
+            {!isFlashbackMode && (
+              <div className="flex flex-col md:flex-row gap-4">
+                <button onClick={() => setSelectedDate(getYesterdayDateStr())} className="flex-1 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-amber-500 transition-all group flex items-center justify-between shadow-sm">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+                      <Clock3 className="w-6 h-6 text-amber-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">{t.tracker.flashback}</p>
+                      <p className="text-sm font-black text-slate-800 dark:text-slate-100">{t.tracker.flashbackQuestion}</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform" />
+                </button>
+                <div className="flex-1 bg-emerald-600 dark:bg-emerald-900/40 p-5 rounded-3xl flex items-center justify-between text-white shadow-lg shadow-emerald-500/20">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+                      <Clock className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-100 opacity-60 mb-0.5">{t.tracker.currentTime}</p>
+                      <p className="text-2xl font-black tabular-nums">{currentTime}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {isFlashbackMode && (
+              <div className="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-[2rem] border border-amber-200 dark:border-amber-900/50 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                    <RotateCcw className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-amber-900 dark:text-amber-400">{t.tracker.flashbackActive}</h3>
+                    <p className="text-sm font-bold text-amber-700 dark:text-amber-500/80">{t.tracker.showingScheduleFor} <span className="underline">{formatDate(selectedDate)}</span></p>
+                  </div>
+                </div>
+                <button onClick={() => { setSelectedDate(currentDate); setYesterdaySchedule(null); }} className="px-6 py-3 bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 font-black rounded-2xl text-xs uppercase tracking-widest shadow-sm border border-amber-200 dark:border-amber-900/50 hover:bg-amber-500 hover:text-white transition-all">{t.common.backToToday}</button>
+              </div>
+            )}
+
+            {/* Fasting Tracker moved to own tab */}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {PRAYER_ORDER.map((name) => {
+                const activeSchedule = isFlashbackMode ? adjustedYesterdaySchedule : adjustedSchedule;
+                const prayer = activeSchedule?.prayers.find(p => p.name === name);
+                const loggedToday = logs.find(l => l.date === selectedDate && l.prayerName === name);
+                const isPassed = isFlashbackMode ? true : (prayer ? isTimePassed(prayer.time, currentDate) : false);
+
+                return (
+                  <PrayerCard
+                    key={name} name={name} time={prayer?.time || '--:--'} loggedToday={loggedToday} isPassed={isPassed} isFlashbackMode={isFlashbackMode} showPrayerBg={showPrayerBg} prayerBgOpacity={prayerBgOpacity}
+                    onPrayerClick={handlePrayerClick} onEditPrayer={handleEditPrayer}
+                  />
+                );
+              })}
+            </div>
+
+          </div>
+        )}
+
+
+        {/* Fasting Tab Content */}
+        {activeTab === 'fasting' && (
+          <div className="space-y-6 lg:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Flashback Control */}
+            {!isFlashbackMode && (
+              <div className="flex flex-col md:flex-row gap-4">
+                <button onClick={() => setSelectedDate(getYesterdayDateStr())} className="flex-1 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-amber-500 transition-all group flex items-center justify-between shadow-sm">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+                      <Clock3 className="w-6 h-6 text-amber-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">{t.tracker.flashback}</p>
+                      <p className="text-sm font-black text-slate-800 dark:text-slate-100">{t.tracker.flashbackQuestion}</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            )}
+
+            {/* Flashback Banner */}
+            {isFlashbackMode && (
+              <div className="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-[2rem] border border-amber-200 dark:border-amber-900/50 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                    <RotateCcw className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-amber-900 dark:text-amber-400">{t.tracker.flashbackActive}</h3>
+                    <p className="text-sm font-bold text-amber-700 dark:text-amber-500/80">{t.tracker.showingScheduleFor} <span className="underline">{formatDate(selectedDate)}</span></p>
+                  </div>
+                </div>
+                <button onClick={() => { setSelectedDate(currentDate); setYesterdaySchedule(null); }} className="px-6 py-3 bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 font-black rounded-2xl text-xs uppercase tracking-widest shadow-sm border border-amber-200 dark:border-amber-900/50 hover:bg-amber-500 hover:text-white transition-all">{t.common.backToToday}</button>
+              </div>
+            )}
+
+            {/* Use schedule.hijri or fallback to calculating it locally */}
+            {(() => {
+              const effectiveHijri = (isFlashbackMode && adjustedYesterdaySchedule?.hijri)
+                ? adjustedYesterdaySchedule.hijri
+                : (adjustedSchedule?.hijri && !isFlashbackMode ? adjustedSchedule.hijri : getHijriDate(new Date(selectedDate)));
+
+              return (
+                <>
+                  <FastingTracker currentDate={selectedDate} hijriDate={effectiveHijri} />
+                  <FastingStats hijriDate={effectiveHijri} minimal={true} />
+                </>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* Dashboard Tab Content */}
+        {activeTab === 'dashboard' && <Dashboard logs={logs} fastingLogs={fastingLogs} dzikirLogs={dzikirLogs} hijriDate={adjustedSchedule?.hijri} />}
+
+
+        {/* History Tab Content */}
+        {activeTab === 'history' && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 rounded-2xl p-4 flex items-center gap-3">
+              <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl text-emerald-600">
+                <Calendar className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600/60 mb-0.5">{t.history.activeFilter}</p>
+                <p className="text-sm font-black text-emerald-700 dark:text-emerald-400">
+                  {t.common.showing}: {formatDate(historyDateFilter || getLocalDateStr(), language === 'id' ? 'id-ID' : 'en-US')}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1 max-w-md">
+                <div className="relative flex-1 group">
+                  <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                  <input type="date" value={historyDateFilter} placeholder={t.history.pickDate} onChange={(e) => { setHistoryDateFilter(e.target.value); setCurrentPage(1); }} className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500 transition-all" />
+                  {historyDateFilter && <button onClick={() => { setHistoryDateFilter(''); setCurrentPage(1); }} className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400"><X className="w-3.5 h-3.5" /></button>}
+                </div>
+                <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-sm shrink-0">
+                  <button
+                    onClick={() => {
+                      const d = new Date(historyDateFilter || getLocalDateStr());
+                      d.setDate(d.getDate() - 1);
+                      setHistoryDateFilter(d.toISOString().split('T')[0]);
+                      setCurrentPage(1);
+                    }}
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-all hover:text-emerald-500"
+                    title={t.common.prev}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <div className="w-[1px] h-4 bg-slate-100 dark:bg-slate-800 mx-1" />
+                  <button
+                    onClick={() => {
+                      setHistoryDateFilter(getLocalDateStr());
+                      setCurrentPage(1);
+                    }}
+                    className="px-2 py-1 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg text-[10px] font-black uppercase tracking-widest text-emerald-600 transition-all"
+                    title={t.common.backToToday}
+                  >
+                    {t.common.today}
+                  </button>
+                  <div className="w-[1px] h-4 bg-slate-100 dark:bg-slate-800 mx-1" />
+                  <button
+                    onClick={() => {
+                      const d = new Date(historyDateFilter || getLocalDateStr());
+                      d.setDate(d.getDate() + 1);
+                      setHistoryDateFilter(d.toISOString().split('T')[0]);
+                      setCurrentPage(1);
+                    }}
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-all hover:text-emerald-500"
+                    title={t.common.next}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 dark:bg-slate-800/50">
+                      <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.date}</th>
+                      <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.prayer}</th>
+                      <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.time}</th>
+                      <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.statusLabel}</th>
+                      <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.common.location}</th>
+                      <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.tracker.execution.title}</th>
+                      <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.tracker.weather.title}</th>
+                      <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.tracker.masbuq}</th>
+                      <th className="px-6 lg:px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.history.notes}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentHistoryLogs.map((log) => (
+                      <tr key={log.id} className="border-t border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
+                        <td className="px-6 lg:px-8 py-5"><p className="text-xs font-bold text-slate-800 dark:text-slate-100">{formatDate(log.date, language === 'id' ? 'id-ID' : 'en-US')}</p></td>
+                        <td className="px-6 lg:px-8 py-5"><span className="text-xs font-black uppercase tracking-widest text-emerald-600">{log.prayerName}</span></td>
+                        <td className="px-6 lg:px-8 py-5"><p className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.actualTime}</p></td>
+                        <td className="px-6 lg:px-8 py-5">
+                          <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase ${log.status === 'Tepat Waktu' || log.status === 'Ontime' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-500'}`}>
+                            {log.status === 'Tepat Waktu' || log.status === 'Ontime' ? t.tracker.status.ontime : t.tracker.status.late} {log.delayMinutes > 0 && `(${log.delayMinutes}m)`}
+                          </span>
+                        </td>
+                        <td className="px-6 lg:px-8 py-5">{log.locationType ? <div className="flex items-center gap-1.5">{log.locationType === 'Masjid' ? <MapPin className="w-3 h-3 text-emerald-600" /> : <Home className="w-3 h-3 text-slate-400" />}<span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.locationType === 'Masjid' ? t.tracker.execution.atMosque : t.tracker.execution.atHome}</span></div> : <span className="text-sm text-slate-300">-</span>}</td>
+                        <td className="px-6 lg:px-8 py-5">{log.executionType ? <div className="flex items-center gap-1.5">{log.executionType === 'Jamaah' ? <Users className="w-3 h-3 text-emerald-600" /> : <User className="w-3 h-3 text-slate-400" />}<span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.executionType === 'Jamaah' ? t.tracker.execution.jamaah : t.tracker.execution.munfarid}</span></div> : <span className="text-sm text-slate-300">-</span>}</td>
+                        <td className="px-6 lg:px-8 py-5">{log.weatherCondition ? <div className="flex items-center gap-1.5">{log.weatherCondition === 'Hujan' ? <CloudRain className="w-3 h-3 text-blue-500" /> : <SunMedium className="w-3 h-3 text-amber-500" />}<span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.weatherCondition === 'Hujan' ? t.tracker.weather.rainy : t.tracker.weather.clear}</span></div> : <span className="text-sm text-slate-300">-</span>}</td>
+                        <td className="px-6 lg:px-8 py-5">{log.isMasbuq ? <span className="px-2 py-1 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 rounded-lg text-[10px] font-black uppercase whitespace-nowrap">{t.tracker.masbuq} ({log.masbuqRakaat})</span> : <span className="text-sm text-slate-300">-</span>}</td>
+                        <td className="px-6 lg:px-8 py-5 text-sm text-slate-500 dark:text-slate-400 max-w-[200px] truncate">{log.reason || '-'}</td>
+                      </tr>
+                    ))}
+                    {currentHistoryLogs.length === 0 && (
+                      <tr><td colSpan={9} className="px-8 py-12 text-center text-slate-400"><div className="flex flex-col items-center gap-3"><CalendarDays className="w-12 h-12 opacity-30" /><p className="text-sm font-bold">{t.common.noDataByDate}</p></div></td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                  <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all"><ChevronLeft className="w-3.5 h-3.5" />{t.common.prev}</button>
+                  <span className="text-xs font-bold text-slate-500">{t.common.page} {currentPage} {t.common.of} {totalPages}</span>
+                  <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all">{t.common.next}<ChevronRight className="w-3.5 h-3.5" /></button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        {/* Settings Tab Content */}
+        {activeTab === 'settings' && (
+          <Settings
+            user={user}
+            logs={logs}
+            fastingLogs={fastingLogs}
+            isSyncing={isSyncing}
+            hasBackup={hasBackup}
+            themeMode={themeMode}
+            showPrayerBg={showPrayerBg}
+            prayerBgOpacity={prayerBgOpacity}
+            prayerTimeCorrection={prayerTimeCorrection}
+            onCorrectionChange={setPrayerTimeCorrection}
+            onUpload={handleUpload}
+            onDownload={handleDownload}
+            onRevert={handleRevert}
+            onLogout={logout}
+            onCycleTheme={cycleTheme}
+            onToggleBg={() => setShowPrayerBg(!showPrayerBg)}
+            onOpacityChange={setPrayerBgOpacity}
+            getCurrentSettings={getCurrentSettings}
+            setLogs={setLogs}
+            restoreSettings={restoreSettings}
+            googleBtnRef={googleBtnSettingsRef}
+            onClearData={() => {
+              clearPrayerLogs();
+              clearFastingLogs();
+            }}
+          />
+        )}
+      </main>
+
+      <LatePrayerModal
+        isOpen={lateModalOpen} onClose={() => { setLateModalOpen(false); setPendingLatePrayer(null); setLateReason(''); }}
+        pendingLatePrayer={pendingLatePrayer} lateReason={lateReason} setLateReason={setLateReason} isMasbuq={isMasbuq} setIsMasbuq={setIsMasbuq} masbuqRakaat={masbuqRakaat} setMasbuqRakaat={setMasbuqRakaat} locationType={locationType} setLocationType={setLocationType} executionType={executionType} setExecutionType={setExecutionType} weatherCondition={weatherCondition} setWeatherCondition={setWeatherCondition} editingLogId={editingLogId} isLateEntry={isLateEntry} isForgotMarking={isForgotMarking} setIsForgotMarking={setIsForgotMarking} showMasbuqPicker={showMasbuqPicker} setShowMasbuqPicker={setShowMasbuqPicker} hasDzikir={hasDzikir} setHasDzikir={setHasDzikir} hasQobliyah={hasQobliyah} setHasQobliyah={setHasQobliyah} hasBadiyah={hasBadiyah} setHasBadiyah={setHasBadiyah} hasDua={hasDua} setHasDua={setHasDua} isSunnahExpanded={isSunnahExpanded} setIsSunnahExpanded={setIsSunnahExpanded} onConfirm={confirmLatePrayer}
+      />
+
+      <SyncConfirmModal isOpen={syncConfirmOpen} onConfirm={confirmCloudReplace} onCancel={keepLocalData} />
+
+      <IslamicCelebration show={showCelebration} onComplete={() => setShowCelebration(false)} />
+    </div>
   );
 };
 

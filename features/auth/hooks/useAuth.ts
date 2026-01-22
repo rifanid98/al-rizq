@@ -6,8 +6,13 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID || "";
 
 export const useAuth = () => {
     const [user, setUser] = useState<UserProfile | null>(() => {
-        const savedUser = localStorage.getItem('al_rizq_user');
-        return savedUser ? JSON.parse(savedUser) : null;
+        try {
+            const savedUser = localStorage.getItem('al_rizq_user');
+            return savedUser ? JSON.parse(savedUser) : null;
+        } catch (e) {
+            console.error("Failed to parse user profile", e);
+            return null;
+        }
     });
 
     const [isGoogleReady, setIsGoogleReady] = useState(!!(window as any).google?.accounts?.id);
