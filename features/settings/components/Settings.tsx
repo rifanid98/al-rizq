@@ -150,20 +150,22 @@ export const Settings: React.FC<SettingsProps> = ({
                 </div>
             </section>
 
+            {/* Gamification Stats Section */}
+            {gamification && gamificationConfig?.enabled && (
+                <div className="animate-in fade-in slide-in-from-top-4 duration-1000">
+                    <GamificationStats
+                        level={gamification.level}
+                        progress={gamification.progress}
+                        totalPoints={gamification.totalPoints}
+                        nextLevelXp={gamification.nextLevelXp}
+                        currentLevelXp={gamification.currentLevelXp}
+                    />
+                </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Gamification Section */}
-                <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col order-first lg:col-span-2">
-                    {gamification && gamificationConfig?.enabled && (
-                        <div className="mb-8">
-                            <GamificationStats
-                                level={gamification.level}
-                                progress={gamification.progress}
-                                totalPoints={gamification.totalPoints}
-                                nextLevelXp={gamification.nextLevelXp}
-                                currentLevelXp={gamification.currentLevelXp}
-                            />
-                        </div>
-                    )}
+                {/* Gamification Settings Section */}
+                <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col lg:col-span-2">
                     <GamificationSettings
                         config={gamificationConfig || DEFAULT_GAMIFICATION_CONFIG}
                         onChange={onGamificationConfigChange || (() => { })}
