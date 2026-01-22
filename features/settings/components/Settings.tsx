@@ -24,7 +24,7 @@ import { Button } from '../../../shared/components/ui/Button';
 import { GamificationSettings } from '../../gamification/components/GamificationSettings';
 import { GamificationStats } from '../../gamification/components/GamificationStats';
 import { PrayerLog, AppSettings, UserProfile, FastingLog, GamificationConfig, DEFAULT_GAMIFICATION_CONFIG } from '../../../shared/types';
-import { STORAGE_KEYS } from '../../../shared/constants';
+import { STORAGE_KEYS, CURRENT_VERSION } from '../../../shared/constants';
 import { useLanguage } from '../../../shared/hooks/useLanguage';
 
 interface SettingsProps {
@@ -133,7 +133,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                         {t.common.premiumAccount}
                                     </span>
                                     <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-full">
-                                        {t.common.version} {STORAGE_KEYS.APP_VERSION || '1.1.0'}
+                                        {t.common.version} {CURRENT_VERSION}
                                     </span>
                                 </div>
                             </div>
