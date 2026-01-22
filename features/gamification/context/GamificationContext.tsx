@@ -31,14 +31,14 @@ export const StarAnimationProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     }, []);
 
-    const triggerAnimation = useCallback((startRect: DOMRect, count: number = 5) => {
+    const triggerAnimation = useCallback((_startRect?: DOMRect | null, count: number = 5) => {
         if (!targetRef.current) return;
 
         const targetRect = targetRef.current.getBoundingClientRect();
 
-        // Center of start
-        const startX = startRect.left + startRect.width / 2;
-        const startY = startRect.top + startRect.height / 2;
+        // Start from center of the screen
+        const startX = window.innerWidth / 2;
+        const startY = window.innerHeight / 2;
 
         // Center of target
         const targetX = targetRect.left + targetRect.width / 2;

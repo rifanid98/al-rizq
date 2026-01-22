@@ -428,7 +428,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 </section>
 
                 {/* Additional Links/Info */}
-                <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center group">
+                <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col group">
                     <div className="flex items-center gap-4 mb-8">
                         <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-950/50 rounded-2xl flex items-center justify-center text-indigo-600">
                             <LayoutGrid className="w-6 h-6" />

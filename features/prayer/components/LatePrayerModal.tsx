@@ -348,7 +348,7 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                                 const points = calculatePrayerPoints(potentialLog, gamificationConfig);
 
                                 // Trigger animation
-                                triggerAnimation(e.currentTarget.getBoundingClientRect(), points > 0 ? points : 12);
+                                triggerAnimation(null, points > 0 ? points : 12);
                                 onConfirm();
                             }}
                         >

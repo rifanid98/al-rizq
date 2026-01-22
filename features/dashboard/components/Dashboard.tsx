@@ -204,7 +204,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                       {/* Total Session */}
                       <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl">
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t.dashboard.totalSessions}</p>

@@ -181,7 +181,7 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
                                         e.stopPropagation();
                                         if (!isChecked && completedItems.length === list.length - 1) {
                                             const points = calculateDzikirPoints({ categoryId: activeCategory.id, isCompleted: true, date: date } as any, gamificationConfig);
-                                            triggerAnimation(e.currentTarget.getBoundingClientRect(), points > 0 ? points : 12);
+                                            triggerAnimation(null, points > 0 ? points : 12);
                                         }
                                         toggleItem(item.id, activeCategory.id, date);
                                     }}

@@ -17,7 +17,7 @@ const SingleStar: React.FC<SingleStarProps> = ({ startX, startY, targetX, target
     // Generate random burst offset once
     const burstOffset = useMemo(() => {
         const angle = Math.random() * Math.PI * 2;
-        const distance = 40 + Math.random() * 60; // 40-100px burst radius
+        const distance = 80 + Math.random() * 100; // 80-180px burst radius
         return {
             x: Math.cos(angle) * distance,
             y: Math.sin(angle) * distance
