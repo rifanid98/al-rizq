@@ -94,6 +94,19 @@ export const Settings: React.FC<SettingsProps> = ({
 
     return (
         <div className="space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Gamification Stats Section */}
+            {gamification && gamificationConfig?.enabled && (
+                <div className="animate-in fade-in slide-in-from-top-4 duration-1000">
+                    <GamificationStats
+                        level={gamification.level}
+                        progress={gamification.progress}
+                        totalPoints={gamification.totalPoints}
+                        nextLevelXp={gamification.nextLevelXp}
+                        currentLevelXp={gamification.currentLevelXp}
+                    />
+                </div>
+            )}
+
             {/* Profile Section */}
             <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden relative group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-emerald-500/10 transition-colors" />
@@ -149,19 +162,6 @@ export const Settings: React.FC<SettingsProps> = ({
                     )}
                 </div>
             </section>
-
-            {/* Gamification Stats Section */}
-            {gamification && gamificationConfig?.enabled && (
-                <div className="animate-in fade-in slide-in-from-top-4 duration-1000">
-                    <GamificationStats
-                        level={gamification.level}
-                        progress={gamification.progress}
-                        totalPoints={gamification.totalPoints}
-                        nextLevelXp={gamification.nextLevelXp}
-                        currentLevelXp={gamification.currentLevelXp}
-                    />
-                </div>
-            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Gamification Settings Section */}
