@@ -11,7 +11,7 @@ interface GamificationSettingsProps {
 
 export const GamificationSettings: React.FC<GamificationSettingsProps> = ({ config, onChange }) => {
     const { t } = useLanguage();
-    const [openSection, setOpenSection] = React.useState<string | null>('prayer');
+    const [openSection, setOpenSection] = React.useState<string | null>(null);
 
     const handleChange = (section: keyof GamificationConfig['points'], key: string, value: number) => {
         const newConfig = {
