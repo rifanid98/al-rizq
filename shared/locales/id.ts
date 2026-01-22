@@ -324,6 +324,8 @@ export const id = {
         },
         settings: {
             title: "Gamifikasi",
+            active: "Gamifikasi Aktif",
+            disabled: "Gamifikasi Nonaktif",
             pointsPrayer: "Poin Sholat",
             pointsFasting: "Poin Puasa",
             pointsDzikir: "Poin Dzikir",

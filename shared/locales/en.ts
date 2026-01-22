@@ -323,6 +323,8 @@ export const en = {
         },
         settings: {
             title: "Gamification",
+            active: "Gamification Active",
+            disabled: "Gamification Disabled",
             pointsPrayer: "Prayer Points",
             pointsFasting: "Fasting Points",
             pointsDzikir: "Dhikr Points",

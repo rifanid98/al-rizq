@@ -51,7 +51,7 @@ export const GamificationSettings: React.FC<GamificationSettingsProps> = ({ conf
                             {t.gamification.settings.title}
                         </h3>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                            {config.enabled ? 'Gamification Active' : 'Gamification Disabled'}
+                            {config.enabled ? t.gamification.settings.active : t.gamification.settings.disabled}
                         </p>
                     </div>
                 </div>
