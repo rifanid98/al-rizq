@@ -112,7 +112,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
             const rec = getFastingRecommendation(new Date(currentDate), hijriDate);
             setRecommendation(rec);
         }
-    }, [currentDate, hijriDate, todayLog]);
+    }, [currentDate, hijriDate, todayLog, nadzarConfig, qadhaConfig, ramadhanConfig]);
 
     // Check if today matches Nadzar criteria
     const checkIsNadzar = (date: string, type: FastingType | null) => {
@@ -147,23 +147,17 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
             removeFastingLog(currentDate);
             setSelectedType(null);
         } else {
-            // Determine effective type:
-            // 1. Explicit selection (dropdown)
-            // 2. Recommendation (e.g. senin-kamis)
-            // 3. User config match (Nadzar for today)
             let typeToLog = (selectedType as FastingType) || (recommendation.type as FastingType);
 
-            const isNadzarMatch = checkIsNadzar(currentDate, typeToLog);
-
-            if (!typeToLog && isNadzarMatch) {
-                typeToLog = 'Nadzar';
-            }
-
             if (typeToLog) {
+                const isNadzarMatch = checkIsNadzar(currentDate, typeToLog);
+                const isQadhaMatch = checkIsQadha(currentDate, typeToLog);
+
                 // If the type is implicitly Nadzar (e.g. user selected Nadzar type), ensure flag is true
-                // But generally, the flag is complementary.
                 const finalIsNadzar = isNadzarMatch || typeToLog === 'Nadzar';
-                logFasting(currentDate, typeToLog, true, finalIsNadzar);
+                const finalIsQadha = isQadhaMatch || typeToLog === 'Qadha';
+
+                logFasting(currentDate, typeToLog, true, finalIsNadzar, finalIsQadha);
             } else {
                 setIsDropdownOpen(prev => !prev);
             }
@@ -350,8 +344,8 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                         <div className="mb-6 px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-2">
                             <Info className="w-4 h-4" />
                             {getRecommendationLabel()}
-                            {checkIsNadzar(currentDate, recommendation.type as FastingType) && <span className="ml-1 text-[10px] bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded-md flex items-center gap-1">+Nadzar <Target className="w-3 h-3" /></span>}
-                            {checkIsQadha(currentDate, recommendation.type as FastingType) && <span className="ml-1 text-[10px] bg-rose-200 dark:bg-rose-900 text-rose-800 dark:text-rose-200 px-1.5 py-0.5 rounded-md flex items-center gap-1">+Qadha <RotateCcw className="w-3 h-3" /></span>}
+                            {recommendation.type !== 'Nadzar' && checkIsNadzar(currentDate, recommendation.type as FastingType) && <span className="ml-1 text-[10px] bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded-md flex items-center gap-1">+Nadzar <Target className="w-3 h-3" /></span>}
+                            {recommendation.type !== 'Qadha' && checkIsQadha(currentDate, recommendation.type as FastingType) && <span className="ml-1 text-[10px] bg-rose-200 dark:bg-rose-900 text-rose-800 dark:text-rose-200 px-1.5 py-0.5 rounded-md flex items-center gap-1">+Qadha <RotateCcw className="w-3 h-3" /></span>}
                         </div>
                     )}
 

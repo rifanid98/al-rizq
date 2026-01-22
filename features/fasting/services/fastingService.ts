@@ -82,13 +82,15 @@ export const isRamadhan = (hijri: HijriDate): boolean => {
 
 
 
+import { STORAGE_KEYS } from "../../../shared/constants";
+
 export const getFastingRecommendation = (date: Date, hijri: HijriDate): {
-    type: 'Senin-Kamis' | 'Ayyamul Bidh' | 'Ramadhan' | 'Lainnya' | 'Nadzar' | null,
+    type: 'Senin-Kamis' | 'Ayyamul Bidh' | 'Ramadhan' | 'Lainnya' | 'Nadzar' | 'Qadha' | null,
     labelKey: string,
     isForbidden?: boolean
 } => {
     // Check for custom Ramadhan range from localStorage
-    const savedRamadhan = localStorage.getItem('al_rizq_ramadhan_config');
+    const savedRamadhan = localStorage.getItem(STORAGE_KEYS.RAMADHAN_CONFIG);
     if (savedRamadhan) {
         try {
             const { startDate, endDate } = JSON.parse(savedRamadhan);
@@ -120,7 +122,50 @@ export const getFastingRecommendation = (date: Date, hijri: HijriDate): {
     if (hMonth === 12 && hDay === 10) return { type: null, labelKey: 'fasting.types.forbidden', isForbidden: true }; // Eid Al-Adha
     if (hMonth === 12 && [11, 12, 13].includes(hDay)) return { type: null, labelKey: 'fasting.types.forbidden', isForbidden: true }; // Tasyrik
 
+    // Priority: Qadha > Nadzar > Sunnah
+
+    // Check Qadha Config
+    const savedQadha = localStorage.getItem(STORAGE_KEYS.QADHA_CONFIG);
+    if (savedQadha) {
+        try {
+            const qadhaConfig = JSON.parse(savedQadha);
+            const day = date.getDay();
+            const yearStr = date.getFullYear();
+            const monthStr = String(date.getMonth() + 1).padStart(2, '0');
+            const dayStr = String(date.getDate()).padStart(2, '0');
+            const dateStr = `${yearStr}-${monthStr}-${dayStr}`;
+
+            if (qadhaConfig.days?.includes(day) || qadhaConfig.customDates?.includes(dateStr)) {
+                return { type: 'Qadha', labelKey: 'fasting.types.qadha' };
+            }
+        } catch (e) {
+            console.error('Error parsing Qadha config:', e);
+        }
+    }
+
+    // Check Nadzar Config
+    const savedNadzar = localStorage.getItem(STORAGE_KEYS.NADZAR_CONFIG);
+    if (savedNadzar) {
+        try {
+            const nadzarConfig = JSON.parse(savedNadzar);
+            const day = date.getDay();
+            const yearStr = date.getFullYear();
+            const monthStr = String(date.getMonth() + 1).padStart(2, '0');
+            const dayStr = String(date.getDate()).padStart(2, '0');
+            const dateStr = `${yearStr}-${monthStr}-${dayStr}`;
+
+            if (nadzarConfig.days?.includes(day) || nadzarConfig.customDates?.includes(dateStr)) {
+                return { type: 'Nadzar', labelKey: 'fasting.types.nadzar' };
+            }
+        } catch (e) {
+            console.error('Error parsing Nadzar config:', e);
+        }
+    }
+
     if (isAyyamulBidh(hijri)) {
+        // Even if it's Ayyamul Bidh, if user configures it as Nadzar/Qadha type, it should return that?
+        // Actually the check for 'types' (like Senin-Kamis is Nadzar) is handled in FastingTracker UI
+        // But for recommendation, we return the base sunnah type if not explicitly overriden by day/date.
         return { type: 'Ayyamul Bidh', labelKey: 'fasting.types.midMonth' };
     }
 
@@ -131,8 +176,6 @@ export const getFastingRecommendation = (date: Date, hijri: HijriDate): {
             labelKey: seninKamis === 'Senin' ? 'fasting.types.monday' : 'fasting.types.thursday'
         };
     }
-
-
 
     return { type: null, labelKey: '' };
 };

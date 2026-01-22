@@ -57,22 +57,6 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
         };
     }, []);
 
-    const checkIsNadzar = (date: string) => {
-        const dateObj = new Date(date + 'T00:00:00');
-        const day = dateObj.getDay();
-        if (nadzarConfig.days.includes(day)) return true;
-        if (nadzarConfig.customDates.includes(date)) return true;
-        return false;
-    };
-
-    const checkIsQadha = (date: string) => {
-        const dateObj = new Date(date + 'T00:00:00');
-        const day = dateObj.getDay();
-        if (qadhaConfig.days.includes(day)) return true;
-        if (qadhaConfig.customDates.includes(date)) return true;
-        return false;
-    };
-
     // Data for Charts
     const data = [
         { name: 'Sunnah', value: stats.sunnah, color: '#10B981' }, // Emerald 500
@@ -202,13 +186,7 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
                         const log = getFastedLog(day.date);
                         const isDayFasted = !!log;
                         const originalType = day.recommendation.type;
-                        const isNadzarConfigured = checkIsNadzar(day.date);
-                        const isQadhaConfigured = checkIsQadha(day.date);
-
-                        // Priority Logic: Leave Sunnah as is, otherwise valid Nadzar becomes Nadzar, otherwise Qadha
-                        const effectiveType = (originalType === 'Senin-Kamis' || originalType === 'Ayyamul Bidh' || originalType === 'Ramadhan')
-                            ? originalType
-                            : (isNadzarConfigured ? 'Nadzar' : (isQadhaConfigured ? 'Qadha' : originalType));
+                        const effectiveType = originalType;
 
                         const isRecommended = !!effectiveType;
                         const isToday = day.date === getLocalDateStr();
