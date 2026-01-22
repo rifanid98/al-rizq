@@ -16,6 +16,12 @@ export const usePrayerLogs = () => {
     });
 
     useEffect(() => {
+        const handleReset = () => setLogs([]);
+        window.addEventListener('prayer_logs_reset', handleReset);
+        return () => window.removeEventListener('prayer_logs_reset', handleReset);
+    }, []);
+
+    useEffect(() => {
         localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(logs));
     }, [logs]);
 
