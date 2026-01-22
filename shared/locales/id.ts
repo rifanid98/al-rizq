@@ -230,7 +230,7 @@ export const id = {
         pickDate: "Pilih Tanggal"
     },
     fasting: {
-        title: "Jadwal Puasa",
+        title: "Pengaturan Puasa",
         statsTitle: "Puasa",
         today: "Hari Ini",
         upcoming: "Akan Datang",
@@ -270,7 +270,10 @@ export const id = {
             resetTab: "Reset Tab Ini",
             saveConfig: "Simpan {type}",
             selectedDates: "{count} tanggal dipilih",
-            selectOnCalendar: "Pilih tanggal di kalender"
+            selectOnCalendar: "Pilih tanggal di kalender",
+            ramadhan: "Ramadhan",
+            ramadhanStart: "Mulai Ramadhan",
+            ramadhanEnd: "Selesai Ramadhan"
         },
         days: {
             sun: "Ahad",

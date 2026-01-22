@@ -229,7 +229,7 @@ export const en = {
         pickDate: "Pick a date"
     },
     fasting: {
-        title: "Fasting Schedule",
+        title: "Fasting Settings",
         statsTitle: "Fasting",
         today: "Today",
         upcoming: "Upcoming",
@@ -269,7 +269,10 @@ export const en = {
             resetTab: "Reset This Tab",
             saveConfig: "Save {type}",
             selectedDates: "{count} dates selected",
-            selectOnCalendar: "Select date on calendar"
+            selectOnCalendar: "Select date on calendar",
+            ramadhan: "Ramadan",
+            ramadhanStart: "Ramadan Start",
+            ramadhanEnd: "Ramadan End"
         },
         days: {
             sun: "SUN",

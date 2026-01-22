@@ -83,6 +83,10 @@ export interface AppSettings {
   };
   lastKnownLocation?: string;
   gamificationConfig?: GamificationConfig;
+  ramadhanConfig?: {
+    startDate: string;
+    endDate: string;
+  };
 }
 
 export interface AppState {
