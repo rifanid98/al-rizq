@@ -36,16 +36,16 @@ export const calculatePrayerPoints = (log: PrayerLog, config: GamificationConfig
     }
 
     // All Sunnah: Qobliyah + Badiyah + Dzikir + Dua
-    // Note: Some prayers might not *have* Qobliyah/Badiyah (e.g. Subuh no badiyah, Ashar no badiyah).
-    // Ideally, we should check if they are *applicable*.
-    // However, simpler logic: if the user checked ALL boxes available in the UI.
-    // Can we know which ones were available?
-    // User request: "marked all sunnah & complementary worship +10 bonus".
-    // If the user marks `hasQobliyah`=true, `hasBadiyah`=true, `hasDzikir`=true, `hasDua`=true.
-    // If a prayer doesn't have Badiyah (like Subuh), presumably the user CANNOT check it?
-    // Let's assume the UI handles availability or the user just checks what they did.
-    // For strict fairness, if they checked all 4, they get the bonus.
-    if (log.hasQobliyah && log.hasBadiyah && log.hasDzikir && log.hasDua) {
+    // Fixed: Subuh & Ashar do not have Badiyah, so we shouldn't require it.
+    const isBadiyahApplicable = !['Subuh', 'Ashar'].includes(log.prayerName);
+
+    // Requirement:
+    // 1. Must have Qobliyah, Dzikir, and Dua
+    // 2. IF Badiyah is applicable, must have Badiyah.
+    const hasCoreSunnah = log.hasQobliyah && log.hasDzikir && log.hasDua;
+    const hasBadiyahRequirement = isBadiyahApplicable ? log.hasBadiyah : true;
+
+    if (hasCoreSunnah && hasBadiyahRequirement) {
         points += (p.bonusAllSunnah || 0);
     }
 

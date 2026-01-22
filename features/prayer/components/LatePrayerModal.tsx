@@ -272,10 +272,24 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                                     </button>
 
                                     <button
-                                        onClick={() => setHasBadiyah(!hasBadiyah)}
-                                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${hasBadiyah ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm' : 'bg-transparent border-transparent text-slate-400'}`}
+                                        onClick={() => {
+                                            if (pendingLatePrayer.name === 'Subuh' || pendingLatePrayer.name === 'Ashar') return;
+                                            setHasBadiyah(!hasBadiyah);
+                                        }}
+                                        disabled={pendingLatePrayer.name === 'Subuh' || pendingLatePrayer.name === 'Ashar'}
+                                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${pendingLatePrayer.name === 'Subuh' || pendingLatePrayer.name === 'Ashar'
+                                                ? 'opacity-50 cursor-not-allowed bg-slate-100 dark:bg-slate-800/50 border-transparent text-slate-400'
+                                                : hasBadiyah
+                                                    ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm'
+                                                    : 'bg-transparent border-transparent text-slate-400'
+                                            }`}
                                     >
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasBadiyah ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pendingLatePrayer.name === 'Subuh' || pendingLatePrayer.name === 'Ashar'
+                                                ? 'bg-slate-200 dark:bg-slate-800 text-slate-400'
+                                                : hasBadiyah
+                                                    ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600'
+                                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                                            }`}>
                                             <Moon className="w-4 h-4" />
                                         </div>
                                         <span className="text-[10px] font-black uppercase text-left leading-tight">{t.tracker.badiyah}</span>
