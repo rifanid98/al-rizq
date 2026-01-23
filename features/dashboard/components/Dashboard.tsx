@@ -179,7 +179,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                 } ${
                 // Tablet/Mobile: Above bottom nav
                 // Desktop: Bottom-10
-                'bottom-28 lg:bottom-10'
+                'bottom-28 lg:bottom-10 mb-6'
                 }`}
             >
               <ChevronDown className="w-8 h-8 group-hover:translate-y-0.5 transition-transform" />
