@@ -321,6 +321,7 @@ export const en = {
     },
     gamification: {
         title: "Gamification",
+        current: "Current",
         level: "Level",
         xp: "XP",
         totalPoints: "Total Points",

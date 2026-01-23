@@ -179,6 +179,7 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
                                 <div
                                     onClick={(e) => {
                                         e.stopPropagation();
+                                        e.preventDefault();
                                         if (!isChecked && completedItems.length === list.length - 1) {
                                             const points = calculateDzikirPoints({ categoryId: activeCategory.id, isCompleted: true, date: date } as any, gamificationConfig);
                                             triggerAnimation(null, points > 0 ? points : 12);
@@ -197,6 +198,14 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
                                 <div
                                     className="flex-1 min-w-0 cursor-pointer"
                                     onClick={() => toggleExpansion(item.id)}
+                                    onDoubleClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!isChecked && completedItems.length === list.length - 1) {
+                                            const points = calculateDzikirPoints({ categoryId: activeCategory.id, isCompleted: true, date: date } as any, gamificationConfig);
+                                            triggerAnimation(null, points > 0 ? points : 12);
+                                        }
+                                        toggleItem(item.id, activeCategory.id, date);
+                                    }}
                                 >
                                     <div className="flex items-center justify-between mb-1">
                                         <h4 className={`font-bold text-sm ${isChecked ? 'text-emerald-900 dark:text-emerald-100' : 'text-slate-800 dark:text-slate-100'}`}>

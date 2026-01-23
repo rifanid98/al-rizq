@@ -111,7 +111,7 @@ export const LevelTiersModal: React.FC<LevelTiersModalProps> = ({ currentLevel, 
                                                 </h3>
                                                 {isCurrent && (
                                                     <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/20 text-white shadow-sm backdrop-blur-md">
-                                                        Current
+                                                        {t.gamification.current}
                                                     </span>
                                                 )}
                                             </div>

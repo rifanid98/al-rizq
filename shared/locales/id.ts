@@ -322,6 +322,7 @@ export const id = {
     },
     gamification: {
         title: "Gamifikasi",
+        current: "Sekarang",
         level: "Level",
         xp: "XP",
         totalPoints: "Total Poin",

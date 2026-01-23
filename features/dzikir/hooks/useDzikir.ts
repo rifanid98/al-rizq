@@ -84,8 +84,8 @@ export const useDzikir = () => {
                 : [...prev, newLog];
 
             // Manually trigger storage update and event to ensure other hook instances see it
-            localStorage.setItem(STORAGE_KEYS.DZIKIR_LOGS, JSON.stringify(updatedLogs));
-            window.dispatchEvent(new Event('dzikir_logs_updated'));
+            // localStorage.setItem(STORAGE_KEYS.DZIKIR_LOGS, JSON.stringify(updatedLogs));
+            // window.dispatchEvent(new Event('dzikir_logs_updated'));
 
             return updatedLogs;
         });
