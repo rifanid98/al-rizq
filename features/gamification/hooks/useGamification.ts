@@ -65,7 +65,10 @@ export const useGamification = (
     }, []);
 
     const [userBadges, setUserBadges] = useState<UserBadge[]>(getStoredBadges);
-    const [newlyUnlockedBadge, setNewlyUnlockedBadge] = useState<UserBadge | null>(null);
+    const [unlockedQueue, setUnlockedQueue] = useState<UserBadge[]>(() => {
+        // Initialize queue with any unseen badges from storage
+        return getStoredBadges().filter(b => b.isNew);
+    });
 
     // Sync state when storage changes externally (cross-tab or events)
     useEffect(() => {
@@ -88,7 +91,7 @@ export const useGamification = (
         const allMetrics = { ...prayerMetrics, ...fastingMetrics, ...dzikirMetrics };
 
         let hasChanges = false;
-        let unlocked: UserBadge | null = null;
+        const newUnlocks: UserBadge[] = [];
 
         // We use function update to ensure we have latest state if effect runs rapidly
         setUserBadges(prev => {
@@ -120,7 +123,7 @@ export const useGamification = (
 
                     // Trigger unlock animation for first tier unlock
                     if (newTier !== null) {
-                        unlocked = newBadge;
+                        newUnlocks.push(newBadge);
                     }
                 } else {
                     const tierChanged = newTier !== existing.unlockedTier && newTier !== null;
@@ -138,7 +141,7 @@ export const useGamification = (
 
                         // Trigger unlock animation for tier upgrade
                         if (tierChanged) {
-                            unlocked = updatedBadge;
+                            newUnlocks.push(updatedBadge);
                         }
                     }
                 }
@@ -147,9 +150,23 @@ export const useGamification = (
             if (hasChanges) {
                 localStorage.setItem(STORAGE_KEYS.BADGES, JSON.stringify(nextState));
 
-                // Set newly unlocked badge for animation (outside of state update)
-                if (unlocked) {
-                    setTimeout(() => setNewlyUnlockedBadge(unlocked), 100);
+                // Add newly unlocked badges to queue (outside of state update)
+                if (newUnlocks.length > 0) {
+                    // Use setTimeout to avoid state update during render phase warning
+                    setTimeout(() => {
+                        setUnlockedQueue(prev => {
+                            // strictly deduplicate entire queue to ensure no ghosts
+                            const combined = [...prev, ...newUnlocks];
+                            const unique = combined.filter((badge, index, self) =>
+                                index === self.findIndex((b) => (
+                                    b.badgeId === badge.badgeId && b.unlockedTier === badge.unlockedTier
+                                ))
+                            );
+                            // Optimization: if length unchanged, return prev ref
+                            if (unique.length === prev.length) return prev;
+                            return unique;
+                        });
+                    }, 100);
                 }
 
                 return nextState;
@@ -167,12 +184,22 @@ export const useGamification = (
         });
     }, []);
 
-    const clearNewlyUnlocked = useCallback(() => {
-        if (newlyUnlockedBadge) {
-            markBadgeSeen(newlyUnlockedBadge.badgeId);
-        }
-        setNewlyUnlockedBadge(null);
-    }, [newlyUnlockedBadge, markBadgeSeen]);
+    const popBadge = useCallback(() => {
+        setUnlockedQueue(prev => {
+            const [processed, ...rest] = prev;
+            if (processed) {
+                markBadgeSeen(processed.badgeId);
+            }
+            return rest;
+        });
+    }, [markBadgeSeen]);
+
+    const clearQueue = useCallback(() => {
+        setUnlockedQueue(prev => {
+            prev.forEach(b => markBadgeSeen(b.badgeId));
+            return [];
+        });
+    }, [markBadgeSeen]);
 
     return {
         totalPoints: pointsDetail.total,
@@ -181,7 +208,8 @@ export const useGamification = (
         config,
         badges: userBadges,
         markBadgeSeen,
-        newlyUnlockedBadge,
-        clearNewlyUnlocked
+        unlockedQueue,
+        popBadge,
+        clearQueue
     };
 };
