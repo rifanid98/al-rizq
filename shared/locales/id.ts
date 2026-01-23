@@ -388,12 +388,8 @@ export const id = {
                     history: "Perang Badar terjadi di bulan Ramadhan, membuktikan puasa bukan alasan untuk lemah, tapi sumber kekuatan ruhiyah."
                 },
                 qadha_annual: {
-                    title: "Debt Slayer {year}",
-                    desc: "Menyelesaikan seluruh utang puasa (Qadha) tahun {year}."
-                },
-                qadha: {
-                    title: "Penakluk Qadha",
-                    desc: "Konsisten melunasi utang puasa tahunan.",
+                    title: "Penakluk Qadha {year}",
+                    desc: "Menyelesaikan seluruh utang puasa (Qadha) tahun {year}.",
                     history: "Aisyah RA biasa mengqadha puasa Ramadhan di bulan Sya'ban, menunjukkan kesungguhan menunaikan kewajiban sebelum Ramadhan berikutnya."
                 }
             },

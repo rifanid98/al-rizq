@@ -8,10 +8,12 @@ import { Sparkles, Moon, Sun, Flame, Eye, EyeOff } from 'lucide-react';
 import { Button } from '../../../shared/components/ui/Button';
 
 interface BadgeCollectionProps {
-    userBadges: UserBadge[]; // Using userBadges prop from hook
+    userBadges: UserBadge[];
+    ramadhanConfig?: { startDate: string, endDate: string };
+    qadhaConfig?: { customDates: string[] };
 }
 
-export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userBadges }) => {
+export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userBadges, ramadhanConfig, qadhaConfig }) => {
     const { t } = useLanguage();
     const [previewMode, setPreviewMode] = useState(false);
     const currentYearStr = new Date().getFullYear().toString();
@@ -21,7 +23,8 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userBadges }) 
     const availableYears = useMemo(() => {
         const years = new Set<string>();
         years.add(currentYearStr);
-        userBadges.forEach(ub => {
+        (userBadges || []).forEach(ub => {
+            if (!ub || !ub.badgeId) return;
             const match = ub.badgeId.match(/_(\d{4})$/);
             if (match) years.add(match[1]);
         });
@@ -88,8 +91,15 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userBadges }) 
                 });
 
                 const allCatBadges = finalBadgeIds
-                    .map(id => getBadgeDefinition(id))
-                    .filter((def): def is any => !!def);
+                    .map(id => {
+                        try {
+                            return getBadgeDefinition(id, ramadhanConfig, qadhaConfig);
+                        } catch (e) {
+                            console.error(`Error getting badge definition for ${id}:`, e);
+                            return undefined;
+                        }
+                    })
+                    .filter((def): def is any => !!def && !!def.id);
 
                 if (allCatBadges.length === 0) return null;
 
@@ -120,6 +130,8 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userBadges }) 
                                         key={def.id}
                                         definition={def}
                                         userBadge={finalBadge}
+                                        ramadhanConfig={ramadhanConfig}
+                                        qadhaConfig={qadhaConfig}
                                     />
                                 );
                             })}

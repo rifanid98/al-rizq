@@ -9,7 +9,9 @@ export const useGamification = (
     logs: PrayerLog[],
     fastingLogs: FastingLog[],
     dzikirLogs: DzikirLog[],
-    userConfig?: GamificationConfig
+    userConfig?: GamificationConfig,
+    ramadhanConfig?: { startDate: string, endDate: string },
+    qadhaConfig?: any
 ) => {
     const config = useMemo(() => {
         if (!userConfig) return DEFAULT_GAMIFICATION_CONFIG;
@@ -98,7 +100,7 @@ export const useGamification = (
             const nextState = [...prev];
 
             Object.entries(allMetrics).forEach(([badgeId, count]) => {
-                const def = getBadgeDefinition(badgeId);
+                const def = getBadgeDefinition(badgeId, ramadhanConfig, qadhaConfig);
                 if (!def) return;
 
                 const existingIndex = nextState.findIndex(b => b.badgeId === badgeId);
@@ -126,21 +128,24 @@ export const useGamification = (
                         newUnlocks.push(newBadge);
                     }
                 } else {
-                    const tierChanged = newTier !== existing.unlockedTier && newTier !== null;
+                    const tierChanged = newTier !== existing.unlockedTier;
+                    const tierImproved = (newTier !== null && existing.unlockedTier === null) ||
+                        (newTier === 'gold' && existing.unlockedTier !== 'gold') ||
+                        (newTier === 'silver' && existing.unlockedTier === 'bronze');
 
                     if (effectiveCount !== existing.currentCount || tierChanged) {
                         const updatedBadge: UserBadge = {
                             ...existing,
                             currentCount: effectiveCount,
                             unlockedTier: newTier,
-                            isNew: existing.isNew || tierChanged,
-                            unlockedAt: tierChanged ? Date.now() : existing.unlockedAt
+                            isNew: tierImproved ? true : existing.isNew,
+                            unlockedAt: tierImproved ? Date.now() : existing.unlockedAt
                         };
                         nextState[existingIndex] = updatedBadge;
                         hasChanges = true;
 
-                        // Trigger unlock animation for tier upgrade
-                        if (tierChanged) {
+                        // Trigger unlock animation only for tier improvements
+                        if (tierImproved) {
                             newUnlocks.push(updatedBadge);
                         }
                     }
@@ -174,7 +179,7 @@ export const useGamification = (
             return prev;
         });
 
-    }, [logs, fastingLogs, dzikirLogs]); // Recalculate when logs change
+    }, [logs, fastingLogs, dzikirLogs, ramadhanConfig, qadhaConfig]); // Recalculate when logs or config change
 
     const markBadgeSeen = useCallback((badgeId: string) => {
         setUserBadges(prev => {

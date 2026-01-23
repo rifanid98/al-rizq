@@ -34,9 +34,9 @@ export const GamificationStats: React.FC<GamificationStatsProps> = ({
     const theme = currentTier.colorTheme;
 
     // Resolve Rank Name
-    // Key format: 'levels.muslim' -> access t.gamification.levels.muslim
-    const rankKey = currentTier.nameKey.split('.')[1]; // e.g., 'muslim'
-    const rankName = levelName || (t.gamification.levels as any)[rankKey] || rankKey;
+    const rankKey = currentTier.nameKey.split('.')[1] || 'novice';
+    const levels = t?.gamification?.levels || {};
+    const rankName = levelName || (levels as any)[rankKey] || rankKey;
 
     // Dynamic Gradient Map
     const getGradient = (theme: string) => {

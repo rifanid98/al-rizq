@@ -4,51 +4,50 @@ import { Lock } from 'lucide-react';
 import { BadgeDefinition, UserBadge } from '../../../shared/types/gamification';
 import { useLanguage } from '../../../shared/hooks/useLanguage';
 import { BadgeDetailModal } from './BadgeDetailModal';
+import { getBadgeDefinition } from '../services/badgeService';
 
 interface BadgeItemProps {
     definition: BadgeDefinition;
     userBadge?: UserBadge | null;
+    ramadhanConfig?: { startDate: string, endDate: string };
+    qadhaConfig?: { customDates: string[] };
 }
 
-export const BadgeItem: React.FC<BadgeItemProps> = ({ definition, userBadge }) => {
+export const BadgeItem: React.FC<BadgeItemProps> = ({ definition, userBadge, ramadhanConfig, qadhaConfig }) => {
     const { t } = useLanguage();
 
-    // Translation logic
-    // Translation logic
-    const keys = definition.titleKey.split('.');
-    let title: any = t.gamification;
-    let desc: any = t.gamification;
-    let history: any = t.gamification;
+    // Safe translation helper
+    const getTranslation = (path: string) => {
+        try {
+            const keys = path.split('.');
+            let current = t.gamification;
+            for (const key of keys) {
+                if (!current) return path;
+                current = current[key];
+            }
+            if (typeof current !== 'string') return path;
 
-    try {
-        keys.forEach(k => { title = title[k]; });
-        definition.descriptionKey.split('.').forEach(k => { desc = desc[k]; });
-        if (definition.historyKey) {
-            definition.historyKey.split('.').forEach(k => { history = history[k]; });
-        } else {
-            history = null;
-        }
-
-        // Handle year replacement for dynamic badges
-        const match = definition.id.match(/_(\d{4})$/);
-        if (match) {
-            const year = match[1];
-            if (typeof title === 'string') {
-                if (title.includes('{year}')) {
-                    title = title.replace('{year}', year);
-                } else {
-                    title = `${title} ${year}`;
+            // Handle year replacement for dynamic badges
+            const match = definition.id.match(/_(\d{4})$/);
+            if (match) {
+                const year = match[1];
+                if (current.includes('{year}')) {
+                    return current.replace(/{year}/g, year);
+                }
+                // Only auto-append year to title if it doesn't have it
+                if (path.includes('.title') && !current.includes(year)) {
+                    return `${current} ${year}`;
                 }
             }
-            if (typeof desc === 'string' && desc.includes('{year}')) {
-                desc = desc.replace('{year}', year);
-            }
+            return current;
+        } catch {
+            return path;
         }
-    } catch (e) {
-        title = definition.titleKey;
-        desc = definition.descriptionKey;
-        history = null;
-    }
+    };
+
+    const title = getTranslation(definition.titleKey);
+    const desc = getTranslation(definition.descriptionKey);
+    const history = definition.historyKey ? getTranslation(definition.historyKey) : null;
 
     const isUnlocked = !!userBadge?.unlockedTier;
     const tier = userBadge?.unlockedTier;
@@ -88,10 +87,14 @@ export const BadgeItem: React.FC<BadgeItemProps> = ({ definition, userBadge }) =
         }
     };
 
-    // Calculate progress
-    const nextTierReq = definition.tiers.find(t => t.requirement > (userBadge?.currentCount || 0))?.requirement;
+    // Re-resolve definition using configs if it's a dynamic badge to get correct thresholds
+    const dynamicDef = getBadgeDefinition(definition.id, ramadhanConfig, qadhaConfig) || definition;
+
+    // Calculate progress using the dynamic definition
     const currentCount = userBadge?.currentCount || 0;
-    const maxReq = definition.tiers[definition.tiers.length - 1].requirement;
+    const tiers = dynamicDef.tiers || [];
+    const nextTierReq = tiers.find(t => t.requirement > currentCount)?.requirement;
+    const maxReq = tiers.length > 0 ? tiers[tiers.length - 1].requirement : 100;
     const displayReq = nextTierReq || maxReq;
     const progressPercent = Math.min(100, (currentCount / displayReq) * 100);
 
@@ -137,8 +140,10 @@ export const BadgeItem: React.FC<BadgeItemProps> = ({ definition, userBadge }) =
             <BadgeDetailModal
                 isOpen={showModal}
                 onClose={() => setShowModal(false)}
-                definition={definition}
+                definition={dynamicDef}
                 userBadge={userBadge}
+                ramadhanConfig={ramadhanConfig}
+                qadhaConfig={qadhaConfig}
             />
         </>
     );

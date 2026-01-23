@@ -16,9 +16,11 @@ interface AchievementsProps {
         levelTier?: LevelTier;
     };
     logs: any[]; // Prayer logs for stats if needed
+    ramadhanConfig?: { startDate: string, endDate: string };
+    qadhaConfig?: { customDates: string[] };
 }
 
-export const Achievements: React.FC<AchievementsProps> = ({ gamification, logs }) => {
+export const Achievements: React.FC<AchievementsProps> = ({ gamification, logs, ramadhanConfig, qadhaConfig }) => {
     const { t } = useLanguage();
 
     return (
@@ -42,7 +44,7 @@ export const Achievements: React.FC<AchievementsProps> = ({ gamification, logs }
             </div>
 
             {/* Badges Grid */}
-            <BadgeCollection userBadges={gamification.badges} />
+            <BadgeCollection userBadges={gamification.badges} ramadhanConfig={ramadhanConfig} qadhaConfig={qadhaConfig} />
         </div>
     );
 };
