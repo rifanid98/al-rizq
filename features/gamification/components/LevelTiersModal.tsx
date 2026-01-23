@@ -31,31 +31,21 @@ export const LevelTiersModal: React.FC<LevelTiersModalProps> = ({ currentLevel, 
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div
                 className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Header */}
-                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md z-10">
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                            {t.gamification.levelTiers || 'Level Tiers'}
-                        </h2>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            {t.gamification.currentLevel} {currentLevel}
-                        </p>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                    >
-                        <X className="w-5 h-5 text-slate-500" />
-                    </button>
-                </div>
+                {/* Floating Close Button */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 z-20 p-2 bg-black/20 hover:bg-black/30 text-white rounded-full backdrop-blur-md transition-all"
+                >
+                    <X className="w-5 h-5" />
+                </button>
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto space-y-4">
+                <div className="p-6 overflow-y-auto space-y-4 pt-16">
                     {LEVEL_TIERS.map((tier, index) => {
                         const isUnlocked = currentLevel >= tier.level;
                         const isCurrent = index === currentTierIndex;
