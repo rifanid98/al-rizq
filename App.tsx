@@ -66,6 +66,7 @@ import { StarAnimationProvider, useStarAnimation } from './features/gamification
 import { StarAnimationLayer } from './features/gamification/components/StarAnimationLayer';
 import { Achievements } from './features/gamification/components/Achievements';
 import { BadgeUnlockModal } from './features/gamification/components/BadgeUnlockModal';
+import { LevelUpModal } from './features/gamification/components/LevelUpModal';
 
 const App: React.FC = () => {
   // Hooks
@@ -609,6 +610,14 @@ const App: React.FC = () => {
         }}
       />
       <StarAnimationLayer />
+      {/* Level Up Modal */}
+      {gamification.levelUpEvent && (
+        <LevelUpModal
+          show={gamification.levelUpEvent.show}
+          onClose={gamification.dismissLevelUp}
+          gamification={gamification}
+        />
+      )}
     </StarAnimationProvider>
   );
 };

@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { PrayerLog, FastingLog, DzikirLog, GamificationConfig, DEFAULT_GAMIFICATION_CONFIG } from '../../../shared/types';
 import { calculatePrayerPoints, calculateFastingPoints, calculateDzikirPoints, getLevel } from '../services/gamificationService';
 import { calculatePrayerMetrics, calculateFastingMetrics, calculateDzikirMetrics, determineTier, getBadgeDefinition } from '../services/badgeService';
@@ -206,6 +206,28 @@ export const useGamification = (
         });
     }, [markBadgeSeen]);
 
+    // --- LEVEL UP LOGIC ---
+    const [levelUpEvent, setLevelUpEvent] = useState<{ level: number; show: boolean } | null>(null);
+    const previousLevelRef = React.useRef<number>(0);
+
+    useEffect(() => {
+        // Initialize ref on first run if it's 0 (to avoid triggering on initial load)
+        if (previousLevelRef.current === 0 && levelInfo.level > 0) {
+            previousLevelRef.current = levelInfo.level;
+            return;
+        }
+
+        if (levelInfo.level > previousLevelRef.current) {
+            // Trigger Level Up
+            setLevelUpEvent({ level: levelInfo.level, show: true });
+            previousLevelRef.current = levelInfo.level;
+        }
+    }, [levelInfo.level]);
+
+    const dismissLevelUp = useCallback(() => {
+        setLevelUpEvent(null);
+    }, []);
+
     return {
         totalPoints: pointsDetail.total,
         pointsDetail,
@@ -215,6 +237,8 @@ export const useGamification = (
         markBadgeSeen,
         unlockedQueue,
         popBadge,
-        clearQueue
+        clearQueue,
+        levelUpEvent,
+        dismissLevelUp
     };
 };

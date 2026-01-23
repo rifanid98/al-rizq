@@ -9,8 +9,11 @@ interface AchievementsProps {
         totalPoints: number;
         level: number;
         progress: number;
-        nextLevelXp: number;
-        currentLevelXp: number;
+        nextThreshold: number;
+        currentPoints: number;
+        currentLevelThreshold: number;
+        pointsInLevel: number;
+        pointsNeededForLevel: number;
         badges: UserBadge[];
         levelName?: string;
         levelTier?: LevelTier;
@@ -30,8 +33,10 @@ export const Achievements: React.FC<AchievementsProps> = ({ gamification, logs, 
                 totalPoints={gamification.totalPoints}
                 level={gamification.level}
                 levelName={gamification.levelName}
-                nextLevelXp={gamification.nextLevelXp}
-                currentLevelXp={gamification.currentLevelXp}
+                nextThreshold={gamification.nextThreshold}
+                currentLevelThreshold={gamification.currentLevelThreshold}
+                pointsInLevel={gamification.pointsInLevel}
+                pointsNeededForLevel={gamification.pointsNeededForLevel}
                 progress={gamification.progress}
                 levelTier={gamification.levelTier}
             />
