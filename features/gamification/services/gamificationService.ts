@@ -7,46 +7,94 @@ export const calculatePrayerPoints = (log: PrayerLog, config: GamificationConfig
 
     const p = config.points.prayer;
     let points = 0;
+    const breakdown: Record<string, number> = {};
 
-    // Single Criteria
-    const isMosque = log.locationType === 'Masjid';
-    const isJamaah = log.executionType === 'Jamaah';
-    const isNoMasbuq = !log.isMasbuq;
-    // Check if status implies "On Time". 
-    // In `types/index.ts`: status: 'Tepat Waktu' | 'Terlambat' | 'Terlewat';
-    // Note: PrayerCard.tsx checks: `loggedToday.status === 'Tepat Waktu' || loggedToday.status === 'Ontime'`
-    // Ideally standardize, but we'll check broadly.
+    // Rule 1: Mark Prayer -> 0 Base Points (as requested)
+
+    // Status Check
+    // "Tepat Waktu" includes "Forgot to mark" which defaults to on-time for scoring purposes.
     const isOnTime = log.status === 'Tepat Waktu' || (log as any).status === 'Ontime';
 
-    if (isMosque) points += (p.mosque || 0);
-    if (isJamaah) points += (p.jamaah || 0);
-    if (isNoMasbuq) points += (p.noMasbuq || 0);
-    if (isOnTime) points += (p.onTime || 0);
-
-    // Sunnah & Complementary
-    if (log.hasQobliyah) points += (p.qobliyah || 0);
-    if (log.hasBadiyah) points += (p.badiyah || 0);
-    if (log.hasDzikir) points += (p.dzikir || 0);
-    if (log.hasDua) points += (p.dua || 0);
-
-    // Bonuses
-    // Perfect: Mosque + Jamaah + NoMasbuq + OnTime
-    if (isMosque && isJamaah && isNoMasbuq && isOnTime) {
-        points += (p.bonusPerfect || 0);
+    // Rule 2: Mosque
+    const isMosque = log.locationType === 'Masjid';
+    if (isMosque) {
+        const val = (p.mosque || 0);
+        points += val;
+        if (val > 0) breakdown['Mosque'] = val;
     }
 
-    // All Sunnah: Qobliyah + Badiyah + Dzikir + Dua
-    // Fixed: Subuh & Ashar do not have Badiyah, so we shouldn't require it.
-    const isBadiyahApplicable = !['Subuh', 'Ashar'].includes(log.prayerName);
+    // Rule 3: Jama'ah
+    const isJamaah = log.executionType === 'Jamaah';
+    if (isJamaah) {
+        const val = (p.jamaah || 0);
+        points += val;
+        if (val > 0) breakdown['Jamaah'] = val;
+    }
 
-    // Requirement:
-    // 1. Must have Qobliyah, Dzikir, and Dua
-    // 2. IF Badiyah is applicable, must have Badiyah.
+    // Rule 4: No Masbuq
+    // Logic: No Masbuq points are only relevant for Jama'ah. 
+    // If Munfarid, this reward is cancelled.
+    const isNoMasbuq = !log.isMasbuq && isJamaah;
+    if (isNoMasbuq) {
+        const val = (p.noMasbuq || 0);
+        points += val;
+        if (val > 0) breakdown['No Masbuq'] = val;
+    }
+
+    // Rule 5: Sunnah & Complementary
+    if (log.hasQobliyah) {
+        const val = (p.qobliyah || 0);
+        points += val;
+        if (val > 0) breakdown['Qobliyah'] = val;
+    }
+    if (log.hasBadiyah) {
+        const val = (p.badiyah || 0);
+        points += val;
+        if (val > 0) breakdown['Badiyah'] = val;
+    }
+    if (log.hasDzikir) {
+        const val = (p.dzikir || 0);
+        points += val;
+        if (val > 0) breakdown['Dzikir'] = val;
+    }
+    if (log.hasDua) {
+        const val = (p.dua || 0);
+        points += val;
+        if (val > 0) breakdown['Dua'] = val;
+    }
+
+    // Rule 6: On Time
+    if (isOnTime) {
+        const val = (p.onTime || 0);
+        points += val;
+        if (val > 0) breakdown['On Time'] = val;
+    }
+
+    // --- Bonuses ---
+
+    // Extended Rule 1: Perfect Prayer Bonus
+    // Criteria: Rule 2 (Mosque) + Rule 3 (Jama'ah) + Rule 4 (No Masbuq) + On Time
+    if (isMosque && isJamaah && isNoMasbuq && isOnTime) {
+        const val = (p.bonusPerfect || 0);
+        points += val;
+        if (val > 0) breakdown['Bonus Perfect'] = val;
+    }
+
+    // Extended Rule 2: All Sunnah Bonus
+    // Criteria: Qobliyah + Dzikir + Dua + (Badiyah if applicable)
+    // Exception: Subuh & Ashar do not have Badiyah.
+    const isBadiyahApplicable = !['Subuh', 'Ashar'].includes(log.prayerName);
     const hasCoreSunnah = log.hasQobliyah && log.hasDzikir && log.hasDua;
     const hasBadiyahRequirement = isBadiyahApplicable ? log.hasBadiyah : true;
 
     if (hasCoreSunnah && hasBadiyahRequirement) {
-        points += (p.bonusAllSunnah || 0);
+        const val = (p.bonusAllSunnah || 0);
+        points += val;
+        if (val > 0) breakdown['Bonus All Sunnah'] = val;
+    }
+
+    if (points > 0) {
+        console.log(`[Points Debug] ${log.prayerName}:`, breakdown, `Total: ${points}`);
     }
 
     return points;

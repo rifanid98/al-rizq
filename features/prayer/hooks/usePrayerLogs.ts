@@ -35,6 +35,7 @@ export const usePrayerLogs = () => {
         options: {
             reason?: string,
             isForgot?: boolean,
+            status?: PrayerLog['status'],
             extra?: Partial<PrayerLog>,
             isMasbuq?: boolean,
             masbuqRakaat?: number,
@@ -50,16 +51,9 @@ export const usePrayerLogs = () => {
         }
     ) => {
         const today = getLocalDateStr();
-        const actualTime = new Date().toTimeString().slice(0, 5);
-        const delay = calculateDelay(scheduledTime, actualTime);
+        const nowTime = new Date().toTimeString().slice(0, 5);
         const dateToUse = options.selectedDate || today;
-
-        let status: PrayerLog['status'] = 'Tepat Waktu';
-        if (!options.isForgot && isLate(scheduledTime, actualTime)) {
-            status = 'Terlambat';
-        }
-
-        const now = Date.now();
+        const nowTimestamp = Date.now();
         const targetId = options.extra?.id || options.editingLogId;
 
         setLogs(prev => {
@@ -68,6 +62,18 @@ export const usePrayerLogs = () => {
 
             const targetIdx = updateIdx !== -1 ? updateIdx : existingDailyIdx;
             const existingLog = targetIdx !== -1 ? prev[targetIdx] : null;
+
+            // Determine actual time: keep old if editing, use provided extra, or use current time
+            const actualTimeToUse = existingLog ? existingLog.actualTime : (options.extra?.actualTime || nowTime);
+            const delayToUse = calculateDelay(scheduledTime, actualTimeToUse);
+
+            // Use provided status, or calculate based on isForgot/isLate
+            let statusToUse: PrayerLog['status'] = options.status || 'Tepat Waktu';
+            if (!options.status) {
+                if (!options.isForgot && isLate(scheduledTime, actualTimeToUse)) {
+                    statusToUse = 'Terlambat';
+                }
+            }
 
             const prefix = '(Lupa menandai)';
             const rawReason = options.reason || '';
@@ -79,9 +85,9 @@ export const usePrayerLogs = () => {
                 date: existingLog ? existingLog.date : (options.extra?.date || dateToUse),
                 prayerName,
                 scheduledTime,
-                actualTime: existingLog ? existingLog.actualTime : (options.extra?.actualTime || actualTime),
-                status: existingLog ? existingLog.status : status,
-                delayMinutes: existingLog ? existingLog.delayMinutes : delay,
+                actualTime: actualTimeToUse,
+                status: statusToUse,
+                delayMinutes: delayToUse,
                 reason: options.isForgot
                     ? (cleanReason ? `${prefix} ${cleanReason}` : prefix)
                     : (cleanReason || undefined),
@@ -104,7 +110,7 @@ export const usePrayerLogs = () => {
                 newLogs.push(logData);
             }
 
-            localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, now.toString());
+            localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, nowTimestamp.toString());
             return newLogs;
         });
     }, []);

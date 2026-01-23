@@ -157,7 +157,11 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                                     {t.tracker.execution.jamaah}
                                 </button>
                                 <button
-                                    onClick={() => setExecutionType('Munfarid')}
+                                    onClick={() => {
+                                        setExecutionType('Munfarid');
+                                        setIsMasbuq(false);
+                                        setShowMasbuqPicker(false);
+                                    }}
                                     className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${executionType === 'Munfarid' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
                                 >
                                     {t.tracker.execution.munfarid}
@@ -165,10 +169,13 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                             </div>
                         </div>
 
-                        <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                        <div className={`p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 transition-opacity ${executionType === 'Munfarid' ? 'opacity-50' : ''}`}>
                             <div className="flex justify-between items-center mb-2">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.tracker.masbuq}?</p>
-                                {isMasbuq && !showMasbuqPicker && (
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    {t.tracker.masbuq}?
+                                    {executionType === 'Munfarid' && <span className="ml-1 normal-case font-bold text-[8px]">(Khusus Jamaah)</span>}
+                                </p>
+                                {isMasbuq && !showMasbuqPicker && executionType === 'Jamaah' && (
                                     <button
                                         onClick={() => setShowMasbuqPicker(true)}
                                         className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-tight hover:underline"
@@ -179,11 +186,13 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                             </div>
                             <button
                                 onClick={() => {
+                                    if (executionType === 'Munfarid') return;
                                     const newVal = !isMasbuq;
                                     setIsMasbuq(newVal);
                                     setShowMasbuqPicker(newVal);
                                 }}
-                                className={`w-full py-1.5 rounded-lg text-[10px] font-black uppercase transition-all border-2 ${isMasbuq ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-500 text-amber-700 dark:text-amber-400' : 'bg-white dark:bg-slate-900 border-transparent text-slate-500'}`}
+                                disabled={executionType === 'Munfarid'}
+                                className={`w-full py-1.5 rounded-lg text-[10px] font-black uppercase transition-all border-2 ${isMasbuq ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-500 text-amber-700 dark:text-amber-400' : 'bg-white dark:bg-slate-900 border-transparent text-slate-500'} ${executionType === 'Munfarid' ? 'cursor-not-allowed' : ''}`}
                             >
                                 {isMasbuq ? t.common.yes : t.common.no}
                             </button>
@@ -361,29 +370,28 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                                 // Calculate expected points
                                 const potentialLog: any = {
                                     prayerName: pendingLatePrayer.name,
-                                    // Match logPrayer logic: if it's a forgot marking, it counts as Tepat Waktu for points
                                     status: isForgotMarking ? 'Tepat Waktu' : (isLateEntry ? 'Terlambat' : 'Tepat Waktu'),
-                                    locationType: locationType,
-                                    executionType: executionType,
-                                    isMasbuq: isMasbuq,
-                                    hasQobliyah: hasQobliyah,
-                                    hasBadiyah: hasBadiyah,
-                                    hasDzikir: hasDzikir,
-                                    hasDua: hasDua
+                                    locationType,
+                                    executionType,
+                                    isMasbuq,
+                                    hasQobliyah,
+                                    hasBadiyah,
+                                    hasDzikir,
+                                    hasDua
                                 };
-                                const points = calculatePrayerPoints(potentialLog, gamificationConfig);
 
-                                // --- Animation Logic ---
-                                // 1. Trigger on first time Save if no unmarks (points >= pointsAtOpen)
-                                // 2. Trigger on Edit if user increases their score (points > pointsAtOpen)
-                                const isNewLog = !editingLogId;
+                                const currentPoints = calculatePrayerPoints(potentialLog, gamificationConfig);
                                 const pointsAtOpen = initialPointsRef.current;
-                                const isImproving = points > pointsAtOpen;
-                                const isMaintainingFirstTime = isNewLog && points >= pointsAtOpen;
+                                const isNewLog = !editingLogId;
+                                const buttonRect = e.currentTarget.getBoundingClientRect();
 
-                                if (isMaintainingFirstTime || isImproving) {
-                                    // Trigger animation with the actual points count
-                                    triggerAnimation(null, points);
+                                if (isNewLog) {
+                                    if (currentPoints > 0) {
+                                        triggerAnimation(buttonRect, currentPoints);
+                                    }
+                                } else if (currentPoints > pointsAtOpen) {
+                                    // collect only the new points added during this edit
+                                    triggerAnimation(buttonRect, currentPoints - pointsAtOpen);
                                 }
 
                                 onConfirm();

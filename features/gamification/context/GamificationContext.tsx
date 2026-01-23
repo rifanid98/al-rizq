@@ -35,14 +35,14 @@ export const StarAnimationProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const triggerAnimation = useCallback((_startRect?: DOMRect | null, count: number = 5) => {
         const now = Date.now();
-        if (now - lastTriggerTime.current < 1000) return; // 1s cooldown
+        if (now - lastTriggerTime.current < 300) return; // Reduced cooldown for better interactive feel
         lastTriggerTime.current = now;
 
         if (!targetRef.current) return;
 
         const targetRect = targetRef.current.getBoundingClientRect();
 
-        // Start from center of the screen
+        // Focus animation to start from the center of the screen
         const startX = window.innerWidth / 2;
         const startY = window.innerHeight / 2;
 
