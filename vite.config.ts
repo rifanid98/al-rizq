@@ -21,12 +21,14 @@ export default defineConfig(({ mode }) => {
       }
     },
     build: {
+      chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
           manualChunks: {
             'vendor-react': ['react', 'react-dom'],
             'vendor-recharts': ['recharts'],
-            'vendor-utils': ['lucide-react', '@supabase/supabase-js'],
+            'vendor-framer': ['framer-motion'],
+            'vendor-utils': ['lucide-react', '@supabase/supabase-js', '@google/genai'],
           }
         }
       }

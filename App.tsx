@@ -174,6 +174,8 @@ const App: React.FC = () => {
   // Animation Refs
   const mobileSettingsRef = useRef<HTMLButtonElement>(null);
   const desktopSettingsRef = useRef<HTMLButtonElement>(null);
+  const mobileAchievementsRef = useRef<HTMLButtonElement>(null);
+  const desktopAchievementsRef = useRef<HTMLButtonElement>(null);
 
   const resetSliderTimer = useCallback(() => {
     if (sliderTimerRef.current) window.clearTimeout(sliderTimerRef.current);
@@ -433,7 +435,18 @@ const App: React.FC = () => {
   const handleEditPrayer = (log: PrayerLog) => {
     setEditingLogId(log.id);
     setPendingLatePrayer({ name: log.prayerName, scheduledTime: log.scheduledTime });
-    setLateReason(log.reason || '');
+
+    // Extract "Forgot" state from reason if present
+    const prefix = '(Lupa menandai)';
+    const reason = log.reason || '';
+    if (reason.includes(prefix)) {
+      setIsForgotMarking(true);
+      setLateReason(reason.replace(prefix, '').trim());
+    } else {
+      setIsForgotMarking(false);
+      setLateReason(reason);
+    }
+
     setIsMasbuq(log.isMasbuq || false);
     setMasbuqRakaat(log.masbuqRakaat || 1);
     setLocationType(log.locationType || 'Masjid');
@@ -590,7 +603,8 @@ const App: React.FC = () => {
           googleBtnSidebarRef, googleBtnHeaderRef, googleBtnSettingsRef,
           lastDateRef, sliderTimerRef, resetSliderTimer,
           filteredHistoryLogs, totalPages, currentHistoryLogs, applyCorrection, adjustedSchedule, adjustedYesterdaySchedule,
-          handlePrayerClick, handleEditPrayer, confirmLatePrayer, confirmCloudReplace, keepLocalData, t, mobileSettingsRef, desktopSettingsRef
+          handlePrayerClick, handleEditPrayer, confirmLatePrayer, confirmCloudReplace, keepLocalData, t,
+          mobileSettingsRef, desktopSettingsRef, mobileAchievementsRef, desktopAchievementsRef
         }}
       />
       <StarAnimationLayer />
@@ -654,26 +668,26 @@ const AppContent: React.FC<any> = (props) => {
     googleBtnSidebarRef, googleBtnHeaderRef, googleBtnSettingsRef,
     lastDateRef, sliderTimerRef, resetSliderTimer,
     filteredHistoryLogs, totalPages, currentHistoryLogs, applyCorrection, adjustedSchedule, adjustedYesterdaySchedule,
-    handlePrayerClick, handleEditPrayer, confirmLatePrayer, confirmCloudReplace, keepLocalData, t, mobileSettingsRef, desktopSettingsRef
+    handlePrayerClick, handleEditPrayer, confirmLatePrayer, confirmCloudReplace, keepLocalData, t,
+    mobileSettingsRef, desktopSettingsRef, mobileAchievementsRef, desktopAchievementsRef
   } = props;
 
   const { registerTarget } = useStarAnimation();
 
   // Register based on visibility
   useEffect(() => {
-    // Simple logic: Register both? No, assume desktop if width > lg.
     // Or just register the one that is mounted/visible.
-    if (window.innerWidth >= 1024 && desktopSettingsRef.current) {
-      registerTarget(desktopSettingsRef);
-    } else if (mobileSettingsRef.current) {
-      registerTarget(mobileSettingsRef);
+    if (window.innerWidth >= 1024 && desktopAchievementsRef.current) {
+      registerTarget(desktopAchievementsRef);
+    } else if (mobileAchievementsRef.current) {
+      registerTarget(mobileAchievementsRef);
     }
 
     const handleResize = () => {
-      if (window.innerWidth >= 1024 && desktopSettingsRef.current) {
-        registerTarget(desktopSettingsRef);
-      } else if (mobileSettingsRef.current) {
-        registerTarget(mobileSettingsRef);
+      if (window.innerWidth >= 1024 && desktopAchievementsRef.current) {
+        registerTarget(desktopAchievementsRef);
+      } else if (mobileAchievementsRef.current) {
+        registerTarget(mobileAchievementsRef);
       }
     };
 
@@ -730,7 +744,7 @@ const AppContent: React.FC<any> = (props) => {
             <button
               key={tab}
               id={tab === 'achievements' ? 'mobile-gamification-trigger' : undefined}
-              ref={tab === 'settings' ? mobileSettingsRef : undefined}
+              ref={tab === 'settings' ? mobileSettingsRef : tab === 'achievements' ? mobileAchievementsRef : undefined}
               onClick={() => { setActiveTab(tab as any); setIsTrackerMenuOpen(false); }}
               className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${activeTab === tab ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}
             >
@@ -771,7 +785,7 @@ const AppContent: React.FC<any> = (props) => {
               {['dashboard', 'history', 'achievements', 'settings'].map((tab) => (
                 <button
                   key={tab}
-                  ref={tab === 'settings' ? desktopSettingsRef : undefined}
+                  ref={tab === 'settings' ? desktopSettingsRef : tab === 'achievements' ? desktopAchievementsRef : undefined}
                   onClick={() => setActiveTab(tab as any)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === tab ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                 >

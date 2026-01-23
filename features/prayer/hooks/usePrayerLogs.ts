@@ -69,6 +69,11 @@ export const usePrayerLogs = () => {
             const targetIdx = updateIdx !== -1 ? updateIdx : existingDailyIdx;
             const existingLog = targetIdx !== -1 ? prev[targetIdx] : null;
 
+            const prefix = '(Lupa menandai)';
+            const rawReason = options.reason || '';
+            // Clean reason by removing the prefix if it exists to avoid duplication
+            const cleanReason = rawReason.replace(prefix, '').trim();
+
             const logData: PrayerLog = {
                 id: (targetId || crypto.randomUUID()),
                 date: existingLog ? existingLog.date : (options.extra?.date || dateToUse),
@@ -77,7 +82,9 @@ export const usePrayerLogs = () => {
                 actualTime: existingLog ? existingLog.actualTime : (options.extra?.actualTime || actualTime),
                 status: existingLog ? existingLog.status : status,
                 delayMinutes: existingLog ? existingLog.delayMinutes : delay,
-                reason: options.isForgot ? (options.reason ? `(Lupa menandai) ${options.reason}` : 'Lupa menandai') : (options.reason || undefined),
+                reason: options.isForgot
+                    ? (cleanReason ? `${prefix} ${cleanReason}` : prefix)
+                    : (cleanReason || undefined),
                 isMasbuq: options.isMasbuq || false,
                 masbuqRakaat: options.isMasbuq ? options.masbuqRakaat : undefined,
                 locationType: options.locationType || 'Masjid',
