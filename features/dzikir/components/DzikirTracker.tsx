@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useDzikir } from '../hooks/useDzikir';
 import { useLanguage } from '../../../shared/hooks/useLanguage';
-import { Check, Sun, Moon, List, ChevronDown, Maximize2, Minimize2, CheckCircle, ArrowDown, ChevronsUp, ChevronsDown } from 'lucide-react';
+import { Check, Sun, Moon, List, ChevronDown, Maximize2, Minimize2, CheckCircle, ArrowDown, ChevronsUp, ChevronsDown, Plus, Minus, RotateCcw } from 'lucide-react';
 import { getLocalDateStr } from '../../../shared/utils/helpers';
 import { useStarAnimation } from '../../gamification/context/GamificationContext';
 import { calculateDzikirPoints } from '../../gamification/services/gamificationService';
@@ -20,6 +20,7 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
     const [activeCategoryId, setActiveCategoryId] = useState<string>(getSuggestedCategory());
     const [expandedItems, setExpandedItems] = useState<string[]>([]);
     const [showScrollBtn, setShowScrollBtn] = useState(false);
+    const [fontSize, setFontSize] = useState(20);
     const bottomRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
@@ -205,6 +206,8 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
                                             triggerAnimation(null, points > 0 ? points : 12);
                                         }
                                         toggleItem(item.id, activeCategory.id, date);
+                                        // Automatically collapse when marked
+                                        setExpandedItems(prev => prev.filter(i => i !== item.id));
                                     }}
                                 >
                                     <div className="flex items-center justify-between mb-1">
@@ -218,7 +221,11 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
                                             {item.count}x
                                         </span>
                                     </div>
-                                    <p className={`text-base leading-relaxed font-arabic mb-2 ${isChecked ? 'text-emerald-800/70 dark:text-emerald-200/50' : 'text-slate-700 dark:text-slate-300'} ${isExpanded ? '' : 'line-clamp-2'}`} dir="rtl">
+                                    <p
+                                        className={`leading-relaxed font-arabic mb-2 ${isChecked ? 'text-emerald-800/70 dark:text-emerald-200/50' : 'text-slate-700 dark:text-slate-300'} ${isExpanded ? '' : 'line-clamp-2'}`}
+                                        style={{ fontSize: `${fontSize}px` }}
+                                        dir="rtl"
+                                    >
                                         {item.arabic}
                                     </p>
                                     <div className="flex items-center justify-between gap-4">
@@ -241,7 +248,34 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
             )}
             {/* Floating Action Buttons */}
             {/* Floating Action Buttons */}
-            <div className="fixed bottom-28 lg:bottom-10 right-6 lg:right-10 flex flex-col gap-3 z-50">
+            <div className="fixed bottom-28 lg:bottom-10 right-6 lg:right-10 flex flex-col gap-3 z-50 mb-6">
+                {/* Font Size Controls */}
+                <div className="flex flex-col gap-2 bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-1">
+                    <button
+                        onClick={() => setFontSize(prev => Math.min(prev + 2, 40))}
+                        className="w-10 h-10 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-all"
+                        title="Increase Font Size"
+                    >
+                        <Plus className="w-4 h-4" />
+                    </button>
+                    <div className="h-[1px] bg-slate-100 dark:bg-slate-700 mx-2" />
+                    <button
+                        onClick={() => setFontSize(prev => Math.max(prev - 2, 12))}
+                        className="w-10 h-10 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-all"
+                        title="Decrease Font Size"
+                    >
+                        <Minus className="w-4 h-4" />
+                    </button>
+                    <div className="h-[1px] bg-slate-100 dark:bg-slate-700 mx-2" />
+                    <button
+                        onClick={() => setFontSize(20)}
+                        className="w-10 h-10 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-all"
+                        title="Reset Font Size"
+                    >
+                        <RotateCcw className="w-4 h-4" />
+                    </button>
+                </div>
+
                 {/* Expand/Collapse All */}
                 <button
                     onClick={toggleAllExpansion}
