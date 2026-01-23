@@ -62,19 +62,7 @@ export const useSettings = () => {
 
     const { language, setLanguage } = useLanguage();
 
-    useEffect(() => {
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const applyTheme = () => {
-            const isDark = themeMode === 'dark' || (themeMode === 'system' && mediaQuery.matches);
-            document.documentElement.classList.toggle('dark', isDark);
-        };
-        applyTheme();
-        localStorage.setItem('al_rizq_theme', themeMode);
 
-        const listener = () => { if (themeMode === 'system') applyTheme(); };
-        mediaQuery.addEventListener('change', listener);
-        return () => mediaQuery.removeEventListener('change', listener);
-    }, [themeMode]);
 
     useEffect(() => {
         localStorage.setItem('al_rizq_show_bg', JSON.stringify(showPrayerBg));
@@ -192,9 +180,30 @@ export const useSettings = () => {
         if (s.gamificationConfig) localStorage.setItem(STORAGE_KEYS.GAMIFICATION_CONFIG, JSON.stringify(s.gamificationConfig));
     }, []);
 
+    const [isResolvedDark, setIsResolvedDark] = useState<boolean>(() => {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        return themeMode === 'dark' || (themeMode === 'system' && mediaQuery.matches);
+    });
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const updateTheme = () => {
+            const isDark = themeMode === 'dark' || (themeMode === 'system' && mediaQuery.matches);
+            setIsResolvedDark(isDark);
+            document.documentElement.classList.toggle('dark', isDark);
+        };
+
+        updateTheme();
+        localStorage.setItem('al_rizq_theme', themeMode);
+
+        mediaQuery.addEventListener('change', updateTheme);
+        return () => mediaQuery.removeEventListener('change', updateTheme);
+    }, [themeMode]);
+
     return {
         themeMode,
         setThemeMode,
+        isDark: isResolvedDark,
         showPrayerBg,
         setShowPrayerBg,
         prayerBgOpacity,
