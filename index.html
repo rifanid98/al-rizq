@@ -120,6 +120,22 @@
         .bg-gradient-radial {
             background: radial-gradient(circle at center, var(--tw-gradient-stops));
         }
+
+        /* Level Up Shimmer Effect */
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-150%) skewX(-20deg);
+            }
+            50% {
+                transform: translateX(150%) skewX(-20deg);
+            }
+            100% {
+                transform: translateX(150%) skewX(-20deg);
+            }
+        }
+        .animate-shimmer {
+            animation: shimmer 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+        }
     </style>
 </head>
 
