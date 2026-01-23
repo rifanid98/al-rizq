@@ -727,7 +727,13 @@ const AppContent: React.FC<any> = (props) => {
 
           {/* Other Tabs */}
           {['dashboard', 'history', 'achievements', 'settings'].map((tab) => (
-            <button key={tab} ref={tab === 'settings' ? mobileSettingsRef : undefined} onClick={() => { setActiveTab(tab as any); setIsTrackerMenuOpen(false); }} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${activeTab === tab ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}>
+            <button
+              key={tab}
+              id={tab === 'achievements' ? 'mobile-gamification-trigger' : undefined}
+              ref={tab === 'settings' ? mobileSettingsRef : undefined}
+              onClick={() => { setActiveTab(tab as any); setIsTrackerMenuOpen(false); }}
+              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${activeTab === tab ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}
+            >
               {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5" />}
               {tab === 'history' && <HistoryIcon className="w-5 h-5" />}
               {tab === 'achievements' && <Award className="w-5 h-5" />}
@@ -771,7 +777,7 @@ const AppContent: React.FC<any> = (props) => {
                 >
                   {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5" />}
                   {tab === 'history' && <HistoryIcon className="w-5 h-5" />}
-                  {tab === 'achievements' && <Award className="w-5 h-5" />}
+                  {tab === 'achievements' && <Award id="nav-achievements-desktop" className="w-5 h-5" />}
                   {tab === 'settings' && <SettingsIcon className="w-5 h-5" />}
                   <span className="text-sm capitalize">{t.tabs[tab as keyof typeof t.tabs]}</span>
                 </button>
@@ -1270,8 +1276,9 @@ const AppContent: React.FC<any> = (props) => {
       <IslamicCelebration show={showCelebration} onComplete={() => setShowCelebration(false)} />
 
       <BadgeUnlockModal
-        badge={gamification?.newlyUnlockedBadge || null}
-        onClose={() => gamification?.clearNewlyUnlocked?.()}
+        queue={gamification?.unlockedQueue || []}
+        onPop={gamification?.popBadge}
+        onClear={gamification?.clearQueue}
       />
     </div>
   );

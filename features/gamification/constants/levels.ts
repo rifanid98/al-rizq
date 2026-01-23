@@ -9,25 +9,25 @@ export const LEVEL_TIERS: LevelTier[] = [
     },
     {
         level: 10,
-        minXp: 5000,
+        minXp: 4500,
         nameKey: 'levels.mukmin',
         colorTheme: 'emerald'
     },
     {
         level: 25,
-        minXp: 12500,
+        minXp: 12000,
         nameKey: 'levels.muhsin',
         colorTheme: 'cyan'
     },
     {
         level: 50,
-        minXp: 25000,
+        minXp: 24500,
         nameKey: 'levels.muttaqin',
         colorTheme: 'amber'
     },
     {
         level: 100,
-        minXp: 50000,
+        minXp: 49500,
         nameKey: 'levels.siddiq',
         colorTheme: 'violet'
     }
