@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, CheckCircle2, Lock, ShieldCheck } from 'lucide-react';
 import { useLanguage } from '../../../shared/hooks/useLanguage';
 import { LEVEL_TIERS, getTierColorClass } from '../constants/levels';
@@ -12,6 +13,15 @@ interface LevelTiersModalProps {
 
 export const LevelTiersModal: React.FC<LevelTiersModalProps> = ({ currentLevel, onClose }) => {
     const { t } = useLanguage();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    // Helper for safe portal rendering
+    if (!mounted) return null;
 
     // Determine current tier index
     const currentTierIndex = LEVEL_TIERS.findIndex(tier =>
@@ -30,10 +40,17 @@ export const LevelTiersModal: React.FC<LevelTiersModalProps> = ({ currentLevel, 
         }
     };
 
-    return (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    return createPortal(
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+            {/* Backdrop */}
             <div
-                className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]"
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                onClick={onClose}
+            />
+
+            {/* Modal Card */}
+            <div
+                className="relative bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] z-10"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Floating Close Button */}
@@ -115,6 +132,7 @@ export const LevelTiersModal: React.FC<LevelTiersModalProps> = ({ currentLevel, 
                     })}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
