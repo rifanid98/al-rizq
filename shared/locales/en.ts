@@ -388,13 +388,8 @@ export const en = {
                 },
                 qadha_annual: {
                     title: "Debt Slayer {year}",
-                    desc: "Completed {year} Qadha Fasting",
+                    desc: "Successfully completed all Qadha fasts for the year {year}.",
                     history: "Aisha RA used to make up missed Ramadan fasts in the month of Sha'ban, showing diligence in fulfilling obligations."
-                },
-                qadha: {
-                    title: "Debt Slayer",
-                    desc: "Paid Annual Qadha",
-                    history: "Fulfilling a debt to Allah is more deserving of being paid off. (Hadith)"
                 }
             },
             dzikir: {

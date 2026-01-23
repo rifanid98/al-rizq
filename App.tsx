@@ -66,6 +66,7 @@ import { StarAnimationProvider, useStarAnimation } from './features/gamification
 import { StarAnimationLayer } from './features/gamification/components/StarAnimationLayer';
 import { Achievements } from './features/gamification/components/Achievements';
 import { BadgeUnlockModal } from './features/gamification/components/BadgeUnlockModal';
+import { LevelUpModal } from './features/gamification/components/LevelUpModal';
 
 const App: React.FC = () => {
   // Hooks
@@ -74,7 +75,7 @@ const App: React.FC = () => {
     themeMode, cycleTheme, isDark, showPrayerBg, setShowPrayerBg, prayerBgOpacity, setPrayerBgOpacity,
     locationHistory, getCurrentSettings, restoreSettings, addToHistory, language, setLanguage,
     prayerTimeCorrection, setPrayerTimeCorrection, setLastKnownLocation, lastKnownLocation, removeHistory,
-    gamificationConfig, setGamificationConfig
+    gamificationConfig, setGamificationConfig, ramadhanConfig, qadhaConfig
   } = useSettings();
   const {
     schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule
@@ -84,7 +85,7 @@ const App: React.FC = () => {
   const { logs: dzikirLogs, clearLogs: clearDzikirLogs } = useDzikir();
   const { isSyncing, handleUpload, handleDownload, hasBackup, handleRevert } = useSync(user?.email);
 
-  const gamification = useGamification(logs, fastingLogs, dzikirLogs, gamificationConfig);
+  const gamification = useGamification(logs, fastingLogs, dzikirLogs, gamificationConfig, ramadhanConfig, qadhaConfig);
 
   // Local States
   const [activeTab, setActiveTab] = useState<'tracker' | 'fasting' | 'dzikir' | 'dashboard' | 'history' | 'achievements' | 'settings'>(() => {
@@ -556,7 +557,7 @@ const App: React.FC = () => {
           themeMode, cycleTheme, isDark, showPrayerBg, setShowPrayerBg, prayerBgOpacity, setPrayerBgOpacity,
           locationHistory, getCurrentSettings, restoreSettings, addToHistory, language, setLanguage,
           prayerTimeCorrection, setPrayerTimeCorrection, setLastKnownLocation, lastKnownLocation, removeHistory,
-          gamificationConfig, setGamificationConfig,
+          gamificationConfig, setGamificationConfig, ramadhanConfig, qadhaConfig,
           schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule,
           logs, setLogs, logPrayer, deleteLog, clearPrayerLogs,
           fastingLogs, clearFastingLogs,
@@ -609,6 +610,14 @@ const App: React.FC = () => {
         }}
       />
       <StarAnimationLayer />
+      {/* Level Up Modal */}
+      {gamification.levelUpEvent && (
+        <LevelUpModal
+          show={gamification.levelUpEvent.show}
+          onClose={gamification.dismissLevelUp}
+          gamification={gamification}
+        />
+      )}
     </StarAnimationProvider>
   );
 };
@@ -621,7 +630,7 @@ const AppContent: React.FC<any> = (props) => {
     themeMode, cycleTheme, isDark, showPrayerBg, setShowPrayerBg, prayerBgOpacity, setPrayerBgOpacity,
     locationHistory, getCurrentSettings, restoreSettings, addToHistory, language, setLanguage,
     prayerTimeCorrection, setPrayerTimeCorrection, setLastKnownLocation, lastKnownLocation, removeHistory,
-    gamificationConfig, setGamificationConfig,
+    gamificationConfig, setGamificationConfig, ramadhanConfig, qadhaConfig,
     schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule,
     logs, setLogs, logPrayer, deleteLog, clearPrayerLogs,
     fastingLogs, clearFastingLogs,
@@ -1110,7 +1119,7 @@ const AppContent: React.FC<any> = (props) => {
         {/* Achievements Tab Content */}
         {activeTab === 'achievements' && gamification && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <Achievements gamification={gamification} logs={logs} />
+            <Achievements gamification={gamification} logs={logs} ramadhanConfig={ramadhanConfig} qadhaConfig={qadhaConfig} />
           </div>
         )}
 
@@ -1294,6 +1303,8 @@ const AppContent: React.FC<any> = (props) => {
         queue={gamification?.unlockedQueue || []}
         onPop={gamification?.popBadge}
         onClear={gamification?.clearQueue}
+        ramadhanConfig={ramadhanConfig}
+        qadhaConfig={qadhaConfig}
       />
     </div>
   );

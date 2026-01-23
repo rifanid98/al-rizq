@@ -60,7 +60,42 @@ export const useSettings = () => {
         }
     });
 
+    const [qadhaConfig, setQadhaConfig] = useState<any>(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEYS.QADHA_CONFIG);
+            return saved ? JSON.parse(saved) : undefined;
+        } catch (e) {
+            return undefined;
+        }
+    });
+
+    const [ramadhanConfig, setRamadhanConfig] = useState<AppSettings['ramadhanConfig']>(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEYS.RAMADHAN_CONFIG);
+            return saved ? JSON.parse(saved) : undefined;
+        } catch (e) {
+            return undefined;
+        }
+    });
+
     const { language, setLanguage } = useLanguage();
+
+    useEffect(() => {
+        const handleRamadhanUpdate = () => {
+            const saved = localStorage.getItem(STORAGE_KEYS.RAMADHAN_CONFIG);
+            if (saved) setRamadhanConfig(JSON.parse(saved));
+        };
+        const handleQadhaUpdate = () => {
+            const saved = localStorage.getItem(STORAGE_KEYS.QADHA_CONFIG);
+            if (saved) setQadhaConfig(JSON.parse(saved));
+        };
+        window.addEventListener('ramadhan_config_updated', handleRamadhanUpdate);
+        window.addEventListener('qadha_config_updated', handleQadhaUpdate);
+        return () => {
+            window.removeEventListener('ramadhan_config_updated', handleRamadhanUpdate);
+            window.removeEventListener('qadha_config_updated', handleQadhaUpdate);
+        };
+    }, []);
 
 
 
@@ -97,6 +132,8 @@ export const useSettings = () => {
             setLocationHistory([]);
             setLastKnownLocation('');
             setGamificationConfig(DEFAULT_GAMIFICATION_CONFIG);
+            setRamadhanConfig(undefined);
+            setQadhaConfig(undefined);
             setLanguage('id'); // Default language
         };
         window.addEventListener('app_data_reset', handleReset);
@@ -222,6 +259,8 @@ export const useSettings = () => {
         setLastKnownLocation,
         removeHistory,
         gamificationConfig,
-        setGamificationConfig
+        setGamificationConfig,
+        ramadhanConfig,
+        qadhaConfig
     };
 };

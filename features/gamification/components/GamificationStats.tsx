@@ -9,21 +9,27 @@ interface GamificationStatsProps {
     level: number;
     progress: number;
     totalPoints: number;
-    nextLevelXp: number;
-    currentLevelXp: number;
+    nextThreshold: number;
+    currentLevelThreshold: number;
+    pointsInLevel: number;
+    pointsNeededForLevel: number;
     levelName?: string;
     levelTier?: LevelTier;
+    readOnly?: boolean;
+    minimal?: boolean;
 }
-
 import { LevelTier } from '../../../shared/types/gamification';
 
 export const GamificationStats: React.FC<GamificationStatsProps> = ({
     level,
     progress,
     totalPoints,
-    nextLevelXp,
-    currentLevelXp,
-    levelName
+    nextThreshold,
+    pointsInLevel,
+    pointsNeededForLevel,
+    levelName,
+    readOnly = false,
+    minimal = false
 }) => {
     const { t } = useLanguage();
     const [showLevelModal, setShowLevelModal] = useState(false);
@@ -34,9 +40,9 @@ export const GamificationStats: React.FC<GamificationStatsProps> = ({
     const theme = currentTier.colorTheme;
 
     // Resolve Rank Name
-    // Key format: 'levels.muslim' -> access t.gamification.levels.muslim
-    const rankKey = currentTier.nameKey.split('.')[1]; // e.g., 'muslim'
-    const rankName = levelName || (t.gamification.levels as any)[rankKey] || rankKey;
+    const rankKey = currentTier.nameKey.split('.')[1] || 'novice';
+    const levels = t?.gamification?.levels || {};
+    const rankName = levelName || (levels as any)[rankKey] || rankKey;
 
     // Dynamic Gradient Map
     const getGradient = (theme: string) => {
@@ -71,10 +77,10 @@ export const GamificationStats: React.FC<GamificationStatsProps> = ({
     return (
         <>
             <div
-                onClick={() => setShowLevelModal(true)}
-                className={`relative overflow-hidden bg-gradient-to-br ${cardClass} rounded-[2.5rem] p-6 text-white shadow-lg mb-8 transition-all duration-500 cursor-pointer hover:scale-[1.02] active:scale-[0.98] ring-offset-2 dark:ring-offset-slate-950 focus:outline-none focus:ring-2`}
-                role="button"
-                tabIndex={0}
+                onClick={() => !readOnly && setShowLevelModal(true)}
+                className={`relative overflow-hidden bg-gradient-to-br ${cardClass} rounded-[2.5rem] p-6 text-white shadow-lg mb-8 transition-all duration-500 ${!readOnly ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]' : ''} ring-offset-2 dark:ring-offset-slate-950 focus:outline-none focus:ring-2`}
+                role={readOnly ? undefined : "button"}
+                tabIndex={readOnly ? -1 : 0}
             >
                 {/* Background patterns */}
                 <div className="absolute top-0 right-0 p-8 opacity-10 transform translate-x-1/3 -translate-y-1/3 pointer-events-none">
@@ -87,7 +93,7 @@ export const GamificationStats: React.FC<GamificationStatsProps> = ({
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                     {/* Left: Level & Progress */}
                     <div className="flex-1 w-full">
-                        <div className="flex items-center gap-3 mb-2">
+                        <div className={`flex items-center gap-3 mb-2 ${minimal ? 'justify-center flex-col text-center' : ''}`}>
                             <div className="p-2 bg-white/20 backdrop-blur-md rounded-xl">
                                 <Trophy className="w-6 h-6 text-white" />
                             </div>
@@ -97,35 +103,39 @@ export const GamificationStats: React.FC<GamificationStatsProps> = ({
                             </div>
                         </div>
 
-                        <div className="mt-4">
-                            <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-white/90 mb-1">
-                                <span>{t.gamification.xp}</span>
-                                <span>{Math.floor(currentLevelXp)} / {nextLevelXp}</span>
-                            </div>
-                            <div className="h-3 w-full bg-black/20 rounded-full overflow-hidden backdrop-blur-sm">
-                                <div
-                                    className="h-full bg-white transition-all duration-1000 ease-out relative"
-                                    style={{ width: `${progress}%` }}
-                                >
-                                    <div className="absolute inset-0 bg-white/50 animate-pulse"></div>
+                        {!minimal && (
+                            <div className="mt-4">
+                                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-white/90 mb-1">
+                                    <span>{t.gamification.xp}</span>
+                                    <span>{pointsInLevel} / {pointsNeededForLevel}</span>
+                                </div>
+                                <div className="h-3 w-full bg-black/20 rounded-full overflow-hidden backdrop-blur-sm">
+                                    <div
+                                        className="h-full bg-white transition-all duration-1000 ease-out relative"
+                                        style={{ width: `${progress}%` }}
+                                    >
+                                        <div className="absolute inset-0 bg-white/50 animate-pulse"></div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
                     </div>
 
                     {/* Right: Star Points */}
-                    <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md px-6 py-4 rounded-3xl border border-white/20 shadow-inner min-w-[180px] justify-between">
-                        <div className="relative">
-                            <Star className="w-10 h-10 text-yellow-200 fill-yellow-200 animate-pulse drop-shadow-[0_0_15px_rgba(253,224,71,0.6)]" />
-                            <Sparkles className="absolute -top-2 -right-2 w-5 h-5 text-white animate-bounce" />
+                    {!minimal && (
+                        <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md px-6 py-4 rounded-3xl border border-white/20 shadow-inner min-w-[180px] justify-between">
+                            <div className="relative">
+                                <Star className="w-10 h-10 text-yellow-200 fill-yellow-200 animate-pulse drop-shadow-[0_0_15px_rgba(253,224,71,0.6)]" />
+                                <Sparkles className="absolute -top-2 -right-2 w-5 h-5 text-white animate-bounce" />
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-white/80">{t.gamification.totalPoints}</p>
+                                <p className="text-3xl font-black tabular-nums tracking-tighter drop-shadow-md">
+                                    {displayedPoints.toLocaleString()}
+                                </p>
+                            </div>
                         </div>
-                        <div className="text-right">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-white/80">{t.gamification.totalPoints}</p>
-                            <p className="text-3xl font-black tabular-nums tracking-tighter drop-shadow-md">
-                                {displayedPoints.toLocaleString()}
-                            </p>
-                        </div>
-                    </div>
+                    )}
                 </div>
             </div>
 

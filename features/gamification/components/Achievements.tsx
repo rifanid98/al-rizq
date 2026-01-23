@@ -9,16 +9,21 @@ interface AchievementsProps {
         totalPoints: number;
         level: number;
         progress: number;
-        nextLevelXp: number;
-        currentLevelXp: number;
+        nextThreshold: number;
+        currentPoints: number;
+        currentLevelThreshold: number;
+        pointsInLevel: number;
+        pointsNeededForLevel: number;
         badges: UserBadge[];
         levelName?: string;
         levelTier?: LevelTier;
     };
     logs: any[]; // Prayer logs for stats if needed
+    ramadhanConfig?: { startDate: string, endDate: string };
+    qadhaConfig?: { customDates: string[] };
 }
 
-export const Achievements: React.FC<AchievementsProps> = ({ gamification, logs }) => {
+export const Achievements: React.FC<AchievementsProps> = ({ gamification, logs, ramadhanConfig, qadhaConfig }) => {
     const { t } = useLanguage();
 
     return (
@@ -28,8 +33,10 @@ export const Achievements: React.FC<AchievementsProps> = ({ gamification, logs }
                 totalPoints={gamification.totalPoints}
                 level={gamification.level}
                 levelName={gamification.levelName}
-                nextLevelXp={gamification.nextLevelXp}
-                currentLevelXp={gamification.currentLevelXp}
+                nextThreshold={gamification.nextThreshold}
+                currentLevelThreshold={gamification.currentLevelThreshold}
+                pointsInLevel={gamification.pointsInLevel}
+                pointsNeededForLevel={gamification.pointsNeededForLevel}
                 progress={gamification.progress}
                 levelTier={gamification.levelTier}
             />
@@ -42,7 +49,7 @@ export const Achievements: React.FC<AchievementsProps> = ({ gamification, logs }
             </div>
 
             {/* Badges Grid */}
-            <BadgeCollection userBadges={gamification.badges} />
+            <BadgeCollection userBadges={gamification.badges} ramadhanConfig={ramadhanConfig} qadhaConfig={qadhaConfig} />
         </div>
     );
 };

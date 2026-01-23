@@ -56,8 +56,11 @@ interface SettingsProps {
         level: number;
         progress: number;
         totalPoints: number;
-        nextLevelXp: number;
-        currentLevelXp: number;
+        nextThreshold: number;
+        currentPoints: number;
+        currentLevelThreshold: number;
+        pointsInLevel: number;
+        pointsNeededForLevel: number;
         config: GamificationConfig;
         badges: UserBadge[];
     };

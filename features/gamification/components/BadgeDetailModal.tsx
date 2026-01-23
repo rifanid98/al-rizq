@@ -1,22 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { BadgeDefinition, UserBadge } from '../../../shared/types/gamification';
 import { BadgeIcon } from './BadgeAssets';
 import { X, Lock } from 'lucide-react';
 import { useLanguage } from '../../../shared/hooks/useLanguage';
+import { getBadgeDefinition } from '../services/badgeService';
 
 interface BadgeDetailModalProps {
     isOpen: boolean;
     onClose: () => void;
     definition: BadgeDefinition;
     userBadge?: UserBadge | null;
+    ramadhanConfig?: { startDate: string, endDate: string };
+    qadhaConfig?: { customDates: string[] };
 }
 
 export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
     isOpen,
     onClose,
     definition,
-    userBadge
+    userBadge,
+    ramadhanConfig,
+    qadhaConfig
 }) => {
     const { t } = useLanguage();
     const [isFlipped, setIsFlipped] = useState(false);
@@ -25,6 +30,11 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
 
     // Preview state, defaults to current unlocked tier
     const [previewTier, setPreviewTier] = useState<string | undefined>(userBadge?.unlockedTier);
+
+    // Re-resolve definition using configs if it's a dynamic badge to get correct thresholds
+    const dynamicDef = useMemo(() =>
+        getBadgeDefinition(definition.id, ramadhanConfig, qadhaConfig) || definition
+        , [definition, ramadhanConfig, qadhaConfig]);
 
     useEffect(() => {
         if (isOpen) {
@@ -63,38 +73,37 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
 
     if (!isOpen) return null;
 
-    // Translation logic (similar to BadgeItem)
-    const keys = definition.titleKey.split('.');
-    let title: any = t.gamification;
-    let desc: any = t.gamification;
-    let history: any = t.gamification;
+    // Safe translation helper
+    const getTranslation = (path: string) => {
+        try {
+            const keys = path.split('.');
+            let current = t.gamification;
+            for (const key of keys) {
+                if (!current) return path;
+                current = current[key];
+            }
+            if (typeof current !== 'string') return path;
 
-    try {
-        keys.forEach(k => { title = title[k]; });
-        definition.descriptionKey.split('.').forEach(k => { desc = desc[k]; });
-        if (definition.historyKey) {
-            definition.historyKey.split('.').forEach(k => { history = history[k]; });
-        } else { history = null; }
-
-        // Handle year replacement for dynamic badges
-        const match = definition.id.match(/_(\d{4})$/);
-        if (match) {
-            const year = match[1];
-            if (typeof title === 'string') {
-                if (title.includes('{year}')) {
-                    title = title.replace('{year}', year);
-                } else {
-                    title = `${title} ${year}`;
+            // Handle year replacement for dynamic badges
+            const match = definition.id.match(/_(\d{4})$/);
+            if (match) {
+                const year = match[1];
+                if (current.includes('{year}')) {
+                    return current.replace(/{year}/g, year);
+                }
+                if (path.includes('.title') && !current.includes(year)) {
+                    return `${current} ${year}`;
                 }
             }
-            if (typeof desc === 'string' && desc.includes('{year}')) {
-                desc = desc.replace('{year}', year);
-            }
+            return current;
+        } catch {
+            return path;
         }
-    } catch (e) {
-        title = definition.titleKey;
-        desc = definition.descriptionKey;
-    }
+    };
+
+    const title = getTranslation(definition.titleKey);
+    const desc = getTranslation(definition.descriptionKey);
+    const history = definition.historyKey ? getTranslation(definition.historyKey) : null;
 
     const tier = userBadge?.unlockedTier;
     const isUnlocked = !!tier;
@@ -173,7 +182,7 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
                                 flex gap-2 mb-4 transition-all duration-700 delay-400
                                 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
                             `}>
-                                {definition.tiers.map((t) => (
+                                {dynamicDef.tiers.map((t) => (
                                     <button
                                         key={t.tier}
                                         onClick={() => setPreviewTier(t.tier)}
@@ -224,7 +233,7 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
                                         Milestones
                                     </div>
                                     <div className="bg-black/20 rounded-xl p-2 space-y-1 backdrop-blur-sm">
-                                        {definition.tiers.map((t) => {
+                                        {dynamicDef.tiers.map((t) => {
                                             const isAchieved = (currentCount >= t.requirement);
                                             return (
                                                 <div

@@ -70,8 +70,9 @@ export const LevelTiersModal: React.FC<LevelTiersModalProps> = ({ currentLevel, 
                             : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500';
 
                         // Resolve name
-                        const rankKey = tier.nameKey.split('.')[1];
-                        const rankName = (t.gamification.levels as any)[rankKey] || rankKey;
+                        const rankKey = tier.nameKey.split('.')[1] || 'novice';
+                        const levels = t?.gamification?.levels || {};
+                        const rankName = (levels as any)[rankKey] || rankKey;
 
                         return (
                             <div

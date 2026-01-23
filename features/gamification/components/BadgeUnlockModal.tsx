@@ -11,6 +11,8 @@ interface BadgeUnlockModalProps {
     queue: UserBadge[];
     onPop: () => void;
     onClear: () => void;
+    ramadhanConfig?: { startDate: string, endDate: string };
+    qadhaConfig?: { customDates: string[] };
 }
 
 const tierLabels: Record<BadgeTier, string> = {
@@ -44,15 +46,33 @@ const tierColors: Record<BadgeTier, { bg: string; text: string; glow: string }> 
 };
 
 // --- HELPER ---
-const getNestedTranslation = (t: any, key: string): string => {
-    const fullKey = `gamification.${key}`;
-    const keys = fullKey.split('.');
-    let value: any = t;
-    for (const k of keys) {
-        if (value && typeof value === 'object' && k in value) value = value[k];
-        else return key;
+const getNestedTranslation = (t: any, path: string, badgeId?: string): string => {
+    try {
+        const keys = path.split('.');
+        let current = t.gamification;
+        for (const key of keys) {
+            if (!current) return path;
+            current = current[key];
+        }
+        if (typeof current !== 'string') return path;
+
+        // Handle year replacement if available
+        if (badgeId) {
+            const match = badgeId.match(/_(\d{4})$/);
+            if (match) {
+                const year = match[1];
+                if (current.includes('{year}')) {
+                    return current.replace(/{year}/g, year);
+                }
+                if (path.includes('.title') && !current.includes(year)) {
+                    return `${current} ${year}`;
+                }
+            }
+        }
+        return current;
+    } catch {
+        return path;
     }
-    return typeof value === 'string' ? value : key;
 };
 
 // --- SUB-COMPONENT: BADGE CARD ---
@@ -60,12 +80,14 @@ const BadgeCard: React.FC<{
     badge: UserBadge;
     isDesktop: boolean;
     onClose?: () => void;
-}> = ({ badge, isDesktop, onClose }) => {
+    ramadhanConfig?: { startDate: string, endDate: string };
+    qadhaConfig?: { customDates: string[] };
+}> = ({ badge, isDesktop, onClose, ramadhanConfig, qadhaConfig }) => {
     const { t } = useLanguage();
     const [isFlipped, setIsFlipped] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
 
-    const def = getBadgeDefinition(badge.badgeId);
+    const def = getBadgeDefinition(badge.badgeId, ramadhanConfig, qadhaConfig);
 
     useEffect(() => {
         const flipTimer = setTimeout(() => {
@@ -84,10 +106,10 @@ const BadgeCard: React.FC<{
     if (!def) return null;
 
     const tier = badge.unlockedTier || 'bronze';
-    const colors = tierColors[tier];
-    const title = getNestedTranslation(t, def.titleKey);
-    const desc = getNestedTranslation(t, def.descriptionKey);
-    const history = def.historyKey ? getNestedTranslation(t, def.historyKey) : null;
+    const colors = tierColors[tier] || tierColors.bronze;
+    const title = getNestedTranslation(t, def.titleKey, badge.badgeId);
+    const desc = getNestedTranslation(t, def.descriptionKey, badge.badgeId);
+    const history = def.historyKey ? getNestedTranslation(t, def.historyKey, badge.badgeId) : null;
 
     return (
         <div className="relative w-80 h-[480px] perspective-1000 group cursor-default">
@@ -265,7 +287,9 @@ const DesktopView: React.FC<{
     setVisibleCount: React.Dispatch<React.SetStateAction<number>>;
     onCollect: () => void;
     isCollecting: boolean;
-}> = ({ queue, visibleCount, setVisibleCount, onCollect, isCollecting }) => {
+    ramadhanConfig?: { startDate: string, endDate: string };
+    qadhaConfig?: { customDates: string[] };
+}> = ({ queue, visibleCount, setVisibleCount, onCollect, isCollecting, ramadhanConfig, qadhaConfig }) => {
     const safeVisibleCount = Math.max(visibleCount, 0);
     // When collecting, force cards to be removed so AnimatePresence triggers the exit variant
     const visibleCards = isCollecting ? [] : queue.slice(0, safeVisibleCount);
@@ -304,7 +328,7 @@ const DesktopView: React.FC<{
                                 zIndex: visibleCards.length - index
                             }}
                         >
-                            <BadgeCard badge={badge} isDesktop={true} />
+                            <BadgeCard badge={badge} isDesktop={true} ramadhanConfig={ramadhanConfig} qadhaConfig={qadhaConfig} />
                         </motion.div>
                     ))}
                 </AnimatePresence>
@@ -360,7 +384,9 @@ const DesktopView: React.FC<{
 const MobileView: React.FC<{
     queue: UserBadge[];
     onPop: () => void;
-}> = ({ queue, onPop }) => {
+    ramadhanConfig?: { startDate: string, endDate: string };
+    qadhaConfig?: { customDates: string[] };
+}> = ({ queue, onPop, ramadhanConfig, qadhaConfig }) => {
     const currentBadge = queue[0];
 
     // Explicit container variants to manage exit timing
@@ -410,6 +436,8 @@ const MobileView: React.FC<{
                                 badge={currentBadge}
                                 isDesktop={false}
                                 onClose={onPop}
+                                ramadhanConfig={ramadhanConfig}
+                                qadhaConfig={qadhaConfig}
                             />
                         </motion.div>
                     )}
@@ -420,7 +448,7 @@ const MobileView: React.FC<{
 };
 
 // --- MAIN WRAPPER ---
-export const BadgeUnlockModal: React.FC<BadgeUnlockModalProps> = ({ queue, onPop, onClear }) => {
+export const BadgeUnlockModal: React.FC<BadgeUnlockModalProps> = ({ queue, onPop, onClear, ramadhanConfig, qadhaConfig }) => {
     const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
     const [desktopVisibleCount, setDesktopVisibleCount] = useState(0);
     const [isCollecting, setIsCollecting] = useState(false);
@@ -459,12 +487,16 @@ export const BadgeUnlockModal: React.FC<BadgeUnlockModalProps> = ({ queue, onPop
                         setVisibleCount={setDesktopVisibleCount}
                         onCollect={handleCollect}
                         isCollecting={isCollecting}
+                        ramadhanConfig={ramadhanConfig}
+                        qadhaConfig={qadhaConfig}
                     />
                 ) : (
                     <MobileView
                         key="mobile"
                         queue={queue}
                         onPop={onPop}
+                        ramadhanConfig={ramadhanConfig}
+                        qadhaConfig={qadhaConfig}
                     />
                 )
             )}

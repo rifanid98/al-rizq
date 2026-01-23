@@ -111,25 +111,21 @@ export const BADGES: BadgeDefinition[] = [
         historyKey: 'badges.fasting.ramadhan.history',
         icon: 'Award',
         tiers: [
-            { tier: 'bronze', requirement: 1 },
-            { tier: 'silver', requirement: 3 },
-            { tier: 'gold', requirement: 5 },
+            { tier: 'gold', requirement: 100 }, // Default high, will be dynamic
         ]
     },
     {
-        id: 'fasting_qadha',
+        id: 'fasting_qadha_annual',
         category: 'fasting',
         isTemplate: true,
-        titleKey: 'badges.fasting.qadha.title',
-        descriptionKey: 'badges.fasting.qadha.desc',
-        historyKey: 'badges.fasting.qadha.history',
+        titleKey: 'badges.fasting.qadha_annual.title',
+        descriptionKey: 'badges.fasting.qadha_annual.desc',
+        historyKey: 'badges.fasting.qadha_annual.history',
         icon: 'RotateCcw',
         tiers: [
-            { tier: 'gold', requirement: 1 },
+            { tier: 'gold', requirement: 999 }, // Default high, will be override by qadhaConfig
         ]
     },
-
-
     // --- DHIKR BADGES ---
     {
         id: 'dzikir_morning',

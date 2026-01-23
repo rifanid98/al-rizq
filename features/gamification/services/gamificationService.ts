@@ -131,23 +131,36 @@ export const calculateDzikirPoints = (log: DzikirLog, config: GamificationConfig
     return 0;
 };
 
-export const getLevel = (totalPoints: number): { level: number; progress: number; currentLevelXp: number; nextLevelXp: number } => {
-    // Simple Level System: Level N needs N * 100 XP? Or quadratic?
-    // Let's use a standard RPG curve: Points = Level^2 * Constant.
-    // Or linear for simplicity: Level 1 = 0-500, Level 2 = 501-1500...
-    // Let's stick to a simple formula: Level = floor(sqrt(points / 25)) + 1
-    // If points = 0 -> sq(0)=0 -> Lvl 1
-    // If points = 100 -> sq(4)=2 -> Lvl 3 (Maybe too fast?)
-    // Let's try Level = floor(points / 500) + 1.
-    // 0 -> Lvl 1. 500 -> Lvl 2. 
-    // With points like +5, +5, +10... a good day might give 5 prayers * ~50pts = 250pts.
-    // So everyday you gain ~0.5 level? That feels rewarding.
+export const getLevel = (totalPoints: number): {
+    level: number;
+    progress: number;
+    currentPoints: number;
+    nextThreshold: number;
+    currentLevelThreshold: number;
+    pointsInLevel: number;
+    pointsNeededForLevel: number;
+} => {
+    // Scaling formula for thresholds:
+    // L1: 0 - 500
+    // L2: 500 - 1500 (+1000)
+    // L3: 1500 - 3000 (+1500)
 
-    const XP_PER_LEVEL = 500;
-    const level = Math.floor(totalPoints / XP_PER_LEVEL) + 1;
-    const currentLevelXp = totalPoints % XP_PER_LEVEL;
-    const nextLevelXp = XP_PER_LEVEL;
-    const progress = (currentLevelXp / nextLevelXp) * 100;
+    const level = Math.floor((-250 + Math.sqrt(62500 + 1000 * totalPoints)) / 500) + 1;
 
-    return { level, progress, currentLevelXp, nextLevelXp };
+    const currentLevelThreshold = 250 * (level - 1) * level;
+    const nextThreshold = 250 * level * (level + 1);
+
+    const pointsInLevel = totalPoints - currentLevelThreshold;
+    const pointsNeededForLevel = nextThreshold - currentLevelThreshold;
+    const progress = (pointsInLevel / pointsNeededForLevel) * 100;
+
+    return {
+        level,
+        progress: Math.min(progress, 100),
+        currentPoints: totalPoints,
+        nextThreshold,
+        currentLevelThreshold,
+        pointsInLevel: Math.max(0, Math.floor(pointsInLevel)),
+        pointsNeededForLevel
+    };
 };

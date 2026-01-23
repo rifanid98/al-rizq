@@ -18,24 +18,73 @@ const groupByYear = <T extends { date: string }>(logs: T[]): Record<string, T[]>
     return groups;
 };
 
-export const getBadgeDefinition = (id: string): BadgeDefinition | undefined => {
+export const getBadgeDefinition = (
+    id: string,
+    ramadhanConfig?: { startDate: string, endDate: string },
+    qadhaConfig?: { customDates: string[]; days?: number[] }
+): BadgeDefinition | undefined => {
     // 1. Check exact match (static badges)
     const staticDef = BADGES.find(b => b.id === id);
     if (staticDef) return staticDef;
 
     // 2. Check for Yearly pattern: [base_id]_[year]
-    // Regex: Match everything until the last underscore and 4 digits
     const match = id.match(/^(.+)_(\d{4})$/);
     if (match) {
         const baseId = match[1];
-        // const year = match[2]; // Unused but available helper
+        const year = match[2];
         const baseDef = BADGES.find(b => b.id === baseId);
 
         if (baseDef) {
-            return {
-                ...baseDef,
-                id: id // Return dynamic ID (e.g. prayer_ontime_2025)
-            };
+            const def = { ...baseDef, id };
+
+            // Special handling for Ramadhan: Dynamic threshold and Gold only
+            if (baseId === 'fasting_hero' && ramadhanConfig?.startDate && ramadhanConfig?.endDate) {
+                const configYear = new Date(ramadhanConfig.startDate).getFullYear().toString();
+                if (configYear === year) {
+                    const start = new Date(ramadhanConfig.startDate);
+                    const end = new Date(ramadhanConfig.endDate);
+                    const diff = end.getTime() - start.getTime();
+                    const totalDays = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
+
+                    // Force a single Gold tier with the dynamic requirement
+                    def.tiers = [{ tier: 'gold', requirement: totalDays }];
+                } else {
+                    // Safety fallback
+                    def.tiers = [{ tier: 'gold', requirement: 30 }];
+                }
+            }
+
+            // Special handling for Qadha: Dynamic threshold (all set Qadha dates for that year)
+            if (baseId === 'fasting_qadha_annual') {
+                if (qadhaConfig) {
+                    // Count custom dates for this year
+                    const customDatesCount = (qadhaConfig.customDates || []).filter(d => d.startsWith(`${year}-`)).length;
+
+                    // Count occurrences of scheduled days (0-6) for this year
+                    let recurringCount = 0;
+                    const scheduledDays = qadhaConfig.days || [];
+                    if (scheduledDays.length > 0) {
+                        const startOfYear = new Date(parseInt(year), 0, 1);
+                        const endOfYear = new Date(parseInt(year), 11, 31);
+                        for (let d = new Date(startOfYear); d <= endOfYear; d.setDate(d.getDate() + 1)) {
+                            if (scheduledDays.includes(d.getDay())) {
+                                recurringCount++;
+                            }
+                        }
+                    }
+
+                    const totalQadha = customDatesCount + recurringCount;
+
+                    // Threshold is the total number of Qadha set for that year
+                    // If they set nothing, requirement is effectively infinite (until they plan something)
+                    def.tiers = [{ tier: 'gold', requirement: totalQadha > 0 ? totalQadha : 999 }];
+                } else {
+                    // Config missing: set impossible requirement to prevent accidental unlock
+                    def.tiers = [{ tier: 'gold', requirement: 999 }];
+                }
+            }
+
+            return def;
         }
     }
     return undefined;
@@ -93,49 +142,26 @@ export const calculateFastingMetrics = (logs: FastingLog[]): Record<string, numb
         let monThuCount = 0;
         let ayamulBidhCount = 0;
         let ramadhanCount = 0;
-        let qadhaCount = 0; // Track count for tier logic
-
-        // Tracking for completion check (all Qadha done)
-        const qadhaLogs: FastingLog[] = [];
+        let qadhaCount = 0;
 
         yearLogs.forEach(log => {
             if (!log.isCompleted) return;
 
-            // Standard counters
             if (log.type === 'Senin-Kamis') monThuCount++;
             if (log.type === 'Ayyamul Bidh') ayamulBidhCount++;
             if (log.type === 'Ramadhan') ramadhanCount++;
-
-            // Qadha Logic
-            if (log.type === 'Qadha' || log.isQadha) {
-                qadhaCount++;
-                qadhaLogs.push(log);
-            }
+            if (log.type === 'Qadha' || log.isQadha) qadhaCount++;
         });
 
-        // Metrics for Standard Badges
         if (monThuCount > 0) metrics[`fasting_mon_thu_${year}`] = monThuCount;
         if (ayamulBidhCount > 0) metrics[`fasting_ayamul_bidh_${year}`] = ayamulBidhCount;
 
-        // Ramadhan: Just track count of days for now, or 1 if completed?
-        // Current badge tiers: 1, 3, 5. Let's assume this means "Years completed".
-        // BUT user wants yearly badges. So "Ramadhan 2025".
-        // If they did Ramadhan in 2025, give them 1 point.
-        // Wait, did they complete the WHOLE Ramadhan? Hard to track without total days.
-        // Let's assume > 20 days is "Completed".
-        const ramadhanCompleted = ramadhanCount > 20 ? 1 : 0;
-        if (ramadhanCompleted > 0) metrics[`fasting_hero_${year}`] = ramadhanCompleted;
+        // Return actual days for Ramadhan
+        if (ramadhanCount > 0) metrics[`fasting_hero_${year}`] = ramadhanCount;
 
-        // Qadha Badges
-        // 1. The "Debt Slayer" (Completed ALL Qadha for this year)
-        // This logic was relying on knowing how many they missed.
-        // But for now, we just count them. 
-        // Wait, the previous logic: `qadhaByYear[year] > 0` -> 1.
-        // It was basically "If you did ANY Qadha in 2025...". 
-        // Let's keep it simple: If they logged Qadha, give them count?
-        // Original definition had tiers: 1, 10, 30, 100.
-        // So we populate the count.
-        if (qadhaCount > 0) metrics[`fasting_qadha_${year}`] = qadhaCount;
+        if (qadhaCount > 0) {
+            metrics[`fasting_qadha_annual_${year}`] = qadhaCount;
+        }
     });
 
     return metrics;

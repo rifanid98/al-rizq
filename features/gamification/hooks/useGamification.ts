@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { PrayerLog, FastingLog, DzikirLog, GamificationConfig, DEFAULT_GAMIFICATION_CONFIG } from '../../../shared/types';
 import { calculatePrayerPoints, calculateFastingPoints, calculateDzikirPoints, getLevel } from '../services/gamificationService';
 import { calculatePrayerMetrics, calculateFastingMetrics, calculateDzikirMetrics, determineTier, getBadgeDefinition } from '../services/badgeService';
@@ -9,7 +9,9 @@ export const useGamification = (
     logs: PrayerLog[],
     fastingLogs: FastingLog[],
     dzikirLogs: DzikirLog[],
-    userConfig?: GamificationConfig
+    userConfig?: GamificationConfig,
+    ramadhanConfig?: { startDate: string, endDate: string },
+    qadhaConfig?: any
 ) => {
     const config = useMemo(() => {
         if (!userConfig) return DEFAULT_GAMIFICATION_CONFIG;
@@ -98,7 +100,7 @@ export const useGamification = (
             const nextState = [...prev];
 
             Object.entries(allMetrics).forEach(([badgeId, count]) => {
-                const def = getBadgeDefinition(badgeId);
+                const def = getBadgeDefinition(badgeId, ramadhanConfig, qadhaConfig);
                 if (!def) return;
 
                 const existingIndex = nextState.findIndex(b => b.badgeId === badgeId);
@@ -126,21 +128,24 @@ export const useGamification = (
                         newUnlocks.push(newBadge);
                     }
                 } else {
-                    const tierChanged = newTier !== existing.unlockedTier && newTier !== null;
+                    const tierChanged = newTier !== existing.unlockedTier;
+                    const tierImproved = (newTier !== null && existing.unlockedTier === null) ||
+                        (newTier === 'gold' && existing.unlockedTier !== 'gold') ||
+                        (newTier === 'silver' && existing.unlockedTier === 'bronze');
 
                     if (effectiveCount !== existing.currentCount || tierChanged) {
                         const updatedBadge: UserBadge = {
                             ...existing,
                             currentCount: effectiveCount,
                             unlockedTier: newTier,
-                            isNew: existing.isNew || tierChanged,
-                            unlockedAt: tierChanged ? Date.now() : existing.unlockedAt
+                            isNew: tierImproved ? true : existing.isNew,
+                            unlockedAt: tierImproved ? Date.now() : existing.unlockedAt
                         };
                         nextState[existingIndex] = updatedBadge;
                         hasChanges = true;
 
-                        // Trigger unlock animation for tier upgrade
-                        if (tierChanged) {
+                        // Trigger unlock animation only for tier improvements
+                        if (tierImproved) {
                             newUnlocks.push(updatedBadge);
                         }
                     }
@@ -174,7 +179,7 @@ export const useGamification = (
             return prev;
         });
 
-    }, [logs, fastingLogs, dzikirLogs]); // Recalculate when logs change
+    }, [logs, fastingLogs, dzikirLogs, ramadhanConfig, qadhaConfig]); // Recalculate when logs or config change
 
     const markBadgeSeen = useCallback((badgeId: string) => {
         setUserBadges(prev => {
@@ -201,6 +206,28 @@ export const useGamification = (
         });
     }, [markBadgeSeen]);
 
+    // --- LEVEL UP LOGIC ---
+    const [levelUpEvent, setLevelUpEvent] = useState<{ level: number; show: boolean } | null>(null);
+    const previousLevelRef = React.useRef<number>(0);
+
+    useEffect(() => {
+        // Initialize ref on first run if it's 0 (to avoid triggering on initial load)
+        if (previousLevelRef.current === 0 && levelInfo.level > 0) {
+            previousLevelRef.current = levelInfo.level;
+            return;
+        }
+
+        if (levelInfo.level > previousLevelRef.current) {
+            // Trigger Level Up
+            setLevelUpEvent({ level: levelInfo.level, show: true });
+            previousLevelRef.current = levelInfo.level;
+        }
+    }, [levelInfo.level]);
+
+    const dismissLevelUp = useCallback(() => {
+        setLevelUpEvent(null);
+    }, []);
+
     return {
         totalPoints: pointsDetail.total,
         pointsDetail,
@@ -210,6 +237,8 @@ export const useGamification = (
         markBadgeSeen,
         unlockedQueue,
         popBadge,
-        clearQueue
+        clearQueue,
+        levelUpEvent,
+        dismissLevelUp
     };
 };
