@@ -284,6 +284,7 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                                 <div className="grid grid-cols-2 gap-4">
                                     <button
                                         onClick={() => setHasQobliyah(!hasQobliyah)}
+                                        onDoubleClick={() => { setHasQobliyah(true); setIsSunnahExpanded(false); }}
                                         className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${hasQobliyah ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm' : 'bg-transparent border-transparent text-slate-400'}`}
                                     >
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasQobliyah ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
@@ -296,6 +297,11 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                                         onClick={() => {
                                             if (pendingLatePrayer.name === 'Subuh' || pendingLatePrayer.name === 'Ashar') return;
                                             setHasBadiyah(!hasBadiyah);
+                                        }}
+                                        onDoubleClick={() => {
+                                            if (pendingLatePrayer.name === 'Subuh' || pendingLatePrayer.name === 'Ashar') return;
+                                            setHasBadiyah(true);
+                                            setIsSunnahExpanded(false);
                                         }}
                                         disabled={pendingLatePrayer.name === 'Subuh' || pendingLatePrayer.name === 'Ashar'}
                                         className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${pendingLatePrayer.name === 'Subuh' || pendingLatePrayer.name === 'Ashar'
@@ -318,6 +324,7 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
 
                                     <button
                                         onClick={() => setHasDzikir(!hasDzikir)}
+                                        onDoubleClick={() => { setHasDzikir(true); setIsSunnahExpanded(false); }}
                                         className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${hasDzikir ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm' : 'bg-transparent border-transparent text-slate-400'}`}
                                     >
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasDzikir ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
@@ -328,6 +335,7 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
 
                                     <button
                                         onClick={() => setHasDua(!hasDua)}
+                                        onDoubleClick={() => { setHasDua(true); setIsSunnahExpanded(false); }}
                                         className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${hasDua ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm' : 'bg-transparent border-transparent text-slate-400'}`}
                                     >
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasDua ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
