@@ -4,9 +4,10 @@ import { useLanguage } from "../../../shared/hooks/useLanguage";
 import { useFastingLogs } from "../hooks/useFastingLogs";
 import { getMonthForecast } from "../services/fastingService";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Calendar as CalendarIcon, Info, Star, RotateCcw, Moon, Target, TrendingUp, MoonStar } from 'lucide-react';
+import { Calendar as CalendarIcon, Info, Star, RotateCcw, Moon, Target, TrendingUp, MoonStar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { HijriDate, FastingType } from '../../../shared/types';
 import { getLocalDateStr } from '../../../shared/utils/helpers';
+import { getHijriDate } from '../services/fastingService';
 import { STORAGE_KEYS } from '../../../shared/constants';
 
 interface NadzarConfig {
@@ -64,18 +65,44 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
         { name: 'Qadha', value: stats.qadha, color: '#F43F5E' }, // Rose 500
     ].filter(d => d.value > 0);
 
+    // Date Navigation State
+    const [displayedDate, setDisplayedDate] = useState(new Date());
+
+    // Calculate Hijri Offset (Difference between API and Local)
+    const hijriOffset = useMemo(() => {
+        if (!hijriDate) return 0;
+        const now = new Date();
+        // Get local prediction for TODAY (not displayedDate)
+        const local = getHijriDate(now);
+
+        // Only adjust if months match to avoid complex month-boundary math errors
+        // If they differ, the offset is likely too large or caused by month boundary skew
+        if (local.month.number !== hijriDate.month.number) return 0;
+
+        return parseInt(hijriDate.day) - parseInt(local.day);
+    }, [hijriDate]);
+
     // Monthly Forecast Calendar
     const currentMonthForecast = useMemo(() => {
-        const now = new Date();
-        return getMonthForecast(now.getFullYear(), now.getMonth());
-    }, [configVersion]);
+        return getMonthForecast(displayedDate.getFullYear(), displayedDate.getMonth(), hijriOffset);
+    }, [displayedDate, hijriOffset, configVersion]);
+
+    const handlePrevMonth = () => {
+        setDisplayedDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+    };
+
+    const handleNextMonth = () => {
+        setDisplayedDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+    };
+
+    const isCurrentMonth = displayedDate.getMonth() === new Date().getMonth() && displayedDate.getFullYear() === new Date().getFullYear();
 
 
     // Helper to check if a date is fasted and get type
     const getFastedLog = (date: string) => fastingLogs.find(l => l.date === date);
 
     return (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-8 pb-10">
             {/* Fasting Performance Panel */}
             {!minimal && (
                 <div className="order-last md:order-first bg-emerald-600 dark:bg-emerald-900/40 p-8 rounded-[2.5rem] shadow-xl shadow-emerald-500/10 flex flex-col md:flex-row items-center justify-between gap-8 text-white">
@@ -167,7 +194,34 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
                         <CalendarIcon className="w-4 h-4 text-emerald-500" />
                         {t.fasting.history}
                     </h4>
-                    <span className="text-xs font-bold text-slate-400">{new Date().toLocaleString(language === 'id' ? 'id-ID' : 'en-US', { month: 'long', year: 'numeric' })}</span>
+                    <div className="flex items-center gap-2">
+                        {!isCurrentMonth && (
+                            <button
+                                type="button"
+                                onClick={(e) => { e.preventDefault(); setDisplayedDate(new Date()); }}
+                                className="text-[10px] font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-md transition-colors mr-2 animate-in fade-in"
+                            >
+                                {t.common.today || 'Hari Ini'}
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); handlePrevMonth(); }}
+                            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                        >
+                            <ChevronLeft className="w-5 h-5 text-slate-400" />
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 min-w-[100px] text-center">
+                            {displayedDate.toLocaleString(language === 'id' ? 'id-ID' : 'en-US', { month: 'long', year: 'numeric' })}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); handleNextMonth(); }}
+                            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                        >
+                            <ChevronRight className="w-5 h-5 text-slate-400" />
+                        </button>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-7 gap-2 mb-4">

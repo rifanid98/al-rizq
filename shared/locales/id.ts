@@ -35,7 +35,10 @@ export const id = {
             locationUnavailable: "Lokasi tidak tersedia.",
             timeout: "Waktu pengambilan lokasi habis."
         },
-        trackerCategory: "Ibadah Tracker"
+        trackerCategory: "Ibadah Tracker",
+        activePeriod: "Periode Berlaku",
+        start: "Mulai",
+        end: "Selesai"
     },
     tabs: {
         tracker: "Sholat",
@@ -280,7 +283,8 @@ export const id = {
             selectOnCalendar: "Pilih tanggal di kalender",
             ramadhan: "Ramadhan",
             ramadhanStart: "Mulai Ramadhan",
-            ramadhanEnd: "Selesai Ramadhan"
+            ramadhanEnd: "Selesai Ramadhan",
+            validityHint: "Atur tanggal mulai dan selesai untuk membatasi pengulangan jadwal puasa ini."
         },
         days: {
             sun: "Ahad",

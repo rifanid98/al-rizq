@@ -5,7 +5,27 @@ import { HijriDate } from "../../../shared/types";
  * Calculate the Hijri date for a given Gregorian date
  * Uses an approximation algorithm if no API data is available
  */
-export const getHijriDate = (date: Date): HijriDate => {
+// Hoist formatter for performance
+const hijriFormatter = new Intl.DateTimeFormat("en-u-ca-islamic-umedqura", {
+    day: "numeric",
+    month: "numeric",
+    year: "numeric"
+});
+
+/**
+ * Calculate the Hijri date for a given Gregorian date
+ * Uses an approximation algorithm if no API data is available
+ * @param adjustmentDays Number of days to shift the Hijri calculation (to align with API/Moon sighting)
+ */
+export const getHijriDate = (date: Date, adjustmentDays: number = 0): HijriDate => {
+    // Apply adjustment if needed
+    let targetDate = date;
+    if (adjustmentDays !== 0) {
+        targetDate = new Date(date);
+        targetDate.setDate(date.getDate() + adjustmentDays);
+    }
+
+    const parts = hijriFormatter.formatToParts(targetDate);
     const options: Intl.DateTimeFormatOptions = {
         day: "numeric",
         month: "long",
@@ -17,13 +37,7 @@ export const getHijriDate = (date: Date): HijriDate => {
     // We use a specific locale to parse it easily or use direct calculation
     // For simplicity here, we'll try to use the Intl API
 
-    const formatter = new Intl.DateTimeFormat("en-u-ca-islamic-umedqura", {
-        day: "numeric",
-        month: "numeric",
-        year: "numeric"
-    });
 
-    const parts = formatter.formatToParts(date);
     const day = parts.find(p => p.type === "day")?.value || "";
     const month = parseInt(parts.find(p => p.type === "month")?.value || "1");
     const year = parts.find(p => p.type === "year")?.value || "";
@@ -135,7 +149,11 @@ export const getFastingRecommendation = (date: Date, hijri: HijriDate): {
             const dayStr = String(date.getDate()).padStart(2, '0');
             const dateStr = `${yearStr}-${monthStr}-${dayStr}`;
 
-            if (qadhaConfig.days?.includes(day) || qadhaConfig.customDates?.includes(dateStr)) {
+            // Check validity period for recurring rules
+            const isValidDate = (!qadhaConfig.startDate || dateStr >= qadhaConfig.startDate) &&
+                (!qadhaConfig.endDate || dateStr <= qadhaConfig.endDate);
+
+            if ((isValidDate && qadhaConfig.days?.includes(day)) || qadhaConfig.customDates?.includes(dateStr)) {
                 return { type: 'Qadha', labelKey: 'fasting.types.qadha' };
             }
         } catch (e) {
@@ -154,7 +172,11 @@ export const getFastingRecommendation = (date: Date, hijri: HijriDate): {
             const dayStr = String(date.getDate()).padStart(2, '0');
             const dateStr = `${yearStr}-${monthStr}-${dayStr}`;
 
-            if (nadzarConfig.days?.includes(day) || nadzarConfig.customDates?.includes(dateStr)) {
+            // Check validity period for recurring rules
+            const isValidDate = (!nadzarConfig.startDate || dateStr >= nadzarConfig.startDate) &&
+                (!nadzarConfig.endDate || dateStr <= nadzarConfig.endDate);
+
+            if ((isValidDate && nadzarConfig.days?.includes(day)) || nadzarConfig.customDates?.includes(dateStr)) {
                 return { type: 'Nadzar', labelKey: 'fasting.types.nadzar' };
             }
         } catch (e) {
@@ -180,7 +202,7 @@ export const getFastingRecommendation = (date: Date, hijri: HijriDate): {
     return { type: null, labelKey: '' };
 };
 
-export const getMonthForecast = (year: number, month: number): Array<{
+export const getMonthForecast = (year: number, month: number, adjustmentDays: number = 0): Array<{
     date: string,
     hijri: HijriDate,
     recommendation: { type: string, labelKey: string, isForbidden?: boolean }
@@ -190,7 +212,7 @@ export const getMonthForecast = (year: number, month: number): Array<{
 
     for (let i = 1; i <= daysInMonth; i++) {
         const d = new Date(year, month, i);
-        const hijri = getHijriDate(d);
+        const hijri = getHijriDate(d, adjustmentDays);
         const rec = getFastingRecommendation(d, hijri);
 
         // Fix: Use local date components to avoid UTC shift

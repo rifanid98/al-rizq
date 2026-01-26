@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { HijriDate, FastingType } from "../../../shared/types";
+import { HijriDate, FastingType, FastingPreferenceConfig } from "../../../shared/types";
 import { useLanguage } from "../../../shared/hooks/useLanguage";
 import { useFastingLogs } from "../hooks/useFastingLogs";
 import { getFastingRecommendation } from "../services/fastingService";
@@ -18,11 +18,7 @@ interface FastingTrackerProps {
     gamificationConfig: GamificationConfig;
 }
 
-interface FastingPreferenceConfig {
-    types: FastingType[];
-    days: number[]; // 0-6, 0=Sunday
-    customDates: string[];
-}
+
 
 const STORAGE_KEY_NADZAR_CONFIG = STORAGE_KEYS.NADZAR_CONFIG;
 const STORAGE_KEY_QADHA_CONFIG = STORAGE_KEYS.QADHA_CONFIG;
@@ -56,9 +52,13 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
     });
 
     // Temporary config for editing
-    const [tempNadzar, setTempNadzar] = useState<FastingPreferenceConfig>({ types: [], days: [], customDates: [] });
-    const [tempQadha, setTempQadha] = useState<FastingPreferenceConfig>({ types: [], days: [], customDates: [] });
+    const [tempNadzar, setTempNadzar] = useState<FastingPreferenceConfig>({ types: [], days: [], customDates: [], startDate: '', endDate: '' });
+    const [tempQadha, setTempQadha] = useState<FastingPreferenceConfig>({ types: [], days: [], customDates: [], startDate: '', endDate: '' });
     const [tempRamadhan, setTempRamadhan] = useState<{ startDate: string; endDate: string }>({ startDate: '', endDate: '' });
+
+
+
+
 
     // Helpers to access current active temp config
     const tempConfig = activeConfigTab === 'nadzar' ? tempNadzar : tempQadha;
@@ -256,6 +256,10 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
 
 
 
+
+
+
+
     const removeCustomDate = (date: string) => {
         setTempConfig(prev => ({ ...prev, customDates: prev.customDates.filter(d => d !== date) }));
     };
@@ -282,7 +286,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
         if (activeConfigTab === 'ramadhan') {
             setTempRamadhan({ startDate: '', endDate: '' });
         } else {
-            setTempConfig(() => ({ types: [], days: [], customDates: [] }));
+            setTempConfig(() => ({ types: [], days: [], customDates: [], startDate: '', endDate: '' }));
         }
     };
 
@@ -540,6 +544,34 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                     </div>
                                 ) : (
                                     <div className="space-y-6">
+                                        {/* Validity Period */}
+                                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">{t.common.activePeriod || 'Periode Berlaku'}</h4>
+                                            <div className="flex gap-4">
+                                                <div className="flex-1 space-y-1">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">{t.common.start || 'Mulai'}</label>
+                                                    <input
+                                                        type="date"
+                                                        value={tempConfig.startDate || ''}
+                                                        onChange={(e) => setTempConfig(prev => ({ ...prev, startDate: e.target.value }))}
+                                                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold"
+                                                    />
+                                                </div>
+                                                <div className="flex-1 space-y-1">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">{t.common.end || 'Selesai'}</label>
+                                                    <input
+                                                        type="date"
+                                                        value={tempConfig.endDate || ''}
+                                                        onChange={(e) => setTempConfig(prev => ({ ...prev, endDate: e.target.value }))}
+                                                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <p className="text-[10px] text-slate-400 mt-2 leading-relaxed">
+                                                {t.fasting.config.validityHint || "Atur tanggal mulai dan selesai untuk membatasi pengulangan jadwal puasa ini."}
+                                            </p>
+                                        </div>
+
                                         {/* Auto-check Types */}
                                         <div>
                                             <h4 className="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">
@@ -599,12 +631,16 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                         <div>
                                             <h4 className="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">{t.fasting.config.specialDates}</h4>
 
+                                            {/* Date Range Picker */}
+
+
                                             {/* Calendar UI */}
                                             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                                                 {/* Calendar Header */}
                                                 <div className="flex items-center justify-between mb-4">
                                                     <button
-                                                        onClick={() => setCalendarDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
+                                                        type="button"
+                                                        onClick={(e) => { e.preventDefault(); setCalendarDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)); }}
                                                         className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
                                                     >
                                                         <ChevronLeft className="w-5 h-5 text-slate-400" />
@@ -613,7 +649,8 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                                         {calendarDate.toLocaleString(language === 'id' ? 'id-ID' : 'en-US', { month: 'long', year: 'numeric' })}
                                                     </span>
                                                     <button
-                                                        onClick={() => setCalendarDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
+                                                        type="button"
+                                                        onClick={(e) => { e.preventDefault(); setCalendarDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)); }}
                                                         className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
                                                     >
                                                         <ChevronRight className="w-5 h-5 text-slate-400" />

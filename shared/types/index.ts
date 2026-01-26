@@ -27,6 +27,14 @@ export interface PrayerLog {
   hasDua?: boolean;
 }
 
+export interface FastingPreferenceConfig {
+  types: FastingType[];
+  days: number[]; // 0-6, 0=Sunday
+  customDates: string[];
+  startDate?: string;
+  endDate?: string;
+}
+
 export interface FastingLog {
   id: string;
   date: string; // YYYY-MM-DD
@@ -71,8 +79,8 @@ export interface AppSettings {
   showPrayerBg: boolean;
   prayerBgOpacity: number;
   language: Language;
-  nadzarConfig?: any;
-  qadhaConfig?: any;
+  nadzarConfig?: FastingPreferenceConfig;
+  qadhaConfig?: FastingPreferenceConfig;
   prayerTimeCorrection?: {
     global: number;
     fajr: number;

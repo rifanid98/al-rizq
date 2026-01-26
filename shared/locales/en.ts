@@ -35,7 +35,10 @@ export const en = {
             locationUnavailable: "Location unavailable.",
             timeout: "Location request timed out."
         },
-        trackerCategory: "Worship Tracker"
+        trackerCategory: "Worship Tracker",
+        activePeriod: "Active Period",
+        start: "Start",
+        end: "End"
     },
     tabs: {
         tracker: "Prayer",
@@ -279,7 +282,8 @@ export const en = {
             selectOnCalendar: "Select date on calendar",
             ramadhan: "Ramadan",
             ramadhanStart: "Ramadan Start",
-            ramadhanEnd: "Ramadan End"
+            ramadhanEnd: "Ramadan End",
+            validityHint: "Set start and end dates to limit the recurrence of this fasting schedule."
         },
         days: {
             sun: "SUN",
