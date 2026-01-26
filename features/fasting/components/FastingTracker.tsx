@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { HijriDate, FastingType, FastingPreferenceConfig } from "../../../shared/types";
 import { useLanguage } from "../../../shared/hooks/useLanguage";
 import { useFastingLogs } from "../hooks/useFastingLogs";
-import { getFastingRecommendation } from "../services/fastingService";
+import { getFastingRecommendation, isProhibitedFastingDay, getHijriDate, getProhibitedFastingReason } from "../services/fastingService";
 import { Moon, Check, Info, Star, RotateCcw, Target, Settings, X, Plus, Trash2, ChevronLeft, ChevronRight, MoonStar } from "lucide-react";
 import { Button } from "../../../shared/components/ui/Button";
 import { STORAGE_KEYS } from "../../../shared/constants";
@@ -368,7 +368,13 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                             <div className="flex flex-col gap-3 items-center">
                                 <Button
                                     onClick={(e) => {
-                                        if (!recommendation.isForbidden && !isDropdownOpen) {
+                                        if (recommendation.isForbidden) {
+                                            const reason = getProhibitedFastingReason(hijriDate);
+                                            alert(`Hari ini ${reason}. Puasa diharamkan.`);
+                                            return;
+                                        }
+
+                                        if (!isDropdownOpen) {
                                             // Determine if this click will result in an immediate mark (has direct schedule)
                                             const immediateType = (recommendation.type as FastingType) || (checkIsNadzar(currentDate, null) ? 'Nadzar' as FastingType : null);
 
@@ -379,8 +385,9 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                         }
                                         handleToggle();
                                     }}
-                                    disabled={!!recommendation.isForbidden}
-                                    className={`rounded-2xl ${recommendation.isForbidden ? 'bg-slate-300 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'} text-white px-8 py-4 shadow-lg shadow-emerald-600/20 flex items-center gap-3 text-sm font-bold transition-all transform hover:scale-105`}
+                                    className={`rounded-2xl ${recommendation.isForbidden
+                                        ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
+                                        : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20'} px-8 py-4 flex items-center gap-3 text-sm font-bold transition-all transform hover:scale-105`}
                                 >
                                     {recommendation.isForbidden ? <Info className="w-5 h-5" /> :
                                         (recommendation.type === 'Qadha' || checkIsQadha(currentDate, recommendation.type as FastingType)) ? <RotateCcw className="w-5 h-5" /> :
@@ -670,22 +677,38 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                                         const dateStr = getLocalDateStr(date);
                                                         const isSelected = tempConfig.customDates.includes(dateStr);
                                                         const isCurrentMonth = date.getMonth() === calendarDate.getMonth();
+                                                        const hijri = getHijriDate(date);
+                                                        const isProhibited = isProhibitedFastingDay(hijri, date);
 
                                                         if (!isCurrentMonth) return <div key={i} />;
 
                                                         return (
                                                             <button
                                                                 key={i}
-                                                                onClick={() => toggleCustomDate(dateStr)}
+                                                                onClick={() => {
+                                                                    if (isProhibited) {
+                                                                        const reason = getProhibitedFastingReason(hijri, date);
+                                                                        alert(`Tidak bisa memilih tanggal ini.\nHari ini ${reason} (Diharamkan Puasa).`);
+                                                                        return;
+                                                                    }
+                                                                    toggleCustomDate(dateStr);
+                                                                }}
                                                                 className={`aspect-square rounded-xl flex items-center justify-center text-xs font-bold transition-all relative
-                                                            ${isSelected
-                                                                        ? activeConfigTab === 'nadzar'
-                                                                            ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30'
-                                                                            : 'bg-rose-500 text-white shadow-lg shadow-rose-500/30'
-                                                                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-100 dark:border-slate-700'}
+                                                            ${isProhibited
+                                                                        ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-300 opacity-80 hover:bg-rose-100 dark:hover:bg-rose-900/40'
+                                                                        : isSelected
+                                                                            ? activeConfigTab === 'nadzar'
+                                                                                ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30'
+                                                                                : 'bg-rose-500 text-white shadow-lg shadow-rose-500/30'
+                                                                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-100 dark:border-slate-700'}
                                                         `}
                                                             >
                                                                 {date.getDate()}
+                                                                {isProhibited && (
+                                                                    <div className="absolute inset-x-0 bottom-1 flex justify-center">
+                                                                        <div className="w-1 h-1 bg-rose-500 rounded-full" />
+                                                                    </div>
+                                                                )}
                                                                 {isSelected && (
                                                                     <div className="absolute -top-1 -right-1">
                                                                         {activeConfigTab === 'nadzar' ? (

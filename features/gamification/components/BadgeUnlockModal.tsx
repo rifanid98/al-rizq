@@ -257,7 +257,6 @@ const cardFlyVariants = {
     exit: (customIsCollecting: boolean) => {
         if (customIsCollecting) {
             const target = getFlyTarget();
-            console.log("TARGETTTT", target);
             return {
                 opacity: 0,
                 scale: 0.05, // Shrink to star size
@@ -268,7 +267,6 @@ const cardFlyVariants = {
             };
         }
 
-        console.log("NOT TARGETTTT");
         // Standard Dismiss: Slide UP + Fade Out
         return {
             opacity: 0,

@@ -93,10 +93,6 @@ export const calculatePrayerPoints = (log: PrayerLog, config: GamificationConfig
         if (val > 0) breakdown['Bonus All Sunnah'] = val;
     }
 
-    if (points > 0) {
-        console.log(`[Points Debug] ${log.prayerName}:`, breakdown, `Total: ${points}`);
-    }
-
     return points;
 };
 
