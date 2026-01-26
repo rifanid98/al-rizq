@@ -18,7 +18,9 @@ import {
     Bell,
     Trash2,
     Loader2,
-    LayoutGrid
+    LayoutGrid,
+    Lock,
+    Unlock
 } from 'lucide-react';
 import { Button } from '../../../shared/components/ui/Button';
 import { GamificationSettings } from '../../gamification/components/GamificationSettings';
@@ -97,6 +99,7 @@ export const Settings: React.FC<SettingsProps> = ({
 }) => {
     const { t, language, setLanguage } = useLanguage();
     const [showIndividualCorrection, setShowIndividualCorrection] = React.useState(false);
+    const [isCorrectionEditingEnabled, setIsCorrectionEditingEnabled] = React.useState(false);
 
     return (
         <div className="space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -363,6 +366,16 @@ export const Settings: React.FC<SettingsProps> = ({
                             <h4 className="text-lg font-black text-slate-800 dark:text-slate-100">{t.settings.correction.title}</h4>
                             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">{t.settings.correction.description}</p>
                         </div>
+                        <button
+                            onClick={() => setIsCorrectionEditingEnabled(!isCorrectionEditingEnabled)}
+                            className={`ml-auto p-2 rounded-xl transition-all ${isCorrectionEditingEnabled
+                                ? 'bg-rose-50 text-rose-500 hover:bg-rose-100 dark:bg-rose-950/20 dark:text-rose-400'
+                                : 'bg-slate-100 text-slate-400 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-500'
+                                }`}
+                            title={isCorrectionEditingEnabled ? t.common?.lock || "Lock" : t.common?.unlock || "Unlock"}
+                        >
+                            {isCorrectionEditingEnabled ? <Unlock className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
+                        </button>
                     </div>
 
                     <div className="space-y-6 flex-1">
@@ -376,18 +389,21 @@ export const Settings: React.FC<SettingsProps> = ({
                             </div>
                             <div className="flex items-center gap-3">
                                 <button
+                                    disabled={!isCorrectionEditingEnabled}
                                     onClick={() => onCorrectionChange({ ...prayerTimeCorrection, global: Math.max(-30, prayerTimeCorrection.global - 1) })}
-                                    className="w-8 h-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold transition-colors"
+                                    className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold transition-colors ${!isCorrectionEditingEnabled ? 'bg-slate-50 text-slate-300 dark:bg-slate-800/50 dark:text-slate-600 cursor-not-allowed' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                                 >-</button>
                                 <input
                                     type="range" min="-30" max="30" step="1"
+                                    disabled={!isCorrectionEditingEnabled}
                                     value={prayerTimeCorrection.global}
                                     onChange={(e) => onCorrectionChange({ ...prayerTimeCorrection, global: parseInt(e.target.value) })}
-                                    className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                                    className={`flex-1 h-2 rounded-lg appearance-none cursor-pointer ${!isCorrectionEditingEnabled ? 'bg-slate-100 dark:bg-slate-800 accent-slate-300' : 'bg-slate-200 dark:bg-slate-700 accent-blue-500'}`}
                                 />
                                 <button
+                                    disabled={!isCorrectionEditingEnabled}
                                     onClick={() => onCorrectionChange({ ...prayerTimeCorrection, global: Math.min(30, prayerTimeCorrection.global + 1) })}
-                                    className="w-8 h-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold transition-colors"
+                                    className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold transition-colors ${!isCorrectionEditingEnabled ? 'bg-slate-50 text-slate-300 dark:bg-slate-800/50 dark:text-slate-600 cursor-not-allowed' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                                 >+</button>
                             </div>
                             <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 px-1">
@@ -423,12 +439,14 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <button
+                                                        disabled={!isCorrectionEditingEnabled}
                                                         onClick={() => onCorrectionChange({ ...prayerTimeCorrection, [p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p]: (prayerTimeCorrection[p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p] as number) - 1 })}
-                                                        className="w-6 h-6 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold"
+                                                        className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold ${!isCorrectionEditingEnabled ? 'bg-slate-50 text-slate-300 dark:bg-slate-800/50 dark:text-slate-600 cursor-not-allowed' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
                                                     >-</button>
                                                     <button
+                                                        disabled={!isCorrectionEditingEnabled}
                                                         onClick={() => onCorrectionChange({ ...prayerTimeCorrection, [p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p]: (prayerTimeCorrection[p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p] as number) + 1 })}
-                                                        className="w-6 h-6 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold"
+                                                        className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold ${!isCorrectionEditingEnabled ? 'bg-slate-50 text-slate-300 dark:bg-slate-800/50 dark:text-slate-600 cursor-not-allowed' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
                                                     >+</button>
                                                 </div>
                                             </div>
