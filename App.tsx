@@ -611,7 +611,7 @@ const App: React.FC = () => {
       />
       <StarAnimationLayer />
       {/* Level Up Modal */}
-      {gamification.levelUpEvent && (
+      {gamification.levelUpEvent && activeTab === 'achievements' && (
         <LevelUpModal
           show={gamification.levelUpEvent.show}
           onClose={gamification.dismissLevelUp}
