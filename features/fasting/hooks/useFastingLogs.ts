@@ -1,43 +1,16 @@
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useCallback } from 'react';
 import { FastingLog, FastingType } from '../../../shared/types';
-import { STORAGE_KEYS } from '../../../shared/constants';
 import { getHijriDate, isSeninKamis, isAyyamulBidh } from '../services/fastingService';
+import { useFastingStore } from '../stores/useFastingStore';
 
 export const useFastingLogs = () => {
-    // Signal for re-reading from localStorage
-    const [refreshSignal, setRefreshSignal] = useState(0);
-
-    const FASTING_LOGS_UPDATED = 'fasting_logs_updated';
-
-    const getStoredLogs = useCallback((): FastingLog[] => {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEYS.FASTING_LOGS);
-            return saved ? JSON.parse(saved) : [];
-        } catch (e) {
-            console.error("Failed to parse fasting logs", e);
-            return [];
-        }
-    }, []);
-
-    // Memoized logs that update whenever refreshSignal changes
-    const fastingLogs = useMemo(() => getStoredLogs(), [refreshSignal, getStoredLogs]);
-
-    // Listen for updates from other components
-    useEffect(() => {
-        const handleUpdate = () => setRefreshSignal(prev => prev + 1);
-        window.addEventListener(FASTING_LOGS_UPDATED, handleUpdate);
-        window.addEventListener('app_data_reset', handleUpdate);
-        return () => {
-            window.removeEventListener(FASTING_LOGS_UPDATED, handleUpdate);
-            window.removeEventListener('app_data_reset', handleUpdate);
-        };
-    }, []);
+    const logs = useFastingStore((state) => state.logs);
+    const addLog = useFastingStore((state) => state.addLog);
+    const removeStoreLog = useFastingStore((state) => state.removeLog);
+    const clearStoreLogs = useFastingStore((state) => state.clearLogs);
 
     const logFasting = useCallback((date: string, type: FastingType, isCompleted: boolean = true, isNadzar: boolean = false, isQadha: boolean = false) => {
-        const currentLogs = getStoredLogs();
-        // Remove existing log for this date if any
-        const filtered = currentLogs.filter(l => l.date !== date);
         const newLog: FastingLog = {
             id: crypto.randomUUID(),
             date,
@@ -46,28 +19,20 @@ export const useFastingLogs = () => {
             isNadzar,
             isQadha
         };
-        const updatedLogs = [...filtered, newLog];
-
-        localStorage.setItem(STORAGE_KEYS.FASTING_LOGS, JSON.stringify(updatedLogs));
-        window.dispatchEvent(new Event(FASTING_LOGS_UPDATED));
-    }, [getStoredLogs]);
+        addLog(newLog);
+    }, [addLog]);
 
     const removeFastingLog = useCallback((date: string) => {
-        const currentLogs = getStoredLogs();
-        const updatedLogs = currentLogs.filter(l => l.date !== date);
-
-        localStorage.setItem(STORAGE_KEYS.FASTING_LOGS, JSON.stringify(updatedLogs));
-        window.dispatchEvent(new Event(FASTING_LOGS_UPDATED));
-    }, [getStoredLogs]);
+        removeStoreLog(date);
+    }, [removeStoreLog]);
 
     const clearFastingLogs = useCallback(() => {
-        localStorage.removeItem(STORAGE_KEYS.FASTING_LOGS);
-        window.dispatchEvent(new Event(FASTING_LOGS_UPDATED));
-    }, []);
+        clearStoreLogs();
+    }, [clearStoreLogs]);
 
     const getLogForDate = useCallback((date: string) => {
-        return fastingLogs.find(l => l.date === date);
-    }, [fastingLogs]);
+        return logs.find(l => l.date === date);
+    }, [logs]);
 
     const getLogStats = useCallback(() => {
         let nadzar = 0;
@@ -75,7 +40,7 @@ export const useFastingLogs = () => {
         let sunnah = 0;
         let wajib = 0; // Ramadhan
 
-        fastingLogs.forEach(l => {
+        logs.forEach(l => {
             // Nadzar Count
             if (l.type === 'Nadzar' || l.isNadzar) {
                 nadzar++;
@@ -110,17 +75,16 @@ export const useFastingLogs = () => {
         });
 
         return {
-            total: fastingLogs.length,
+            total: logs.length,
             nadzar,
             qadha,
             sunnah,
             wajib
         };
-    }, [fastingLogs]);
+    }, [logs]);
 
-    // No need to export setFastingLogs as it is managed internally via actions
     return {
-        fastingLogs,
+        fastingLogs: logs,
         logFasting,
         removeFastingLog,
         clearFastingLogs,

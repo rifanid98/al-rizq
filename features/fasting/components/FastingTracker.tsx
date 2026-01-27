@@ -6,7 +6,6 @@ import { useFastingLogs } from "../hooks/useFastingLogs";
 import { getFastingRecommendation, isProhibitedFastingDay, getHijriDate, getProhibitedFastingReason } from "../services/fastingService";
 import { Moon, Check, Info, Star, RotateCcw, Target, Settings, X, Plus, Trash2, ChevronLeft, ChevronRight, MoonStar } from "lucide-react";
 import { Button } from "../../../shared/components/ui/Button";
-import { STORAGE_KEYS } from "../../../shared/constants";
 import { getLocalDateStr } from "../../../shared/utils/helpers";
 import { useStarAnimation } from "../../gamification/context/GamificationContext";
 import { calculateFastingPoints } from "../../gamification/services/gamificationService";
@@ -20,8 +19,13 @@ interface FastingTrackerProps {
 
 
 
-const STORAGE_KEY_NADZAR_CONFIG = STORAGE_KEYS.NADZAR_CONFIG;
-const STORAGE_KEY_QADHA_CONFIG = STORAGE_KEYS.QADHA_CONFIG;
+
+import { useFastingStore } from "../stores/useFastingStore";
+
+// Remove local storage keys constants if not used anywhere else in this file,
+// or just keep them if legacy compatibility is needed for a moment, but implementation ignores them.
+// const STORAGE_KEY_NADZAR_CONFIG = STORAGE_KEYS.NADZAR_CONFIG;
+// const STORAGE_KEY_QADHA_CONFIG = STORAGE_KEYS.QADHA_CONFIG;
 
 export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hijriDate, gamificationConfig }) => {
     const { t, language } = useLanguage();
@@ -34,31 +38,30 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
     const [activeConfigTab, setActiveConfigTab] = useState<'nadzar' | 'qadha' | 'ramadhan'>('nadzar');
 
     // Ramadhan Configuration State
-    const [ramadhanConfig, setRamadhanConfig] = useState<{ startDate: string; endDate: string }>(() => {
-        const saved = localStorage.getItem(STORAGE_KEYS.RAMADHAN_CONFIG);
-        return saved ? JSON.parse(saved) : { startDate: '', endDate: '' };
-    });
+    const ramadhanConfig = useFastingStore((state) => state.ramadhanConfig);
+    const setRamadhanConfigStore = useFastingStore((state) => state.setRamadhanConfig);
 
     // Nadzar Configuration State
-    const [nadzarConfig, setNadzarConfig] = useState<FastingPreferenceConfig>(() => {
-        const saved = localStorage.getItem(STORAGE_KEY_NADZAR_CONFIG);
-        return saved ? JSON.parse(saved) : { types: [], days: [], customDates: [] };
-    });
+    const nadzarConfig = useFastingStore((state) => state.nadzarConfig);
+    const setNadzarConfigStore = useFastingStore((state) => state.setNadzarConfig);
 
     // Qadha Configuration State
-    const [qadhaConfig, setQadhaConfig] = useState<FastingPreferenceConfig>(() => {
-        const saved = localStorage.getItem(STORAGE_KEY_QADHA_CONFIG);
-        return saved ? JSON.parse(saved) : { types: [], days: [], customDates: [] };
-    });
+    const qadhaConfig = useFastingStore((state) => state.qadhaConfig);
+    const setQadhaConfigStore = useFastingStore((state) => state.setQadhaConfig);
 
     // Temporary config for editing
-    const [tempNadzar, setTempNadzar] = useState<FastingPreferenceConfig>({ types: [], days: [], customDates: [], startDate: '', endDate: '' });
-    const [tempQadha, setTempQadha] = useState<FastingPreferenceConfig>({ types: [], days: [], customDates: [], startDate: '', endDate: '' });
-    const [tempRamadhan, setTempRamadhan] = useState<{ startDate: string; endDate: string }>({ startDate: '', endDate: '' });
+    const [tempNadzar, setTempNadzar] = useState<FastingPreferenceConfig>(nadzarConfig);
+    const [tempQadha, setTempQadha] = useState<FastingPreferenceConfig>(qadhaConfig);
+    const [tempRamadhan, setTempRamadhan] = useState<{ startDate: string; endDate: string }>(ramadhanConfig);
 
-
-
-
+    // Sync temp state when modal opens or store changes (though typically modal init is enough)
+    useEffect(() => {
+        if (!isConfigOpen) {
+            setTempNadzar(nadzarConfig);
+            setTempQadha(qadhaConfig);
+            setTempRamadhan(ramadhanConfig);
+        }
+    }, [nadzarConfig, qadhaConfig, ramadhanConfig, isConfigOpen]);
 
     // Helpers to access current active temp config
     const tempConfig = activeConfigTab === 'nadzar' ? tempNadzar : tempQadha;
@@ -68,43 +71,6 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
     };
 
     const [calendarDate, setCalendarDate] = useState(new Date());
-
-    useEffect(() => {
-        localStorage.setItem(STORAGE_KEY_NADZAR_CONFIG, JSON.stringify(nadzarConfig));
-    }, [nadzarConfig]);
-
-    useEffect(() => {
-        localStorage.setItem(STORAGE_KEY_QADHA_CONFIG, JSON.stringify(qadhaConfig));
-    }, [qadhaConfig]);
-
-    useEffect(() => {
-        const handleConfigUpdate = () => {
-            const savedNadzar = localStorage.getItem(STORAGE_KEY_NADZAR_CONFIG);
-            if (savedNadzar) setNadzarConfig(JSON.parse(savedNadzar));
-            const savedQadha = localStorage.getItem(STORAGE_KEY_QADHA_CONFIG);
-            if (savedQadha) setQadhaConfig(JSON.parse(savedQadha));
-            const savedRamadhan = localStorage.getItem(STORAGE_KEYS.RAMADHAN_CONFIG);
-            if (savedRamadhan) setRamadhanConfig(JSON.parse(savedRamadhan));
-        };
-
-        const handleOpenSettings = () => {
-            openConfig();
-        };
-
-        window.addEventListener('fasting_config_updated', handleConfigUpdate);
-        window.addEventListener('nadzar_config_updated', handleConfigUpdate);
-        window.addEventListener('qadha_config_updated', handleConfigUpdate);
-        window.addEventListener('ramadhan_config_updated', handleConfigUpdate);
-        window.addEventListener('open_fasting_settings', handleOpenSettings);
-
-        return () => {
-            window.removeEventListener('fasting_config_updated', handleConfigUpdate);
-            window.removeEventListener('nadzar_config_updated', handleConfigUpdate);
-            window.removeEventListener('qadha_config_updated', handleConfigUpdate);
-            window.removeEventListener('ramadhan_config_updated', handleConfigUpdate);
-            window.removeEventListener('open_fasting_settings', handleOpenSettings);
-        };
-    }, []);
 
     const todayLog = getLogForDate(currentDate);
 
@@ -266,20 +232,11 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
 
     const handleSaveConfig = () => {
         // Persist BOTH configs to ensure conflict resolution (removals) are saved
-        localStorage.setItem(STORAGE_KEY_NADZAR_CONFIG, JSON.stringify(tempNadzar));
-        localStorage.setItem(STORAGE_KEY_QADHA_CONFIG, JSON.stringify(tempQadha));
-        localStorage.setItem(STORAGE_KEYS.RAMADHAN_CONFIG, JSON.stringify(tempRamadhan));
-
-        setNadzarConfig(tempNadzar);
-        setQadhaConfig(tempQadha);
-        setRamadhanConfig(tempRamadhan);
+        setNadzarConfigStore(tempNadzar);
+        setQadhaConfigStore(tempQadha);
+        setRamadhanConfigStore(tempRamadhan);
 
         setIsConfigOpen(false);
-
-        // Force refresh Stats for all
-        window.dispatchEvent(new Event('nadzar_config_updated'));
-        window.dispatchEvent(new Event('qadha_config_updated'));
-        window.dispatchEvent(new Event('ramadhan_config_updated'));
     };
 
     const handleResetConfig = () => {

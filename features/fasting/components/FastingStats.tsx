@@ -2,19 +2,20 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useLanguage } from "../../../shared/hooks/useLanguage";
 import { useFastingLogs } from "../hooks/useFastingLogs";
-import { getMonthForecast } from "../services/fastingService";
+import {
+    getHijriDate,
+    getProhibitedFastingReason,
+    getAsyncMonthForecast,
+    getAsyncHijriMonthForecast
+} from '../services/fastingService';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Calendar as CalendarIcon, Info, Star, RotateCcw, Moon, Target, TrendingUp, MoonStar, ChevronLeft, ChevronRight, XCircle, Loader2, ArrowLeftRight } from 'lucide-react';
 import { HijriDate, FastingType } from '../../../shared/types';
 import { getLocalDateStr } from '../../../shared/utils/helpers';
-import { getHijriDate, getProhibitedFastingReason } from '../services/fastingService';
 import { STORAGE_KEYS } from '../../../shared/constants';
 
-interface NadzarConfig {
-    types: FastingType[];
-    days: number[];
-    customDates: string[];
-}
+import { useFastingStore } from '../stores/useFastingStore';
+import { FastingPreferenceConfig as NadzarConfig } from '../../../shared/types'; // Using reuse of type properly
 
 
 interface FastingStatsProps {
@@ -28,35 +29,9 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
     const stats = getLogStats();
 
     // Nadzar Config State
-    const [nadzarConfig, setNadzarConfig] = useState<NadzarConfig>({ types: [], days: [], customDates: [] });
-
-    // Qadha Config State
-    const [qadhaConfig, setQadhaConfig] = useState<NadzarConfig>({ types: [], days: [], customDates: [] });
-
-    const [configVersion, setConfigVersion] = useState(0);
-
-    useEffect(() => {
-        const loadConfig = () => {
-            const savedNadzar = localStorage.getItem(STORAGE_KEYS.NADZAR_CONFIG);
-            if (savedNadzar) setNadzarConfig(JSON.parse(savedNadzar));
-
-            const savedQadha = localStorage.getItem(STORAGE_KEYS.QADHA_CONFIG);
-            if (savedQadha) setQadhaConfig(JSON.parse(savedQadha));
-
-            setConfigVersion(v => v + 1);
-        };
-
-        loadConfig();
-
-        window.addEventListener('nadzar_config_updated', loadConfig);
-        window.addEventListener('qadha_config_updated', loadConfig);
-        window.addEventListener('ramadhan_config_updated', loadConfig);
-        return () => {
-            window.removeEventListener('nadzar_config_updated', loadConfig);
-            window.removeEventListener('qadha_config_updated', loadConfig);
-            window.removeEventListener('ramadhan_config_updated', loadConfig);
-        };
-    }, []);
+    const nadzarConfig = useFastingStore((state) => state.nadzarConfig);
+    const qadhaConfig = useFastingStore((state) => state.qadhaConfig);
+    const ramadhanConfig = useFastingStore((state) => state.ramadhanConfig);
 
     // Data for Charts
     const data = [
@@ -79,10 +54,11 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
     // Calculate Hijri Offset (Difference between API and Local)
 
     // Calculate Hijri Offset (Difference between API and Local)
+    // Calculate Hijri Offset (Difference between API and Local)
     const hijriOffset = useMemo(() => {
         // If Manual Config exists, we trust our local calculation (which includes manual offset)
         // and ignore the API date to prevent it from "undoing" our manual shift.
-        if (typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEYS.RAMADHAN_CONFIG)) {
+        if (ramadhanConfig.startDate || ramadhanConfig.endDate) {
             return 0;
         }
 
@@ -96,7 +72,7 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
         if (local.month.number !== hijriDate.month.number) return 0;
 
         return parseInt(hijriDate.day) - parseInt(local.day);
-    }, [hijriDate, configVersion]);
+    }, [hijriDate, ramadhanConfig]);
 
     // Monthly Forecast Calendar
     const [currentMonthForecast, setCurrentMonthForecast] = useState<Array<{
@@ -110,9 +86,6 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
         async function fetchForecast() {
             setIsLoadingForecast(true);
             try {
-                // Dynamically import to avoid top-level import conflict or ensure function exists
-                const { getAsyncMonthForecast, getAsyncHijriMonthForecast } = await import('../services/fastingService');
-
                 let data;
                 if (viewMode === 'gregorian') {
                     const y = displayedDate.getFullYear();
@@ -134,7 +107,7 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
         fetchForecast();
 
         return () => { isMounted = false; };
-    }, [displayedDate, hijriNavDate, viewMode, hijriOffset, configVersion]);
+    }, [displayedDate, hijriNavDate, viewMode, hijriOffset, nadzarConfig, qadhaConfig, ramadhanConfig]);
 
     const handlePrevMonth = () => {
         if (viewMode === 'gregorian') {
