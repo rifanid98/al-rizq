@@ -457,7 +457,7 @@ const App: React.FC = () => {
     setHasQobliyah(log.hasQobliyah || false);
     setHasBadiyah(log.hasBadiyah || false);
     setHasDua(log.hasDua || false);
-    setIsLateEntry(true);
+    setIsLateEntry(log.status === 'Terlambat');
     setLateModalOpen(true);
   };
 
@@ -483,7 +483,7 @@ const App: React.FC = () => {
       const isCurrentlyOnTime = !isLateEntry || isForgotMarking;
       const isPerfect = isCurrentlyOnTime && locationType === 'Masjid' && executionType === 'Jamaah' && !isMasbuq;
 
-      if (isPerfect) {
+      if (isPerfect && !editingLogId) {
         setShowCelebration(true);
       }
 
