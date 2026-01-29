@@ -17,6 +17,7 @@ interface FastingState {
     setNadzarConfig: (config: FastingPreferenceConfig) => void;
     setQadhaConfig: (config: FastingPreferenceConfig) => void;
     setRamadhanConfig: (config: { startDate: string; endDate: string }) => void;
+    setLogs: (logs: FastingLog[]) => void;
 }
 
 export const useFastingStore = create<FastingState>()(
@@ -39,9 +40,22 @@ export const useFastingStore = create<FastingState>()(
 
             clearLogs: () => set({ logs: [] }),
 
-            setNadzarConfig: (config) => set({ nadzarConfig: config }),
-            setQadhaConfig: (config) => set({ qadhaConfig: config }),
-            setRamadhanConfig: (config) => set({ ramadhanConfig: config }),
+            setNadzarConfig: (config) => {
+                set({ nadzarConfig: config });
+                localStorage.setItem(STORAGE_KEYS.NADZAR_CONFIG, JSON.stringify(config));
+                window.dispatchEvent(new Event('nadzar_config_updated'));
+            },
+            setQadhaConfig: (config) => {
+                set({ qadhaConfig: config });
+                localStorage.setItem(STORAGE_KEYS.QADHA_CONFIG, JSON.stringify(config));
+                window.dispatchEvent(new Event('qadha_config_updated'));
+            },
+            setRamadhanConfig: (config) => {
+                set({ ramadhanConfig: config });
+                localStorage.setItem(STORAGE_KEYS.RAMADHAN_CONFIG, JSON.stringify(config));
+                window.dispatchEvent(new Event('ramadhan_config_updated'));
+            },
+            setLogs: (logs) => set({ logs }),
         }),
         {
             name: 'fasting-storage', // name of item in the storage (must be unique)

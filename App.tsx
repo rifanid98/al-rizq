@@ -45,6 +45,7 @@ import { usePrayerLogs } from './features/prayer/hooks/usePrayerLogs';
 import { useFastingLogs } from './features/fasting/hooks/useFastingLogs';
 import { useDzikir } from './features/dzikir/hooks/useDzikir';
 import { useSync } from './features/sync/hooks/useSync';
+import { useFastingStore } from './features/fasting/stores/useFastingStore';
 
 import { AuthStatus } from './features/auth/components/AuthStatus';
 import { PrayerCard } from './features/prayer/components/PrayerCard';
@@ -75,7 +76,7 @@ const App: React.FC = () => {
     themeMode, cycleTheme, isDark, showPrayerBg, setShowPrayerBg, prayerBgOpacity, setPrayerBgOpacity,
     locationHistory, getCurrentSettings, restoreSettings, addToHistory, language, setLanguage,
     prayerTimeCorrection, setPrayerTimeCorrection, setLastKnownLocation, lastKnownLocation, removeHistory,
-    gamificationConfig, setGamificationConfig, ramadhanConfig, qadhaConfig
+    gamificationConfig, setGamificationConfig, ramadhanConfig, qadhaConfig, nadzarConfig
   } = useSettings();
   const {
     schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule
@@ -283,8 +284,16 @@ const App: React.FC = () => {
             localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(cloudData.logs));
           }
 
-          if (cloudData.settings) restoreSettings(cloudData.settings);
+          if (cloudData.settings) {
+            restoreSettings(cloudData.settings);
+            // Update Fasting Store Configs directly
+            const store = useFastingStore.getState();
+            if (cloudData.settings.nadzarConfig) store.setNadzarConfig(cloudData.settings.nadzarConfig);
+            if (cloudData.settings.qadhaConfig) store.setQadhaConfig(cloudData.settings.qadhaConfig);
+            if (cloudData.settings.ramadhanConfig) store.setRamadhanConfig(cloudData.settings.ramadhanConfig);
+          }
           if (cloudData.fastingLogs) {
+            useFastingStore.getState().setLogs(cloudData.fastingLogs);
             localStorage.setItem(STORAGE_KEYS.FASTING_LOGS, JSON.stringify(cloudData.fastingLogs));
             window.dispatchEvent(new Event('fasting_logs_updated'));
           }
@@ -511,9 +520,17 @@ const App: React.FC = () => {
         localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(pendingCloudLogs));
       }
 
-      if (pendingCloudSettings) restoreSettings(pendingCloudSettings);
+      if (pendingCloudSettings) {
+        restoreSettings(pendingCloudSettings);
+        // Update Fasting Store Configs directly before reload
+        const store = useFastingStore.getState();
+        if (pendingCloudSettings.nadzarConfig) store.setNadzarConfig(pendingCloudSettings.nadzarConfig);
+        if (pendingCloudSettings.qadhaConfig) store.setQadhaConfig(pendingCloudSettings.qadhaConfig);
+        if (pendingCloudSettings.ramadhanConfig) store.setRamadhanConfig(pendingCloudSettings.ramadhanConfig);
+      }
 
       if (pendingFastingLogs) {
+        useFastingStore.getState().setLogs(pendingFastingLogs);
         localStorage.setItem(STORAGE_KEYS.FASTING_LOGS, JSON.stringify(pendingFastingLogs));
       }
 
@@ -545,7 +562,16 @@ const App: React.FC = () => {
     setPendingFastingLogs(null);
     setPendingDzikirLogs(null);
     setPendingBadges(null);
-    handleUpload(logs, getCurrentSettings(), fastingLogs, dzikirLogs);
+    setPendingDzikirLogs(null);
+    setPendingBadges(null);
+
+    const settings = getCurrentSettings();
+    const fStore = useFastingStore.getState();
+    settings.nadzarConfig = fStore.nadzarConfig;
+    settings.qadhaConfig = fStore.qadhaConfig;
+    settings.ramadhanConfig = fStore.ramadhanConfig;
+
+    handleUpload(logs, settings, fastingLogs, dzikirLogs);
   };
 
   return (
@@ -1275,6 +1301,7 @@ const AppContent: React.FC<any> = (props) => {
                     localStorage.removeItem(key);
                   }
                 });
+                localStorage.removeItem('fasting-storage'); // Clear zustand store
 
                 // Dispatch reset event for all hooks to update their state
                 window.dispatchEvent(new Event('app_data_reset'));

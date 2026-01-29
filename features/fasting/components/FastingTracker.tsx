@@ -373,8 +373,8 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                         ) : (
                             <div className="flex flex-col items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
                                 <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 shadow-sm relative
-                                    ${todayLog.type === 'Nadzar' ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400' :
-                                        todayLog.type === 'Qadha' ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400' :
+                                    ${(todayLog.type === 'Nadzar' || todayLog.isNadzar) ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400' :
+                                        (todayLog.type === 'Qadha' || todayLog.isQadha) ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400' :
                                             'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'}
                                 `}>
                                     {todayLog.type === 'Nadzar' && <Target className="w-8 h-8" />}
@@ -397,8 +397,8 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                 </div>
                                 <div className="flex flex-col items-center">
                                     <p className={`font-black text-lg
-                                        ${todayLog.type === 'Nadzar' ? 'text-amber-600 dark:text-amber-400' :
-                                            todayLog.type === 'Qadha' ? 'text-rose-600 dark:text-rose-400' :
+                                        ${(todayLog.type === 'Nadzar' || todayLog.isNadzar) ? 'text-amber-600 dark:text-amber-400' :
+                                            (todayLog.type === 'Qadha' || todayLog.isQadha) ? 'text-rose-600 dark:text-rose-400' :
                                                 'text-emerald-600 dark:text-emerald-400'}
                                     `}>
                                         {getLoggedLabel()}

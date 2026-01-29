@@ -60,6 +60,15 @@ export const useSettings = () => {
         }
     });
 
+    const [nadzarConfig, setNadzarConfig] = useState<any>(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEYS.NADZAR_CONFIG);
+            return saved ? JSON.parse(saved) : undefined;
+        } catch (e) {
+            return undefined;
+        }
+    });
+
     const [qadhaConfig, setQadhaConfig] = useState<any>(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEYS.QADHA_CONFIG);
@@ -89,11 +98,18 @@ export const useSettings = () => {
             const saved = localStorage.getItem(STORAGE_KEYS.QADHA_CONFIG);
             if (saved) setQadhaConfig(JSON.parse(saved));
         };
+        const handleNadzarUpdate = () => {
+            const saved = localStorage.getItem(STORAGE_KEYS.NADZAR_CONFIG);
+            if (saved) setNadzarConfig(JSON.parse(saved));
+        }
+
         window.addEventListener('ramadhan_config_updated', handleRamadhanUpdate);
         window.addEventListener('qadha_config_updated', handleQadhaUpdate);
+        window.addEventListener('nadzar_config_updated', handleNadzarUpdate);
         return () => {
             window.removeEventListener('ramadhan_config_updated', handleRamadhanUpdate);
             window.removeEventListener('qadha_config_updated', handleQadhaUpdate);
+            window.removeEventListener('nadzar_config_updated', handleNadzarUpdate);
         };
     }, []);
 
@@ -134,6 +150,7 @@ export const useSettings = () => {
             setGamificationConfig(DEFAULT_GAMIFICATION_CONFIG);
             setRamadhanConfig(undefined);
             setQadhaConfig(undefined);
+            setNadzarConfig(undefined);
             setLanguage('id'); // Default language
         };
         window.addEventListener('app_data_reset', handleReset);
@@ -177,7 +194,7 @@ export const useSettings = () => {
             lastKnownLocation: lastKnownLocation,
             gamificationConfig: gamificationConfig
         };
-    }, [themeMode, locationHistory, showPrayerBg, prayerBgOpacity, language, prayerTimeCorrection, lastKnownLocation, gamificationConfig]);
+    }, [themeMode, locationHistory, showPrayerBg, prayerBgOpacity, language, prayerTimeCorrection, lastKnownLocation, gamificationConfig, nadzarConfig, qadhaConfig, ramadhanConfig]);
 
     const restoreSettings = useCallback((s: AppSettings) => {
         if (s.theme) setThemeMode(s.theme);
@@ -190,11 +207,11 @@ export const useSettings = () => {
 
         if (s.nadzarConfig) {
             localStorage.setItem(STORAGE_KEYS.NADZAR_CONFIG, JSON.stringify(s.nadzarConfig));
-            window.dispatchEvent(new Event('fasting_config_updated'));
+            window.dispatchEvent(new Event('nadzar_config_updated'));
         }
         if (s.qadhaConfig) {
             localStorage.setItem(STORAGE_KEYS.QADHA_CONFIG, JSON.stringify(s.qadhaConfig));
-            window.dispatchEvent(new Event('fasting_config_updated'));
+            window.dispatchEvent(new Event('qadha_config_updated'));
         }
         if (s.ramadhanConfig) {
             localStorage.setItem(STORAGE_KEYS.RAMADHAN_CONFIG, JSON.stringify(s.ramadhanConfig));
@@ -261,6 +278,8 @@ export const useSettings = () => {
         gamificationConfig,
         setGamificationConfig,
         ramadhanConfig,
-        qadhaConfig
+        qadhaConfig,
+        nadzarConfig,
+        setNadzarConfig
     };
 };

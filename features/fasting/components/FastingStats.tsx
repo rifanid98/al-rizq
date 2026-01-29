@@ -358,8 +358,8 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
                                             ? (
                                                 day.recommendation.isForbidden
                                                     ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-500 opacity-60 cursor-pointer hover:bg-rose-200 dark:hover:bg-rose-900/60'
-                                                    : (log?.type === 'Nadzar' || effectiveType === 'Nadzar') ? 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200' :
-                                                        (log?.type === 'Qadha' || effectiveType === 'Qadha') ? 'bg-rose-500 dark:bg-rose-600 text-white shadow-md shadow-rose-500/20' :
+                                                    : (log?.type === 'Nadzar' || effectiveType === 'Nadzar' || log?.isNadzar || day.recommendation.isNadzar) ? 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200' :
+                                                        (log?.type === 'Qadha' || effectiveType === 'Qadha' || log?.isQadha) ? 'bg-rose-500 dark:bg-rose-600 text-white shadow-md shadow-rose-500/20' :
                                                             (log?.type === 'Senin-Kamis' || effectiveType === 'Senin-Kamis') ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-200' :
                                                                 ['Ayyamul Bidh', 'Ramadhan', 'Lainnya'].includes(log?.type || effectiveType || '') ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-200' :
                                                                     'bg-slate-100 dark:bg-slate-800'
@@ -402,7 +402,7 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
                                             <div className="absolute inset-0 z-10 flex items-center justify-center opacity-50">
                                                 {effectiveType === 'Nadzar' && <Target className="w-[60%] h-[60%] text-amber-500" />}
                                                 {effectiveType === 'Qadha' && <RotateCcw className="w-[60%] h-[60%] text-white" />}
-                                                {effectiveType === 'Senin-Kamis' && <Star className="w-[60%] h-[60%] text-emerald-500" />}
+                                                {effectiveType === 'Senin-Kamis' && <Star className={`w-[60%] h-[60%] ${day.recommendation.isNadzar ? 'text-amber-500' : 'text-emerald-500'}`} />}
                                                 {effectiveType === 'Ramadhan' && <MoonStar className="w-[60%] h-[60%] text-emerald-500" />}
                                                 {['Ayyamul Bidh', 'Lainnya'].includes(effectiveType || '') && <Moon className="w-[60%] h-[60%] text-sky-500" />}
                                             </div>
