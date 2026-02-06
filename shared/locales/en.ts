@@ -274,11 +274,17 @@ export const en = {
             missed: "Missed"
         },
         dzikirStats: "Dhikr Statistics",
+        sunnahStatsOverview: "Complete overview of your sunnah activities",
         totalSessions: "Total Sessions",
         morning: "Morning",
         evening: "Evening",
         currentStreak: "Current Streak",
-        days: "Days"
+        days: "Days",
+        monthlyProgress: "Monthly Progress",
+        week: "Week",
+        previousWeek: "Previous Week",
+        peekLastWeek: "Peek Last Week",
+        showingPreviousWeek: "Showing last week of previous month"
     },
     history: {
         title: "History",

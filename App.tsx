@@ -596,6 +596,7 @@ const App: React.FC = () => {
           logs, setLogs, logPrayer, deleteLog, clearPrayerLogs,
           fastingLogs, clearFastingLogs,
           dzikirLogs, clearDzikirLogs,
+          sunnahPrayerLogs, dailyHabitLogs,
           isSyncing, handleUpload, handleDownload, hasBackup, handleRevert, handleDeleteCloudData,
           gamification,
           activeTab, setActiveTab,
@@ -669,6 +670,7 @@ const AppContent: React.FC<any> = (props) => {
     logs, setLogs, logPrayer, deleteLog, clearPrayerLogs,
     fastingLogs, clearFastingLogs,
     dzikirLogs, clearDzikirLogs,
+    sunnahPrayerLogs, dailyHabitLogs,
     isSyncing, handleUpload, handleDownload, hasBackup, handleRevert, handleDeleteCloudData,
     gamification,
     activeTab, setActiveTab,
@@ -1147,7 +1149,7 @@ const AppContent: React.FC<any> = (props) => {
         )}
 
         {/* Dashboard Tab Content */}
-        {activeTab === 'dashboard' && <Dashboard logs={logs} fastingLogs={fastingLogs} dzikirLogs={dzikirLogs} hijriDate={adjustedSchedule?.hijri} gamification={gamification} />}
+        {activeTab === 'dashboard' && <Dashboard logs={logs} fastingLogs={fastingLogs} dzikirLogs={dzikirLogs} sunnahPrayerLogs={sunnahPrayerLogs} dailyHabitLogs={dailyHabitLogs} hijriDate={adjustedSchedule?.hijri} gamification={gamification} />}
 
 
         {/* Achievements Tab Content */}

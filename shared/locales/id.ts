@@ -275,11 +275,17 @@ export const id = {
             missed: "Terlewat"
         },
         dzikirStats: "Statistik Ibadah Dzikir",
+        sunnahStatsOverview: "Ringkasan lengkap aktivitas sunnah",
         totalSessions: "Total Sesi",
         morning: "Pagi",
         evening: "Petang",
         currentStreak: "Streak Hari Ini",
-        days: "Hari"
+        days: "Hari",
+        monthlyProgress: "Progress Bulanan",
+        week: "Minggu",
+        previousWeek: "Minggu Sebelumnya",
+        peekLastWeek: "Lihat Minggu Lalu",
+        showingPreviousWeek: "Menampilkan minggu terakhir bulan sebelumnya"
     },
     history: {
         title: "Riwayat",
