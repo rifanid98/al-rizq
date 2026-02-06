@@ -572,6 +572,69 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                       </ResponsiveContainer>
                     </div>
                   </div>
+
+                  {/* Sunnah Worship Performance */}
+                  <div className="order-last md:order-first bg-purple-600 dark:bg-purple-900/40 p-8 rounded-2xl shadow-xl shadow-purple-500/10 flex flex-col md:flex-row items-center justify-between gap-8 text-white">
+                    <div className="flex items-center gap-6">
+                      <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+                        <Star className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-black tracking-tight">{t.dashboard.performance}</h3>
+                        <p className="text-purple-100 font-medium opacity-80">{t.dashboard.sunnahPerformanceSubtitle || 'Your sunnah worship stats'}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 w-full lg:w-auto">
+                      <div className="text-center md:text-left">
+                        <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">{t.tabs.dzikir}</p>
+                        <p className="text-2xl font-black">{dzikirLogs.filter(l => l.isCompleted).length}</p>
+                      </div>
+                      <div className="text-center md:text-left">
+                        <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">{t.sunnah?.prayers?.title || 'Sunnah'}</p>
+                        <p className="text-2xl font-black">{sunnahPrayerLogs.filter(l => l.isCompleted).length}</p>
+                      </div>
+                      <div className="text-center md:text-left">
+                        <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">{t.sunnah?.habits?.title || 'Habits'}</p>
+                        <p className="text-2xl font-black">{dailyHabitLogs.filter(l => l.value === true || (typeof l.value === 'number' && l.value > 0)).length}</p>
+                      </div>
+                      <div className="text-center md:text-left">
+                        <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">{t.dashboard.currentStreak}</p>
+                        <p className="text-2xl font-black">
+                          {(() => {
+                            let streak = 0;
+                            const allDates = new Set<string>();
+                            dzikirLogs.filter(l => l.isCompleted).forEach(l => allDates.add(l.date));
+                            sunnahPrayerLogs.filter(l => l.isCompleted).forEach(l => allDates.add(l.date));
+                            dailyHabitLogs.filter(l => l.value === true || (typeof l.value === 'number' && l.value > 0)).forEach(l => allDates.add(l.date));
+
+                            const uniqueDates = [...allDates].sort().reverse();
+                            const today = new Date().toISOString().split('T')[0];
+
+                            const hasToday = uniqueDates.includes(today);
+                            const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+                            const hasYesterday = uniqueDates.includes(yesterday.toISOString().split('T')[0]);
+
+                            if (!hasToday && !hasYesterday) return 0;
+
+                            let current = new Date();
+                            if (!hasToday) current.setDate(current.getDate() - 1);
+
+                            while (true) {
+                              const dateStr = current.toISOString().split('T')[0];
+                              if (uniqueDates.includes(dateStr)) {
+                                streak++;
+                                current.setDate(current.getDate() - 1);
+                              } else {
+                                break;
+                              }
+                            }
+                            return streak;
+                          })()}
+                          <span className="text-sm font-bold opacity-60 ml-1">{t.dashboard.days}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col gap-8">

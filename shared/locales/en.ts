@@ -260,6 +260,7 @@ export const en = {
         noDataSubtitle: "Start logging your prayers to see your reports here.",
         performance: "Worship Performance",
         performanceSubtitle: "Continue consistency for maximum results.",
+        sunnahPerformanceSubtitle: "Your sunnah worship stats",
         weeklyConsistency: "Weekly Consistency",
         sunnahStats: "Sunnah & Complementary Worship",
         dua: "Praying",

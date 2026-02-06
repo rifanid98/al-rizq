@@ -261,6 +261,7 @@ export const id = {
         noDataSubtitle: "Mulai catat sholatmu untuk melihat laporan di sini.",
         performance: "Performa Ibadah",
         performanceSubtitle: "Teruskan konsistensi untuk hasil yang maksimal.",
+        sunnahPerformanceSubtitle: "Statistik ibadah sunnah Anda",
         weeklyConsistency: "Konsistensi Mingguan",
         sunnahStats: "Ibadah Sunnah & Pelengkap",
         dua: "Berdoa",
