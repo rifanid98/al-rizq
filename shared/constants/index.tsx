@@ -47,4 +47,4 @@ export const STORAGE_KEYS = {
   GAMIFICATION_CONFIG: 'al_rizq_gamification_config'
 };
 
-export const CURRENT_VERSION = '1.2.14';
+export const CURRENT_VERSION = '1.2.15';
