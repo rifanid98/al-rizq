@@ -324,7 +324,8 @@ export const en = {
             sunnah: "Sunnah Fasting",
             nadzar: "Vow",
             total: "Total Fasting",
-            streak: "Streak"
+            streak: "Streak",
+            fastingSummary: "Fasting Summary"
         },
         distribution: "Fasting Distribution",
         history: "Monthly History",

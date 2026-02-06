@@ -182,30 +182,36 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
                     <div className="grid grid-cols-2 gap-8 w-full md:w-auto">
                         <div className="text-center md:text-left">
                             <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">{t.fasting.stats.streak}</p>
-                            <p className="text-2xl font-black">{stats.streak} <span className="text-sm font-bold opacity-60">Hari</span></p>
+                            <p className="text-2xl font-black">{stats.streak} <span className="text-sm font-bold opacity-60">{t.dashboard.days}</span></p>
                         </div>
                         <div className="text-center md:text-left">
                             <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-1">{t.fasting.stats.total}</p>
-                            <p className="text-2xl font-black">{stats.total} <span className="text-sm font-bold opacity-60">Hari</span></p>
+                            <p className="text-2xl font-black">{stats.total} <span className="text-sm font-bold opacity-60">{t.dashboard.days}</span></p>
                         </div>
                     </div>
                 </div>
             )}
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-3 max-[574px]:grid-cols-2 gap-4">
-                <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 flex flex-col items-center justify-center text-center">
-                    <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{stats.sunnah}</span>
-                    <span className="text-[10px] uppercase font-bold text-emerald-600/60 dark:text-emerald-400/60 mt-1">{t.fasting.stats.sunnah}</span>
-                </div>
-                <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/50 flex flex-col items-center justify-center text-center">
-                    <span className="text-2xl font-black text-amber-600 dark:text-amber-400">{stats.nadzar}</span>
-                    <span className="text-[10px] uppercase font-bold text-amber-600/60 dark:text-amber-400/60 mt-1">{t.fasting.stats.nadzar}</span>
-                </div>
-                <div className="bg-rose-50 dark:bg-rose-950/20 p-4 rounded-2xl border border-rose-100 dark:border-rose-900/50 flex flex-col items-center justify-center text-center">
-                    <span className="text-2xl font-black text-rose-600 dark:text-rose-400">{stats.qadha}</span>
-                    {/* Placeholder for Qadha count logic if implemented later */}
-                    <span className="text-[10px] uppercase font-bold text-rose-600/60 dark:text-rose-400/60 mt-1">{t.fasting.stats.qadha}</span>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800">
+                <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
+                    <Star className="w-4 h-4 text-emerald-500" />
+                    {t.fasting.stats.fastingSummary || 'Fasting Summary'}
+                </h4>
+                <div className="grid grid-cols-3 max-[574px]:grid-cols-2 gap-4">
+                    <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 flex flex-col items-center justify-center text-center">
+                        <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{stats.sunnah}</span>
+                        <span className="text-[10px] uppercase font-bold text-emerald-600/60 dark:text-emerald-400/60 mt-1">{t.fasting.stats.sunnah}</span>
+                    </div>
+                    <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/50 flex flex-col items-center justify-center text-center">
+                        <span className="text-2xl font-black text-amber-600 dark:text-amber-400">{stats.nadzar}</span>
+                        <span className="text-[10px] uppercase font-bold text-amber-600/60 dark:text-amber-400/60 mt-1">{t.fasting.stats.nadzar}</span>
+                    </div>
+                    <div className="bg-rose-50 dark:bg-rose-950/20 p-4 rounded-2xl border border-rose-100 dark:border-rose-900/50 flex flex-col items-center justify-center text-center">
+                        <span className="text-2xl font-black text-rose-600 dark:text-rose-400">{stats.qadha}</span>
+                        {/* Placeholder for Qadha count logic if implemented later */}
+                        <span className="text-[10px] uppercase font-bold text-rose-600/60 dark:text-rose-400/60 mt-1">{t.fasting.stats.qadha}</span>
+                    </div>
                 </div>
             </div>
 

@@ -325,7 +325,8 @@ export const id = {
             sunnah: "Puasa Sunnah",
             nadzar: "Nadzar",
             total: "Total Puasa",
-            streak: "Streak"
+            streak: "Streak",
+            fastingSummary: "Ringkasan Puasa"
         },
         distribution: "Distribusi Puasa",
         history: "Riwayat Bulanan",
