@@ -135,6 +135,52 @@ export interface DzikirLog {
   timestamp: number;
 }
 
+// Sunnah Prayer Types
+export interface SunnahPrayerItem {
+  id: string;
+  name: string;
+  nameKey: string; // i18n key
+  minRakaat: number;
+  maxRakaat: number;
+  timeWindow: string;
+  timeWindowKey: string; // i18n key
+  description: string;
+  descriptionKey: string; // i18n key
+}
+
+export interface SunnahPrayerLog {
+  id: string;
+  date: string; // YYYY-MM-DD
+  prayerId: string;
+  rakaat: number;
+  isCompleted: boolean;
+  timestamp: number;
+}
+
+// Daily Habit Types
+export type DailyHabitType = 'counter' | 'checkbox';
+
+export interface DailyHabitItem {
+  id: string;
+  name: string;
+  nameKey: string; // i18n key
+  type: DailyHabitType;
+  targetCount?: number;
+  unit?: string;
+  unitKey?: string; // i18n key
+  description: string;
+  descriptionKey: string; // i18n key
+}
+
+export interface DailyHabitLog {
+  id: string;
+  date: string; // YYYY-MM-DD
+  habitId: string;
+  value: number | boolean;
+  notes?: string;
+  timestamp: number;
+}
+
 export interface GamificationPointsConfig {
   prayer: {
     mosque: number;
@@ -158,6 +204,17 @@ export interface GamificationPointsConfig {
   };
   dzikir: {
     morningEvening: number; // Pagi/Petang
+  };
+  sunnahPrayer: {
+    dhuha: number;
+    tahajjud: number;
+    witir: number;
+  };
+  dailyHabit: {
+    tilawah: number;
+    shalawat: number;
+    sedekah: number;
+    doaTidur: number;
   };
 }
 
@@ -191,6 +248,17 @@ export const DEFAULT_GAMIFICATION_CONFIG: GamificationConfig = {
     },
     dzikir: {
       morningEvening: 10,
+    },
+    sunnahPrayer: {
+      dhuha: 15,
+      tahajjud: 20,
+      witir: 10,
+    },
+    dailyHabit: {
+      tilawah: 10,
+      shalawat: 5,
+      sedekah: 10,
+      doaTidur: 5,
     },
   },
 };

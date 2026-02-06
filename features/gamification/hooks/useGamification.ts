@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
-import { PrayerLog, FastingLog, DzikirLog, GamificationConfig, DEFAULT_GAMIFICATION_CONFIG } from '../../../shared/types';
-import { calculatePrayerPoints, calculateFastingPoints, calculateDzikirPoints, getLevel } from '../services/gamificationService';
+import { PrayerLog, FastingLog, DzikirLog, SunnahPrayerLog, DailyHabitLog, GamificationConfig, DEFAULT_GAMIFICATION_CONFIG } from '../../../shared/types';
+import { calculatePrayerPoints, calculateFastingPoints, calculateDzikirPoints, calculateSunnahPrayerPoints, calculateDailyHabitPoints, getLevel } from '../services/gamificationService';
 import { calculatePrayerMetrics, calculateFastingMetrics, calculateDzikirMetrics, determineTier, getBadgeDefinition } from '../services/badgeService';
 import { UserBadge } from '../../../shared/types/gamification';
 import { STORAGE_KEYS } from '../../../shared/constants';
@@ -9,6 +9,8 @@ export const useGamification = (
     logs: PrayerLog[],
     fastingLogs: FastingLog[],
     dzikirLogs: DzikirLog[],
+    sunnahPrayerLogs: SunnahPrayerLog[],
+    dailyHabitLogs: DailyHabitLog[],
     userConfig?: GamificationConfig,
     ramadhanConfig?: { startDate: string, endDate: string },
     qadhaConfig?: any
@@ -23,6 +25,8 @@ export const useGamification = (
                 prayer: { ...DEFAULT_GAMIFICATION_CONFIG.points.prayer, ...userConfig.points?.prayer },
                 fasting: { ...DEFAULT_GAMIFICATION_CONFIG.points.fasting, ...userConfig.points?.fasting },
                 dzikir: { ...DEFAULT_GAMIFICATION_CONFIG.points.dzikir, ...userConfig.points?.dzikir },
+                sunnahPrayer: { ...DEFAULT_GAMIFICATION_CONFIG.points.sunnahPrayer, ...userConfig.points?.sunnahPrayer },
+                dailyHabit: { ...DEFAULT_GAMIFICATION_CONFIG.points.dailyHabit, ...userConfig.points?.dailyHabit },
             }
         };
     }, [userConfig]);
@@ -31,6 +35,9 @@ export const useGamification = (
         let prayerPoints = 0;
         let fastingPoints = 0;
         let dzikirPoints = 0;
+        let sunnahPrayerPoints = 0;
+        let dailyHabitPoints = 0;
+        let bonusPoints = 0;
 
         logs.forEach(log => {
             prayerPoints += calculatePrayerPoints(log, config);
@@ -44,13 +51,75 @@ export const useGamification = (
             dzikirPoints += calculateDzikirPoints(log, config);
         });
 
+        sunnahPrayerLogs.forEach(log => {
+            sunnahPrayerPoints += calculateSunnahPrayerPoints(log, config);
+        });
+
+        dailyHabitLogs.forEach(log => {
+            dailyHabitPoints += calculateDailyHabitPoints(log, config);
+        });
+
+        // Calculate bonus points for completing all items in a category per date
+        // Dzikir bonus: +10 for each date with all morning OR evening dzikir completed
+        const dzikirByDateCategory = new Map<string, number>();
+        dzikirLogs.forEach(log => {
+            if (log.isCompleted && log.completedItems) {
+                const key = `${log.date}_${log.categoryId}`;
+                const currentCount = dzikirByDateCategory.get(key) || 0;
+                dzikirByDateCategory.set(key, Math.max(currentCount, log.completedItems.length));
+            }
+        });
+        // Check each date-category for completion (assuming 12 items per category)
+        dzikirByDateCategory.forEach((itemCount) => {
+            // If 12 or more items are completed for this category on this date, add bonus
+            if (itemCount >= 12) {
+                bonusPoints += 10;
+            }
+        });
+
+        // Sunnah Prayer bonus: +10 for each date with all 3 prayers completed
+        const sunnahByDate = new Map<string, Set<string>>();
+        sunnahPrayerLogs.forEach(log => {
+            if (log.isCompleted) {
+                if (!sunnahByDate.has(log.date)) {
+                    sunnahByDate.set(log.date, new Set());
+                }
+                sunnahByDate.get(log.date)!.add(log.prayerId);
+            }
+        });
+        sunnahByDate.forEach((prayers) => {
+            if (prayers.size >= 3) {
+                bonusPoints += 10;
+            }
+        });
+
+        // Daily Habit bonus: +10 for each date with all 4 habits completed
+        const habitsByDate = new Map<string, Set<string>>();
+        dailyHabitLogs.forEach(log => {
+            const hasValue = log.value === true || (typeof log.value === 'number' && log.value > 0);
+            if (hasValue) {
+                if (!habitsByDate.has(log.date)) {
+                    habitsByDate.set(log.date, new Set());
+                }
+                habitsByDate.get(log.date)!.add(log.habitId);
+            }
+        });
+        habitsByDate.forEach((habits) => {
+            if (habits.size >= 4) {
+                bonusPoints += 10;
+            }
+        });
+
         return {
             prayer: prayerPoints,
             fasting: fastingPoints,
             dzikir: dzikirPoints,
-            total: prayerPoints + fastingPoints + dzikirPoints
+            sunnahPrayer: sunnahPrayerPoints,
+            dailyHabit: dailyHabitPoints,
+            bonus: bonusPoints,
+            total: prayerPoints + fastingPoints + dzikirPoints + sunnahPrayerPoints + dailyHabitPoints + bonusPoints
         };
-    }, [logs, fastingLogs, dzikirLogs, config]);
+    }, [logs, fastingLogs, dzikirLogs, sunnahPrayerLogs, dailyHabitLogs, config]);
 
     const levelInfo = useMemo(() => {
         return getLevel(pointsDetail.total);

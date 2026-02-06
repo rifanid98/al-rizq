@@ -1,5 +1,5 @@
 
-import { PrayerLog, FastingLog, DzikirLog, GamificationConfig, DEFAULT_GAMIFICATION_CONFIG } from '../../../shared/types';
+import { PrayerLog, FastingLog, DzikirLog, SunnahPrayerLog, DailyHabitLog, GamificationConfig, DEFAULT_GAMIFICATION_CONFIG } from '../../../shared/types';
 
 export const calculatePrayerPoints = (log: PrayerLog, config: GamificationConfig = DEFAULT_GAMIFICATION_CONFIG): number => {
     if (!config.enabled) return 0;
@@ -127,6 +127,45 @@ export const calculateDzikirPoints = (log: DzikirLog, config: GamificationConfig
     return 0;
 };
 
+export const calculateSunnahPrayerPoints = (log: SunnahPrayerLog, config: GamificationConfig = DEFAULT_GAMIFICATION_CONFIG): number => {
+    if (!config.enabled || !log.isCompleted) return 0;
+
+    const p = config.points.sunnahPrayer;
+    // Return points based on prayer type
+    switch (log.prayerId) {
+        case 'dhuha':
+            return p.dhuha || 10;
+        case 'tahajjud':
+            return p.tahajjud || 15;
+        case 'witir':
+            return p.witir || 10;
+        default:
+            return 10;
+    }
+};
+
+export const calculateDailyHabitPoints = (log: DailyHabitLog, config: GamificationConfig = DEFAULT_GAMIFICATION_CONFIG): number => {
+    if (!config.enabled) return 0;
+
+    // Check if habit has a value (completed)
+    const hasValue = log.value === true || (typeof log.value === 'number' && log.value > 0);
+    if (!hasValue) return 0;
+
+    const p = config.points.dailyHabit;
+    // Return points based on habit type
+    switch (log.habitId) {
+        case 'tilawah':
+            return p.tilawah || 10;
+        case 'shalawat':
+            return p.shalawat || 5;
+        case 'sedekah':
+            return p.sedekah || 10;
+        case 'doaTidur':
+            return p.doaTidur || 5;
+        default:
+            return 5;
+    }
+};
 export const getLevel = (totalPoints: number): {
     level: number;
     progress: number;

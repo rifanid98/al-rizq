@@ -47,7 +47,8 @@ export const id = {
         history: "Riwayat",
         achievements: "Capaian",
         settings: "Pengaturan",
-        dzikir: "Dzikir"
+        dzikir: "Dzikir",
+        sunnah: "Sunnah"
     },
     settings: {
         title: "Pengaturan",
@@ -121,6 +122,54 @@ export const id = {
         evening: "Petang",
         morningDesc: "Dibaca setelah sholat Subuh hingga terbit matahari",
         eveningDesc: "Dibaca setelah sholat Ashar hingga terbenam matahari",
+    },
+    sunnah: {
+        tabs: {
+            dzikir: "Dzikir",
+            prayer: "Shalat",
+            habit: "Ibadah"
+        },
+        prayers: {
+            title: "Shalat Sunnah",
+            subtitle: "Ibadah sunnah harian",
+            dhuha: {
+                name: "Shalat Dhuha",
+                timeWindow: "Setelah matahari terbit (+15 menit) hingga sebelum Dzuhur",
+                description: "Shalat sunnah yang dikerjakan pada waktu dhuha (pagi hari)"
+            },
+            tahajjud: {
+                name: "Tahajjud",
+                timeWindow: "Setelah Isya hingga sebelum Subuh (sepertiga malam terakhir)",
+                description: "Shalat malam yang dikerjakan setelah tidur"
+            },
+            witir: {
+                name: "Witir",
+                timeWindow: "Setelah Isya hingga sebelum Subuh",
+                description: "Shalat sunnah dengan jumlah rakaat ganjil, penutup shalat malam"
+            }
+        },
+        habits: {
+            title: "Ibadah Harian",
+            subtitle: "Kebiasaan baik setiap hari",
+            tilawah: {
+                name: "Tilawah Al-Quran",
+                unit: "halaman",
+                description: "Membaca Al-Quran setiap hari"
+            },
+            shalawat: {
+                name: "Shalawat",
+                unit: "kali",
+                description: "Membaca shalawat kepada Nabi Muhammad ﷺ"
+            },
+            sedekah: {
+                name: "Sedekah",
+                description: "Bersedekah setiap hari, sekecil apapun"
+            },
+            doaTidur: {
+                name: "Doa Tidur/Bangun",
+                description: "Membaca doa sebelum tidur dan setelah bangun tidur"
+            }
+        }
     },
     tracker: {
         title: "Sholat",
@@ -443,8 +492,17 @@ export const id = {
                 nadzar: "Nadzar",
                 qadha: "Qadha",
                 other: "Lainnya",
-                morningEvening: "Pagi/Petang"
-            }
+                morningEvening: "Pagi/Petang",
+                dhuha: "Dhuha",
+                tahajjud: "Tahajjud",
+                witir: "Witir",
+                tilawah: "Tilawah",
+                shalawat: "Shalawat",
+                sedekah: "Sedekah",
+                doaTidur: "Doa Tidur"
+            },
+            pointsSunnahPrayer: "Poin Shalat Sunnah",
+            pointsDailyHabit: "Poin Ibadah Harian"
         }
     }
 };

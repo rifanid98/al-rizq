@@ -47,7 +47,8 @@ export const en = {
         history: "History",
         achievements: "Achieves",
         settings: "Settings",
-        dzikir: "Dhikr"
+        dzikir: "Dhikr",
+        sunnah: "Sunnah"
     },
     settings: {
         title: "Settings",
@@ -120,6 +121,54 @@ export const en = {
         evening: "Evening",
         morningDesc: "Read after Dawn prayer until sunrise",
         eveningDesc: "Read after Afternoon prayer until sunset",
+    },
+    sunnah: {
+        tabs: {
+            dzikir: "Dhikr",
+            prayer: "Prayer",
+            habit: "Habit"
+        },
+        prayers: {
+            title: "Sunnah Prayers",
+            subtitle: "Daily sunnah worship",
+            dhuha: {
+                name: "Dhuha Prayer",
+                timeWindow: "After sunrise (+15 min) until before Dhuhr",
+                description: "Morning prayer performed during mid-morning"
+            },
+            tahajjud: {
+                name: "Tahajjud",
+                timeWindow: "After Isha until before Fajr (last third of night)",
+                description: "Night prayer performed after sleeping"
+            },
+            witir: {
+                name: "Witir",
+                timeWindow: "After Isha until before Fajr",
+                description: "Odd-numbered prayer, closing the night prayers"
+            }
+        },
+        habits: {
+            title: "Daily Habits",
+            subtitle: "Good habits every day",
+            tilawah: {
+                name: "Quran Recitation",
+                unit: "pages",
+                description: "Read Al-Quran every day"
+            },
+            shalawat: {
+                name: "Salawat",
+                unit: "times",
+                description: "Sending blessings upon Prophet Muhammad ﷺ"
+            },
+            sedekah: {
+                name: "Charity",
+                description: "Give charity every day, no matter how small"
+            },
+            doaTidur: {
+                name: "Sleep/Wake Dua",
+                description: "Read supplication before sleeping and after waking"
+            }
+        }
     },
     tracker: {
         title: "Prayer",
@@ -442,8 +491,17 @@ export const en = {
                 nadzar: "Nadzar",
                 qadha: "Qadha",
                 other: "Other",
-                morningEvening: "Morning/Evening"
-            }
+                morningEvening: "Morning/Evening",
+                dhuha: "Dhuha",
+                tahajjud: "Tahajjud",
+                witir: "Witir",
+                tilawah: "Tilawah",
+                shalawat: "Salawat",
+                sedekah: "Charity",
+                doaTidur: "Sleep Dua"
+            },
+            pointsSunnahPrayer: "Sunnah Prayer Points",
+            pointsDailyHabit: "Daily Habit Points"
         }
     }
 };

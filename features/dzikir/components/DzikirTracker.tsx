@@ -183,9 +183,16 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         e.preventDefault();
-                                        if (!isChecked && completedItems.length === list.length - 1) {
+                                        if (!isChecked) {
                                             const points = calculateDzikirPoints({ categoryId: activeCategory.id, isCompleted: true, date: date } as any, gamificationConfig);
-                                            triggerAnimation(null, points > 0 ? points : 12);
+                                            // Give points per individual item (divide total by item count)
+                                            const perItemPoints = Math.ceil(points / list.length) || 2;
+                                            triggerAnimation(null, perItemPoints);
+
+                                            // Bonus +10 when all dzikir are completed
+                                            if (completedItems.length === list.length - 1) {
+                                                setTimeout(() => triggerAnimation(null, 10), 300);
+                                            }
                                         }
                                         toggleItem(item.id, activeCategory.id, date);
                                     }}
@@ -203,9 +210,16 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
                                     onClick={() => toggleExpansion(item.id)}
                                     onDoubleClick={(e) => {
                                         e.stopPropagation();
-                                        if (!isChecked && completedItems.length === list.length - 1) {
+                                        if (!isChecked) {
                                             const points = calculateDzikirPoints({ categoryId: activeCategory.id, isCompleted: true, date: date } as any, gamificationConfig);
-                                            triggerAnimation(null, points > 0 ? points : 12);
+                                            // Give points per individual item (divide total by item count)
+                                            const perItemPoints = Math.ceil(points / list.length) || 2;
+                                            triggerAnimation(null, perItemPoints);
+
+                                            // Bonus +10 when all dzikir are completed
+                                            if (completedItems.length === list.length - 1) {
+                                                setTimeout(() => triggerAnimation(null, 10), 300);
+                                            }
                                         }
                                         toggleItem(item.id, activeCategory.id, date);
                                         // Automatically collapse when marked

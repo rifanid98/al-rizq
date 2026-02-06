@@ -44,7 +44,9 @@ export const STORAGE_KEYS = {
   LAST_KNOWN_LOCATION: 'al_rizq_last_location',
   RAMADHAN_CONFIG: 'al_rizq_ramadhan_config',
   BADGES: 'al_rizq_badges',
-  GAMIFICATION_CONFIG: 'al_rizq_gamification_config'
+  GAMIFICATION_CONFIG: 'al_rizq_gamification_config',
+  SUNNAH_PRAYER_LOGS: 'al_rizq_sunnah_prayer_logs',
+  DAILY_HABIT_LOGS: 'al_rizq_daily_habit_logs'
 };
 
 export const CURRENT_VERSION = '1.2.17';

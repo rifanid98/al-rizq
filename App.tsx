@@ -61,6 +61,9 @@ import { FastingStats } from './features/fasting/components/FastingStats';
 import { getHijriDate } from './features/fasting/services/fastingService';
 import { Mosque } from './shared/components/icons/Mosque';
 import { DzikirTracker } from './features/dzikir/components/DzikirTracker';
+import { SunnahTracker } from './features/sunnah/components/SunnahTracker';
+import { useSunnahPrayer } from './features/sunnah/hooks/useSunnahPrayer';
+import { useDailyHabit } from './features/sunnah/hooks/useDailyHabit';
 
 import { useGamification } from './features/gamification/hooks/useGamification';
 import { StarAnimationProvider, useStarAnimation } from './features/gamification/context/GamificationContext';
@@ -84,13 +87,18 @@ const App: React.FC = () => {
   const { logs, setLogs, logPrayer, deleteLog, clearLogs: clearPrayerLogs } = usePrayerLogs();
   const { fastingLogs, clearFastingLogs } = useFastingLogs();
   const { logs: dzikirLogs, clearLogs: clearDzikirLogs } = useDzikir();
+  const { logs: sunnahPrayerLogs } = useSunnahPrayer();
+  const { logs: dailyHabitLogs } = useDailyHabit();
   const { isSyncing, handleUpload, handleDownload, hasBackup, handleRevert, handleDeleteCloudData } = useSync(user?.email);
 
-  const gamification = useGamification(logs, fastingLogs, dzikirLogs, gamificationConfig, ramadhanConfig, qadhaConfig);
+  const gamification = useGamification(logs, fastingLogs, dzikirLogs, sunnahPrayerLogs, dailyHabitLogs, gamificationConfig, ramadhanConfig, qadhaConfig);
 
   // Local States
-  const [activeTab, setActiveTab] = useState<'tracker' | 'fasting' | 'dzikir' | 'dashboard' | 'history' | 'achievements' | 'settings'>(() => {
-    return (localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) as any) || 'tracker';
+  const [activeTab, setActiveTab] = useState<'tracker' | 'fasting' | 'sunnah' | 'dashboard' | 'history' | 'achievements' | 'settings'>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) as any;
+    // Migrate old 'dzikir' tab to 'sunnah'
+    if (saved === 'dzikir') return 'sunnah';
+    return saved || 'tracker';
   });
 
   // Independent scroll position management
@@ -99,7 +107,7 @@ const App: React.FC = () => {
   // Save scroll position before changing tabs
   useEffect(() => {
     const handleScroll = () => {
-      if (['tracker', 'fasting', 'dzikir'].includes(activeTab)) {
+      if (['tracker', 'fasting', 'sunnah'].includes(activeTab)) {
         scrollPositions.current[activeTab] = window.scrollY;
       }
     };
@@ -110,7 +118,7 @@ const App: React.FC = () => {
 
   // Restore scroll position when tab changes
   useEffect(() => {
-    if (['tracker', 'fasting', 'dzikir'].includes(activeTab)) {
+    if (['tracker', 'fasting', 'sunnah'].includes(activeTab)) {
       const savedPosition = scrollPositions.current[activeTab] || 0;
       // Immediate restoration
       window.scrollTo(0, savedPosition);
@@ -766,9 +774,9 @@ const AppContent: React.FC<any> = (props) => {
               <button onClick={(e) => { e.stopPropagation(); setActiveTab('fasting'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'fasting' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
                 <UtensilsCrossed className="w-4 h-4" /> <span className="text-xs">{t.tabs.fasting}</span>
               </button>
-              {/* Dzikir */}
-              <button onClick={(e) => { e.stopPropagation(); setActiveTab('dzikir'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'dzikir' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-                <Star className="w-4 h-4" /> <span className="text-xs">{t.tabs.dzikir}</span>
+              {/* Sunnah */}
+              <button onClick={(e) => { e.stopPropagation(); setActiveTab('sunnah'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'sunnah' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                <Star className="w-4 h-4" /> <span className="text-xs">{t.tabs.sunnah || t.tabs.dzikir}</span>
               </button>
               {/* Arrow */}
               <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-slate-900 border-b border-r border-slate-200 dark:border-slate-800 rotate-45"></div>
@@ -809,8 +817,8 @@ const AppContent: React.FC<any> = (props) => {
               <button onClick={() => setActiveTab('fasting')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'fasting' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
                 <UtensilsCrossed className="w-5 h-5" /> <span className="text-sm">{t.tabs.fasting}</span>
               </button>
-              <button onClick={() => setActiveTab('dzikir')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'dzikir' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-                <Star className="w-5 h-5" /> <span className="text-sm">{t.tabs.dzikir}</span>
+              <button onClick={() => setActiveTab('sunnah')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'sunnah' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                <Star className="w-5 h-5" /> <span className="text-sm">{t.tabs.sunnah || t.tabs.dzikir}</span>
               </button>
             </div>
           </div>
@@ -878,7 +886,7 @@ const AppContent: React.FC<any> = (props) => {
           <div className="flex justify-between items-start flex-1">
             <div>
               <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
-                {activeTab === 'tracker' ? t.tracker.title : activeTab === 'fasting' ? t.tabs.fasting : activeTab === 'dzikir' ? t.tabs.dzikir : activeTab === 'dashboard' ? t.tabs.dashboard : activeTab === 'history' ? t.tabs.history : activeTab === 'achievements' ? t.tabs.achievements : t.tabs.settings}
+                {activeTab === 'tracker' ? t.tracker.title : activeTab === 'fasting' ? t.tabs.fasting : activeTab === 'sunnah' ? (t.tabs.sunnah || t.tabs.dzikir) : activeTab === 'dashboard' ? t.tabs.dashboard : activeTab === 'history' ? t.tabs.history : activeTab === 'achievements' ? t.tabs.achievements : t.tabs.settings}
               </h2>
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-3">
                 <span className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-[10px] lg:text-xs font-bold text-slate-600 dark:text-slate-400 shadow-sm w-fit">
@@ -946,10 +954,10 @@ const AppContent: React.FC<any> = (props) => {
           </div>
         </header>
 
-        {/* Dzikir Tab Content */}
-        {activeTab === 'dzikir' && (
+        {/* Sunnah Tab Content */}
+        {activeTab === 'sunnah' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <DzikirTracker gamificationConfig={gamificationConfig} />
+            <SunnahTracker gamificationConfig={gamificationConfig} />
           </div>
         )}
 
