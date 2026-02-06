@@ -1,4 +1,4 @@
-import { PrayerLog, AppSettings, FastingLog, DzikirLog } from '../../../shared/types';
+import { PrayerLog, AppSettings, FastingLog, DzikirLog, SunnahPrayerLog, DailyHabitLog } from '../../../shared/types';
 import { STORAGE_KEYS } from '../../../shared/constants';
 import { supabase } from '../../../shared/services/supabaseClient';
 
@@ -102,6 +102,45 @@ const uploadDzikirLogs = async (userId: string, logs: DzikirLog[]) => {
     if (error) console.error('Upload dzikir_logs error:', error);
 };
 
+const uploadSunnahPrayerLogs = async (userId: string, logs: SunnahPrayerLog[]) => {
+    if (!logs.length) return;
+
+    const records = logs.map(log => ({
+        id: log.id,
+        user_id: userId,
+        date: log.date,
+        prayer_id: log.prayerId,
+        is_completed: log.isCompleted,
+        rakaat: log.rakaat,
+        timestamp: log.timestamp
+    }));
+
+    const { error } = await supabase
+        .from('sunnah_prayer_logs')
+        .upsert(records, { onConflict: 'user_id,date,prayer_id' });
+
+    if (error) console.error('Upload sunnah_prayer_logs error:', error);
+};
+
+const uploadDailyHabitLogs = async (userId: string, logs: DailyHabitLog[]) => {
+    if (!logs.length) return;
+
+    const records = logs.map(log => ({
+        id: log.id,
+        user_id: userId,
+        date: log.date,
+        habit_id: log.habitId,
+        value: log.value,
+        timestamp: log.timestamp
+    }));
+
+    const { error } = await supabase
+        .from('daily_habit_logs')
+        .upsert(records, { onConflict: 'user_id,date,habit_id' });
+
+    if (error) console.error('Upload daily_habit_logs error:', error);
+};
+
 const uploadBadges = async (userId: string, badges: any[]) => {
     if (!badges.length) return;
 
@@ -199,7 +238,9 @@ export const uploadToCloud = async (
     settings: AppSettings,
     fastingLogs: FastingLog[],
     dzikirLogs: DzikirLog[],
-    badges: any[]
+    badges: any[],
+    sunnahPrayerLogs: SunnahPrayerLog[] = [],
+    dailyHabitLogs: DailyHabitLog[] = []
 ): Promise<number> => {
     const timestamp = Date.now();
 
@@ -213,7 +254,9 @@ export const uploadToCloud = async (
             uploadFastingLogs(userId, fastingLogs),
             uploadDzikirLogs(userId, dzikirLogs),
             uploadBadges(userId, badges),
-            uploadSettings(userId, settings)
+            uploadSettings(userId, settings),
+            uploadSunnahPrayerLogs(userId, sunnahPrayerLogs),
+            uploadDailyHabitLogs(userId, dailyHabitLogs)
         ]);
 
         // Also update legacy table for backward compatibility
@@ -221,7 +264,7 @@ export const uploadToCloud = async (
             .from('user_backups')
             .upsert({
                 email: email,
-                logs: { logs, settings, fastingLogs, dzikirLogs, badges },
+                logs: { logs, settings, fastingLogs, dzikirLogs, badges, sunnahPrayerLogs, dailyHabitLogs },
                 last_updated: timestamp
             }, { onConflict: 'email' });
 
@@ -307,6 +350,47 @@ const downloadDzikirLogs = async (userId: string): Promise<DzikirLog[]> => {
         categoryId: row.category_id,
         completedItems: row.completed_items || [],
         isCompleted: row.is_completed,
+        timestamp: row.timestamp
+    }));
+};
+
+const downloadSunnahPrayerLogs = async (userId: string): Promise<SunnahPrayerLog[]> => {
+    const { data, error } = await supabase
+        .from('sunnah_prayer_logs')
+        .select('*')
+        .eq('user_id', userId);
+
+    if (error) {
+        console.error('Download sunnah_prayer_logs error:', error);
+        return [];
+    }
+
+    return (data || []).map(row => ({
+        id: row.id,
+        date: row.date,
+        prayerId: row.prayer_id,
+        isCompleted: row.is_completed,
+        rakaat: row.rakaat,
+        timestamp: row.timestamp
+    }));
+};
+
+const downloadDailyHabitLogs = async (userId: string): Promise<DailyHabitLog[]> => {
+    const { data, error } = await supabase
+        .from('daily_habit_logs')
+        .select('*')
+        .eq('user_id', userId);
+
+    if (error) {
+        console.error('Download daily_habit_logs error:', error);
+        return [];
+    }
+
+    return (data || []).map(row => ({
+        id: row.id,
+        date: row.date,
+        habitId: row.habit_id,
+        value: row.value,
         timestamp: row.timestamp
     }));
 };
@@ -404,6 +488,8 @@ export const downloadFromCloud = async (email: string): Promise<{
     fastingLogs: FastingLog[],
     dzikirLogs: DzikirLog[],
     badges: any[],
+    sunnahPrayerLogs: SunnahPrayerLog[],
+    dailyHabitLogs: DailyHabitLog[],
     last_updated: number
 } | null> => {
     try {
@@ -421,12 +507,14 @@ export const downloadFromCloud = async (email: string): Promise<{
         const userId = user.id;
 
         // Download all data in parallel
-        const [logs, fastingLogs, dzikirLogs, badges, settings] = await Promise.all([
+        const [logs, fastingLogs, dzikirLogs, badges, settings, sunnahPrayerLogs, dailyHabitLogs] = await Promise.all([
             downloadPrayerLogs(userId),
             downloadFastingLogs(userId),
             downloadDzikirLogs(userId),
             downloadBadges(userId),
-            downloadSettings(userId)
+            downloadSettings(userId),
+            downloadSunnahPrayerLogs(userId),
+            downloadDailyHabitLogs(userId)
         ]);
 
         return {
@@ -435,6 +523,8 @@ export const downloadFromCloud = async (email: string): Promise<{
             fastingLogs,
             dzikirLogs,
             badges,
+            sunnahPrayerLogs,
+            dailyHabitLogs,
             last_updated: Date.now()
         };
     } catch (error) {
@@ -450,6 +540,8 @@ const downloadFromCloudLegacy = async (email: string): Promise<{
     fastingLogs: FastingLog[],
     dzikirLogs: DzikirLog[],
     badges: any[],
+    sunnahPrayerLogs: SunnahPrayerLog[],
+    dailyHabitLogs: DailyHabitLog[],
     last_updated: number
 } | null> => {
     const { data, error } = await supabase
@@ -471,6 +563,8 @@ const downloadFromCloudLegacy = async (email: string): Promise<{
     let fastingLogs: FastingLog[] = [];
     let dzikirLogs: DzikirLog[] = [];
     let badges: any[] = [];
+    let sunnahPrayerLogs: SunnahPrayerLog[] = [];
+    let dailyHabitLogs: DailyHabitLog[] = [];
 
     if (Array.isArray(data.logs)) {
         logs = data.logs;
@@ -480,6 +574,8 @@ const downloadFromCloudLegacy = async (email: string): Promise<{
         fastingLogs = data.logs.fastingLogs || [];
         dzikirLogs = data.logs.dzikirLogs || [];
         badges = data.logs.badges || [];
+        sunnahPrayerLogs = data.logs.sunnahPrayerLogs || [];
+        dailyHabitLogs = data.logs.dailyHabitLogs || [];
     }
 
     return {
@@ -488,6 +584,8 @@ const downloadFromCloudLegacy = async (email: string): Promise<{
         fastingLogs,
         dzikirLogs,
         badges,
+        sunnahPrayerLogs,
+        dailyHabitLogs,
         last_updated: data.last_updated
     };
 };

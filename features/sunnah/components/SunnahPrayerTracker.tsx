@@ -39,7 +39,7 @@ export const SunnahPrayerTracker: React.FC<SunnahPrayerTrackerProps> = ({
 
         // Trigger animation for each individual item when checked
         if (!isCurrentlyCompleted) {
-            const points = gamificationConfig.points.sunnahPrayer[prayerId as keyof typeof gamificationConfig.points.sunnahPrayer] || 10;
+            const points = gamificationConfig?.points?.sunnahPrayer?.[prayerId as keyof typeof gamificationConfig.points.sunnahPrayer] || 10;
             triggerAnimation(null, points);
 
             // Bonus +10 when all sunnah prayers are completed

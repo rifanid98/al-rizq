@@ -579,7 +579,7 @@ const App: React.FC = () => {
     settings.qadhaConfig = fStore.qadhaConfig;
     settings.ramadhanConfig = fStore.ramadhanConfig;
 
-    handleUpload(logs, settings, fastingLogs, dzikirLogs);
+    handleUpload(logs, settings, fastingLogs, dzikirLogs, sunnahPrayerLogs, dailyHabitLogs);
   };
 
   return (
@@ -1280,6 +1280,8 @@ const AppContent: React.FC<any> = (props) => {
             logs={logs}
             fastingLogs={fastingLogs}
             dzikirLogs={dzikirLogs}
+            sunnahPrayerLogs={sunnahPrayerLogs}
+            dailyHabitLogs={dailyHabitLogs}
             isSyncing={isSyncing}
             hasBackup={hasBackup}
             themeMode={themeMode}

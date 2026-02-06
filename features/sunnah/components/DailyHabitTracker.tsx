@@ -47,7 +47,7 @@ export const DailyHabitTracker: React.FC<DailyHabitTrackerProps> = ({
 
         // Trigger animation for each individual item when checked
         if (!isCurrentlyCompleted) {
-            const points = gamificationConfig.points.dailyHabit[habitId as keyof typeof gamificationConfig.points.dailyHabit] || 5;
+            const points = gamificationConfig?.points?.dailyHabit?.[habitId as keyof typeof gamificationConfig.points.dailyHabit] || 5;
             triggerAnimation(null, points);
 
             // Bonus +10 when all daily habits are completed

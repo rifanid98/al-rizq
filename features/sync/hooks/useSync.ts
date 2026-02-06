@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { PrayerLog, AppSettings, FastingLog, DzikirLog } from '../../../shared/types';
+import { PrayerLog, AppSettings, FastingLog, DzikirLog, SunnahPrayerLog, DailyHabitLog } from '../../../shared/types';
 import { uploadToCloud, downloadFromCloud, deleteCloudData } from '../services/syncService';
 import { STORAGE_KEYS } from '../../../shared/constants';
 
@@ -10,7 +10,7 @@ export const useSync = (userEmail: string | undefined) => {
         return (localStorage.getItem('al_rizq_backup_source') as 'upload' | 'download') || null;
     });
 
-    const handleUpload = useCallback(async (logs: PrayerLog[], settings: AppSettings, fastingLogs: FastingLog[], dzikirLogs: DzikirLog[]) => {
+    const handleUpload = useCallback(async (logs: PrayerLog[], settings: AppSettings, fastingLogs: FastingLog[], dzikirLogs: DzikirLog[], sunnahPrayerLogs: SunnahPrayerLog[], dailyHabitLogs: DailyHabitLog[]) => {
         if (!userEmail) return;
         setIsSyncing(true);
         try {
@@ -25,13 +25,15 @@ export const useSync = (userEmail: string | undefined) => {
                 if (result.dzikirLogs) localStorage.setItem('al_rizq_dzikir_logs_backup', JSON.stringify(result.dzikirLogs));
                 if (result.settings) localStorage.setItem('al_rizq_settings_backup', JSON.stringify(result.settings));
                 if (result.badges) localStorage.setItem('al_rizq_badges_backup', JSON.stringify(result.badges));
+                if (result.sunnahPrayerLogs) localStorage.setItem('al_rizq_sunnah_prayer_logs_backup', JSON.stringify(result.sunnahPrayerLogs));
+                if (result.dailyHabitLogs) localStorage.setItem('al_rizq_daily_habit_logs_backup', JSON.stringify(result.dailyHabitLogs));
 
                 localStorage.setItem('al_rizq_backup_source', 'upload');
                 setHasBackup(true);
                 setBackupSource('upload');
             }
 
-            const timestamp = await uploadToCloud(userEmail, logs, settings, fastingLogs, dzikirLogs, badges);
+            const timestamp = await uploadToCloud(userEmail, logs, settings, fastingLogs, dzikirLogs, badges, sunnahPrayerLogs, dailyHabitLogs);
             localStorage.setItem(STORAGE_KEYS.LAST_UPDATED, timestamp.toString());
             localStorage.setItem(STORAGE_KEYS.LAST_SYNC, timestamp.toString());
         } catch (err) {
@@ -63,6 +65,12 @@ export const useSync = (userEmail: string | undefined) => {
                 const currentBadges = localStorage.getItem(STORAGE_KEYS.BADGES);
                 if (currentBadges) localStorage.setItem('al_rizq_badges_backup', currentBadges);
 
+                const currentSunnahPrayer = localStorage.getItem(STORAGE_KEYS.SUNNAH_PRAYER_LOGS);
+                if (currentSunnahPrayer) localStorage.setItem('al_rizq_sunnah_prayer_logs_backup', currentSunnahPrayer);
+
+                const currentDailyHabit = localStorage.getItem(STORAGE_KEYS.DAILY_HABIT_LOGS);
+                if (currentDailyHabit) localStorage.setItem('al_rizq_daily_habit_logs_backup', currentDailyHabit);
+
                 setHasBackup(true);
                 setBackupSource('download');
                 return result;
@@ -82,6 +90,8 @@ export const useSync = (userEmail: string | undefined) => {
         localStorage.removeItem('al_rizq_dzikir_logs_backup');
         localStorage.removeItem('al_rizq_settings_backup');
         localStorage.removeItem('al_rizq_badges_backup');
+        localStorage.removeItem('al_rizq_sunnah_prayer_logs_backup');
+        localStorage.removeItem('al_rizq_daily_habit_logs_backup');
         localStorage.removeItem('al_rizq_backup_source');
         setHasBackup(false);
         setBackupSource(null);
@@ -93,6 +103,8 @@ export const useSync = (userEmail: string | undefined) => {
         const backupDzikir = localStorage.getItem('al_rizq_dzikir_logs_backup');
         const backupSettings = localStorage.getItem('al_rizq_settings_backup');
         const backupBadges = localStorage.getItem('al_rizq_badges_backup');
+        const backupSunnahPrayer = localStorage.getItem('al_rizq_sunnah_prayer_logs_backup');
+        const backupDailyHabit = localStorage.getItem('al_rizq_daily_habit_logs_backup');
         const source = backupSource;
 
         if (!backupLogs) return null;
@@ -107,12 +119,14 @@ export const useSync = (userEmail: string | undefined) => {
             const restoredDzikir = backupDzikir ? JSON.parse(backupDzikir) : [];
             const restoredSettings = backupSettings ? JSON.parse(backupSettings) : undefined;
             const restoredBadges = backupBadges ? JSON.parse(backupBadges) : [];
+            const restoredSunnahPrayer = backupSunnahPrayer ? JSON.parse(backupSunnahPrayer) : [];
+            const restoredDailyHabit = backupDailyHabit ? JSON.parse(backupDailyHabit) : [];
 
             if (source === 'upload') {
                 if (userEmail) {
                     setIsSyncing(true);
                     try {
-                        await uploadToCloud(userEmail, restoredLogs, restoredSettings, restoredFasting, restoredDzikir, restoredBadges);
+                        await uploadToCloud(userEmail, restoredLogs, restoredSettings, restoredFasting, restoredDzikir, restoredBadges, restoredSunnahPrayer, restoredDailyHabit);
                         console.log('Cloud data restored successfully');
                     } catch (err) {
                         console.error('Failed to restore cloud data:', err);
@@ -138,13 +152,23 @@ export const useSync = (userEmail: string | undefined) => {
                     localStorage.setItem(STORAGE_KEYS.BADGES, backupBadges);
                     window.dispatchEvent(new Event('gamification_updated'));
                 }
+                if (backupSunnahPrayer) {
+                    localStorage.setItem(STORAGE_KEYS.SUNNAH_PRAYER_LOGS, backupSunnahPrayer);
+                    window.dispatchEvent(new Event('sunnah_prayer_logs_updated'));
+                }
+                if (backupDailyHabit) {
+                    localStorage.setItem(STORAGE_KEYS.DAILY_HABIT_LOGS, backupDailyHabit);
+                    window.dispatchEvent(new Event('daily_habit_logs_updated'));
+                }
                 clearBackup();
                 return {
                     logs: restoredLogs,
                     settings: restoredSettings,
                     fastingLogs: restoredFasting,
                     dzikirLogs: restoredDzikir,
-                    badges: restoredBadges
+                    badges: restoredBadges,
+                    sunnahPrayerLogs: restoredSunnahPrayer,
+                    dailyHabitLogs: restoredDailyHabit
                 };
             }
         }

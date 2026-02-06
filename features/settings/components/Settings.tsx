@@ -25,7 +25,7 @@ import {
 import { Button } from '../../../shared/components/ui/Button';
 import { GamificationSettings } from '../../gamification/components/GamificationSettings';
 import { UserBadge } from '../../../shared/types/gamification';
-import { PrayerLog, AppSettings, UserProfile, FastingLog, GamificationConfig, DEFAULT_GAMIFICATION_CONFIG } from '../../../shared/types';
+import { PrayerLog, AppSettings, UserProfile, FastingLog, GamificationConfig, DEFAULT_GAMIFICATION_CONFIG, SunnahPrayerLog, DailyHabitLog } from '../../../shared/types';
 import { STORAGE_KEYS, CURRENT_VERSION } from '../../../shared/constants';
 import { useLanguage } from '../../../shared/hooks/useLanguage';
 import { useFastingStore } from '../../fasting/stores/useFastingStore';
@@ -35,12 +35,14 @@ interface SettingsProps {
     logs: PrayerLog[];
     fastingLogs: FastingLog[];
     dzikirLogs: any[];
+    sunnahPrayerLogs: SunnahPrayerLog[];
+    dailyHabitLogs: DailyHabitLog[];
     isSyncing: boolean;
     hasBackup: boolean;
     themeMode: 'light' | 'dark' | 'system';
     showPrayerBg: boolean;
     prayerBgOpacity: number;
-    onUpload: (logs: PrayerLog[], settings: AppSettings, fastingLogs: FastingLog[], dzikirLogs: any[]) => Promise<void>;
+    onUpload: (logs: PrayerLog[], settings: AppSettings, fastingLogs: FastingLog[], dzikirLogs: any[], sunnahPrayerLogs: SunnahPrayerLog[], dailyHabitLogs: DailyHabitLog[]) => Promise<void>;
     onDownload: () => Promise<any>;
     onRevert: (logs: PrayerLog[]) => Promise<any>;
     onDeleteCloudData: () => Promise<void>;
@@ -76,6 +78,8 @@ export const Settings: React.FC<SettingsProps> = ({
     logs,
     fastingLogs,
     dzikirLogs,
+    sunnahPrayerLogs,
+    dailyHabitLogs,
     isSyncing,
     hasBackup,
     themeMode,
@@ -209,7 +213,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                     currentSettings.nadzarConfig = fStore.nadzarConfig;
                                     currentSettings.qadhaConfig = fStore.qadhaConfig;
                                     currentSettings.ramadhanConfig = fStore.ramadhanConfig;
-                                    onUpload(logs, currentSettings, fastingLogs, dzikirLogs);
+                                    onUpload(logs, currentSettings, fastingLogs, dzikirLogs, sunnahPrayerLogs, dailyHabitLogs);
                                 }}
                                 className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 sm:py-6 flex flex-row sm:flex-col items-center justify-start sm:justify-center gap-4 sm:gap-2 h-auto hover:border-emerald-500 transition-all group px-6 sm:px-4"
                             >
@@ -254,6 +258,14 @@ export const Settings: React.FC<SettingsProps> = ({
                                             localStorage.setItem(STORAGE_KEYS.BADGES, JSON.stringify(result.badges));
                                             window.dispatchEvent(new Event('gamification_updated'));
                                         }
+                                        if (result.sunnahPrayerLogs) {
+                                            localStorage.setItem(STORAGE_KEYS.SUNNAH_PRAYER_LOGS, JSON.stringify(result.sunnahPrayerLogs));
+                                            window.dispatchEvent(new Event('sunnah_prayer_logs_updated'));
+                                        }
+                                        if (result.dailyHabitLogs) {
+                                            localStorage.setItem(STORAGE_KEYS.DAILY_HABIT_LOGS, JSON.stringify(result.dailyHabitLogs));
+                                            window.dispatchEvent(new Event('daily_habit_logs_updated'));
+                                        }
                                         localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(result.logs));
                                         localStorage.setItem(STORAGE_KEYS.LAST_SYNC, result.last_updated.toString());
                                     }
@@ -290,6 +302,14 @@ export const Settings: React.FC<SettingsProps> = ({
                                         if (result.badges) {
                                             localStorage.setItem(STORAGE_KEYS.BADGES, JSON.stringify(result.badges));
                                             window.dispatchEvent(new Event('gamification_updated'));
+                                        }
+                                        if (result.sunnahPrayerLogs) {
+                                            localStorage.setItem(STORAGE_KEYS.SUNNAH_PRAYER_LOGS, JSON.stringify(result.sunnahPrayerLogs));
+                                            window.dispatchEvent(new Event('sunnah_prayer_logs_updated'));
+                                        }
+                                        if (result.dailyHabitLogs) {
+                                            localStorage.setItem(STORAGE_KEYS.DAILY_HABIT_LOGS, JSON.stringify(result.dailyHabitLogs));
+                                            window.dispatchEvent(new Event('daily_habit_logs_updated'));
                                         }
                                     }
                                 }}
