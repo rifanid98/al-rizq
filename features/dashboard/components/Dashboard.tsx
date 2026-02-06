@@ -1,11 +1,12 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -413,12 +414,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                       <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 mb-10">{t.dashboard.weeklyConsistency}</h3>
                       <div className="h-72">
                         <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} barGap={6} barCategoryGap="30%">
+                          <LineChart data={chartData} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#1e293b' : '#e2e8f0'} />
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: isDark ? '#64748b' : '#94a3b8' }} dy={10} />
                             <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: isDark ? '#64748b' : '#94a3b8' }} />
                             <Tooltip
-                              cursor={{ fill: isDark ? '#0f172a' : '#f8fafc' }}
+                              cursor={{ stroke: isDark ? '#334155' : '#cbd5e1', strokeWidth: 2 }}
                               contentStyle={{
                                 backgroundColor: isDark ? '#0f172a' : '#fff',
                                 border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
@@ -429,10 +430,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                               }}
                               itemStyle={{ padding: '2px 0' }}
                             />
-                            <Bar dataKey="ontime" name={t.tracker.status.ontime} fill="#10b981" radius={[4, 4, 0, 0]} barSize={12} />
-                            <Bar dataKey="late" name={t.tracker.status.late} fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={12} />
-                            <Bar dataKey="sunnah" name={t.dashboard.sunnahStats} fill="#14b8a6" radius={[4, 4, 0, 0]} barSize={12} />
-                          </BarChart>
+                            <Legend iconType="circle" wrapperStyle={{ paddingTop: '10px', fontSize: '11px', fontWeight: 700 }} />
+                            <Line type="monotone" dataKey="ontime" name={t.tracker.status.ontime} stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                            <Line type="monotone" dataKey="late" name={t.tracker.status.late} stroke="#f59e0b" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                            <Line type="monotone" dataKey="sunnah" name={t.dashboard.sunnahStats} stroke="#14b8a6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                          </LineChart>
                         </ResponsiveContainer>
                       </div>
                     </div>
