@@ -108,12 +108,12 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
         <div className="flex flex-col gap-6">
             {/* Header / Category Selector */}
             <div className="flex items-center justify-between">
-                <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-x-auto no-scrollbar max-w-[60%]">
+                <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-x-auto no-scrollbar max-w-[60%]">
                     {getCategories().map(cat => (
                         <button
                             key={cat.id}
                             onClick={() => setActiveCategoryId(cat.id)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${activeCategoryId === cat.id
+                            className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all ${activeCategoryId === cat.id
                                 ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm'
                                 : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                                 }`}
@@ -158,7 +158,7 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
 
             {/* Description */}
             {(activeCategory.description || (activeCategory.id === 'pagi' || activeCategory.id === 'petang')) && (
-                <div className="bg-emerald-50 dark:bg-emerald-900/10 px-4 py-3 rounded-xl border border-emerald-100 dark:border-emerald-900/30 text-xs text-emerald-800 dark:text-emerald-200">
+                <div className="bg-emerald-50 dark:bg-emerald-900/10 px-4 py-3 rounded-2xl border border-emerald-100 dark:border-emerald-900/30 text-xs text-emerald-800 dark:text-emerald-200">
                     {activeCategory.id === 'pagi' ? t.dzikir.morningDesc : activeCategory.id === 'petang' ? t.dzikir.eveningDesc : activeCategory.description}
                 </div>
             )}
@@ -275,7 +275,7 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
                             <div className="flex flex-col gap-2 bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-1 animate-in slide-in-from-right-4 fade-in duration-200">
                                 <button
                                     onClick={() => setFontSize(prev => Math.min(prev + 2, 40))}
-                                    className="w-10 h-10 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-all"
+                                    className="w-10 h-10 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-2xl transition-all"
                                     title="Increase Font Size"
                                 >
                                     <Plus className="w-4 h-4" />
@@ -283,7 +283,7 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
                                 <div className="h-[1px] bg-slate-100 dark:bg-slate-700 mx-2" />
                                 <button
                                     onClick={() => setFontSize(prev => Math.max(prev - 2, 12))}
-                                    className="w-10 h-10 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-all"
+                                    className="w-10 h-10 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-2xl transition-all"
                                     title="Decrease Font Size"
                                 >
                                     <Minus className="w-4 h-4" />
@@ -291,7 +291,7 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
                                 <div className="h-[1px] bg-slate-100 dark:bg-slate-700 mx-2" />
                                 <button
                                     onClick={() => setFontSize(20)}
-                                    className="w-10 h-10 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-all"
+                                    className="w-10 h-10 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-2xl transition-all"
                                     title="Reset Font Size"
                                 >
                                     <RotateCcw className="w-4 h-4" />

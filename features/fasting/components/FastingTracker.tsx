@@ -279,7 +279,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
 
     return (
         <>
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-visible">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-visible">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-4">
@@ -295,14 +295,14 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                     </div>
                     <button
                         onClick={openConfig}
-                        className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
+                        className="p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
                     >
                         <Settings className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Main Card */}
-                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-3xl p-6 border border-slate-100 dark:border-slate-700/50 flex flex-col items-center text-center relative">
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 border border-slate-100 dark:border-slate-700/50 flex flex-col items-center text-center relative">
                     <h4 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-1">{t.fasting.today}</h4>
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">{currentDate}</p>
 
@@ -357,7 +357,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                 </Button>
 
                                 {!recommendation.type && isDropdownOpen && (
-                                    <div className="absolute top-full mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-50">
+                                    <div className="absolute top-full mt-2 w-48 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-50">
                                         {['Nadzar', 'Qadha', 'Lainnya'].map((type) => (
                                             <button
                                                 key={type}
@@ -425,7 +425,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
             {
                 isConfigOpen && (
                     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                        <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
+                        <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="flex-1 text-lg font-black text-slate-800 dark:text-slate-100">{t.fasting.config.title}</h3>
                                 <button onClick={() => setIsConfigOpen(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
@@ -468,7 +468,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                             <div className="overflow-y-auto flex-1 pr-2">
                                 {activeConfigTab === 'ramadhan' ? (
                                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                        <div className="bg-emerald-50 dark:bg-emerald-950/20 p-6 rounded-3xl border border-emerald-100 dark:border-emerald-900/50 flex flex-col items-center gap-4">
+                                        <div className="bg-emerald-50 dark:bg-emerald-950/20 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 flex flex-col items-center gap-4">
                                             <div className="w-14 h-14 bg-white dark:bg-slate-900 rounded-2xl flex items-center justify-center shadow-sm">
                                                 <MoonStar className="w-8 h-8 text-emerald-600" />
                                             </div>
@@ -518,7 +518,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                                         type="date"
                                                         value={tempConfig.startDate || ''}
                                                         onChange={(e) => setTempConfig(prev => ({ ...prev, startDate: e.target.value }))}
-                                                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold"
+                                                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold"
                                                     />
                                                 </div>
                                                 <div className="flex-1 space-y-1">
@@ -527,7 +527,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                                         type="date"
                                                         value={tempConfig.endDate || ''}
                                                         onChange={(e) => setTempConfig(prev => ({ ...prev, endDate: e.target.value }))}
-                                                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold"
+                                                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold"
                                                     />
                                                 </div>
                                             </div>
@@ -546,7 +546,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                                     { id: 'Senin-Kamis', label: t.fasting.types.mondayThursdayShort, icon: Star },
                                                     { id: 'Ayyamul Bidh', label: t.fasting.types.midMonth, icon: Moon }
                                                 ].map((item) => (
-                                                    <label key={item.id} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                    <label key={item.id} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                                         <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${tempConfig.types.includes(item.id as FastingType)
                                                             ? activeConfigTab === 'nadzar' ? 'bg-amber-500 border-amber-500' : 'bg-rose-500 border-rose-500'
                                                             : 'border-slate-300 dark:border-slate-600'
@@ -576,7 +576,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                                         <button
                                                             key={idx}
                                                             onClick={() => toggleNadzarDay(idx)}
-                                                            className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-all ${isSelected
+                                                            className={`aspect-square rounded-2xl flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-all ${isSelected
                                                                 ? activeConfigTab === 'nadzar'
                                                                     ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30'
                                                                     : 'bg-rose-500 text-white shadow-lg shadow-rose-500/30'
@@ -605,7 +605,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                                     <button
                                                         type="button"
                                                         onClick={(e) => { e.preventDefault(); setCalendarDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)); }}
-                                                        className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                                                        className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl transition-colors"
                                                     >
                                                         <ChevronLeft className="w-5 h-5 text-slate-400" />
                                                     </button>
@@ -615,7 +615,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                                     <button
                                                         type="button"
                                                         onClick={(e) => { e.preventDefault(); setCalendarDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)); }}
-                                                        className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                                                        className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl transition-colors"
                                                     >
                                                         <ChevronRight className="w-5 h-5 text-slate-400" />
                                                     </button>
@@ -650,7 +650,7 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                                                                     }
                                                                     toggleCustomDate(dateStr);
                                                                 }}
-                                                                className={`aspect-square rounded-xl flex items-center justify-center text-xs font-bold transition-all relative
+                                                                className={`aspect-square rounded-2xl flex items-center justify-center text-xs font-bold transition-all relative
                                                             ${isProhibited
                                                                         ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-300 opacity-80 hover:bg-rose-100 dark:hover:bg-rose-900/40'
                                                                         : isSelected
@@ -696,13 +696,13 @@ export const FastingTracker: React.FC<FastingTrackerProps> = ({ currentDate, hij
                             <div className="flex gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0">
                                 <button
                                     onClick={handleResetConfig}
-                                    className="flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold hover:bg-rose-100 hover:text-rose-600 transition-colors"
+                                    className="flex-1 px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold hover:bg-rose-100 hover:text-rose-600 transition-colors"
                                 >
                                     {t.fasting.config.resetTab}
                                 </button>
                                 <button
                                     onClick={handleSaveConfig}
-                                    className={`flex-1 px-4 py-3 rounded-xl text-white font-bold shadow-lg transition-transform active:scale-95 ${activeConfigTab === 'nadzar' ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20' :
+                                    className={`flex-1 px-4 py-3 rounded-2xl text-white font-bold shadow-lg transition-transform active:scale-95 ${activeConfigTab === 'nadzar' ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20' :
                                         activeConfigTab === 'ramadhan' ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20' :
                                             'bg-rose-600 hover:bg-rose-700 shadow-rose-600/20'
                                         }`}

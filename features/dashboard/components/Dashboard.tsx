@@ -146,19 +146,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
       <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl mx-auto">
         <button
           onClick={() => setActiveTab('prayer')}
-          className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'prayer' ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
+          className={`px-6 py-2 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'prayer' ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
         >
           {t.common.prayer}
         </button>
         <button
           onClick={() => setActiveTab('fasting')}
-          className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'fasting' ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
+          className={`px-6 py-2 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'fasting' ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
         >
           {t.fasting.statsTitle}
         </button>
         <button
           onClick={() => setActiveTab('sunnah')}
-          className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'sunnah' ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
+          className={`px-6 py-2 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'sunnah' ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
         >
           {t.tabs.sunnah}
         </button>
@@ -166,7 +166,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
 
       {
         (logs.length === 0 && fastingLogs.length === 0 && activeTab !== 'sunnah') ? (
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-16 text-center border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-16 text-center border border-slate-200 dark:border-slate-800 shadow-sm">
             <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
               <TrendingUp className="w-10 h-10 text-slate-300 dark:text-slate-700" />
             </div>
@@ -197,7 +197,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
               ) : activeTab === 'sunnah' ? (
                 <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   {/* Sunnah Stats Summary */}
-                  <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm">
+                  <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <div className="flex items-center gap-4 mb-8">
                       <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl">
                         <Star className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
@@ -244,7 +244,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                     {/* Detailed Stats */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {/* Dzikir Pagi */}
-                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
+                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl">
                         <div className="flex items-center gap-2 mb-2">
                           <SunMedium className="w-3 h-3 text-amber-500" />
                           <span className="text-[9px] font-bold text-slate-500">{t.dashboard.morning}</span>
@@ -253,7 +253,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                       </div>
 
                       {/* Dzikir Petang */}
-                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
+                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl">
                         <div className="flex items-center gap-2 mb-2">
                           <Moon className="w-3 h-3 text-indigo-500" />
                           <span className="text-[9px] font-bold text-slate-500">{t.dashboard.evening}</span>
@@ -262,7 +262,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                       </div>
 
                       {/* Dhuha */}
-                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
+                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl">
                         <div className="flex items-center gap-2 mb-2">
                           <SunMedium className="w-3 h-3 text-orange-500" />
                           <span className="text-[9px] font-bold text-slate-500">{t.sunnah.prayers.dhuha.name}</span>
@@ -271,7 +271,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                       </div>
 
                       {/* Tahajjud */}
-                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
+                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl">
                         <div className="flex items-center gap-2 mb-2">
                           <Moon className="w-3 h-3 text-purple-500" />
                           <span className="text-[9px] font-bold text-slate-500">{t.sunnah.prayers.tahajjud.name}</span>
@@ -280,7 +280,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                       </div>
 
                       {/* Tilawah */}
-                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
+                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl">
                         <div className="flex items-center gap-2 mb-2">
                           <BookOpen className="w-3 h-3 text-emerald-500" />
                           <span className="text-[9px] font-bold text-slate-500">{t.sunnah.habits.tilawah.name}</span>
@@ -289,7 +289,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                       </div>
 
                       {/* Shalawat */}
-                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
+                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl">
                         <div className="flex items-center gap-2 mb-2">
                           <Heart className="w-3 h-3 text-pink-500" />
                           <span className="text-[9px] font-bold text-slate-500">{t.sunnah.habits.shalawat.name}</span>
@@ -298,7 +298,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                       </div>
 
                       {/* Sedekah */}
-                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
+                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl">
                         <div className="flex items-center gap-2 mb-2">
                           <Hand className="w-3 h-3 text-teal-500" />
                           <span className="text-[9px] font-bold text-slate-500">{t.sunnah.habits.sedekah.name}</span>
@@ -307,7 +307,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                       </div>
 
                       {/* Streak */}
-                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
+                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl">
                         <div className="flex items-center gap-2 mb-2">
                           <Star className="w-3 h-3 text-yellow-500" />
                           <span className="text-[9px] font-bold text-slate-500">{t.dashboard.currentStreak}</span>
@@ -352,13 +352,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                   </div>
 
                   {/* Monthly Progress Chart */}
-                  <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm">
+                  <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">{t.dashboard.monthlyProgress || 'Monthly Progress'}</h3>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setWeekOffset(prev => prev - 1)}
-                          className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                          className="p-2 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                         >
                           <ChevronDown className="w-4 h-4 rotate-90 text-slate-600 dark:text-slate-400" />
                         </button>
@@ -376,7 +376,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                         <button
                           onClick={() => setWeekOffset(prev => Math.min(prev + 1, 0))}
                           disabled={weekOffset >= 0}
-                          className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="p-2 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <ChevronDown className="w-4 h-4 -rotate-90 text-slate-600 dark:text-slate-400" />
                         </button>
@@ -387,7 +387,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                     <div className="mb-4 flex items-center gap-3">
                       <button
                         onClick={() => setIsPeekEnabled(!isPeekEnabled)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${isPeekEnabled
+                        className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all ${isPeekEnabled
                             ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
                           }`}
@@ -487,7 +487,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                   {/* Detail Masbuq Summary (Performa Ibadah) */}
                   <div
                     ref={performanceRef}
-                    className="order-last md:order-first bg-emerald-600 dark:bg-emerald-900/40 p-8 rounded-[2.5rem] shadow-xl shadow-emerald-500/10 flex flex-col md:flex-row items-center justify-between gap-8 text-white"
+                    className="order-last md:order-first bg-emerald-600 dark:bg-emerald-900/40 p-8 rounded-2xl shadow-xl shadow-emerald-500/10 flex flex-col md:flex-row items-center justify-between gap-8 text-white"
                   >
                     <div className="flex items-center gap-6">
                       <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
@@ -516,7 +516,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
 
                   {/* Primary Stats Grid */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
                       <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
                         <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                       </div>
@@ -525,7 +525,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                         <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.ontime}</p>
                       </div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-amber-500/30 transition-all">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-amber-500/30 transition-all">
                       <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
                         <Clock className="w-6 h-6 text-amber-600 dark:text-amber-400" />
                       </div>
@@ -534,7 +534,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                         <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.late}</p>
                       </div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-blue-500/30 transition-all">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-blue-500/30 transition-all">
                       <div className="w-12 h-12 bg-blue-50 dark:bg-blue-950/30 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
                         <MapPin className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                       </div>
@@ -543,7 +543,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                         <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{stats.atMosque}</p>
                       </div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-rose-500/30 transition-all">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-rose-500/30 transition-all">
                       <div className="w-12 h-12 bg-rose-50 dark:bg-rose-950/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
                         <AlertCircle className="w-6 h-6 text-rose-600 dark:text-rose-400" />
                       </div>
@@ -577,8 +577,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                     </div>
 
                     <div className={`grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 transition-all duration-300 ${!isSunnahStatsExpanded ? 'hidden lg:grid' : 'grid'}`}>
-                      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
-                        <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+                      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
+                        <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
                           <SunMedium className="w-5 h-5 text-emerald-600" />
                         </div>
                         <div>
@@ -586,8 +586,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                           <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.qobliyahCount}</p>
                         </div>
                       </div>
-                      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
-                        <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+                      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
+                        <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
                           <Moon className="w-5 h-5 text-emerald-600" />
                         </div>
                         <div>
@@ -595,8 +595,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                           <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.badiyahCount}</p>
                         </div>
                       </div>
-                      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
-                        <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+                      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
+                        <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
                           <Star className="w-5 h-5 text-emerald-600" />
                         </div>
                         <div>
@@ -604,8 +604,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                           <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.dzikirCount}</p>
                         </div>
                       </div>
-                      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
-                        <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+                      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm group hover:border-emerald-500/30 transition-all">
+                        <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
                           <User className="w-5 h-5 text-emerald-600" />
                         </div>
                         <div>
@@ -618,7 +618,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
 
                   <div className="grid lg:grid-cols-2 gap-8">
                     {/* Adherence Chart */}
-                    <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                       <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 mb-10">{t.dashboard.weeklyConsistency}</h3>
                       <div className="h-72">
                         <ResponsiveContainer width="100%" height="100%">
@@ -650,7 +650,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                     {/* Breakdown Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:col-span-1">
                       {/* Status Breakdown */}
-                      <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+                      <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
                         <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-6 uppercase tracking-widest text-center">{t.common.statusLabel}</h3>
                         <div className="h-48 relative flex-1">
                           <ResponsiveContainer width="100%" height="100%">
@@ -679,7 +679,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                       </div>
 
                       {/* Location Breakdown */}
-                      <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+                      <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
                         <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-6 uppercase tracking-widest text-center">{t.common.location}</h3>
                         <div className="h-48 relative flex-1">
                           <ResponsiveContainer width="100%" height="100%">

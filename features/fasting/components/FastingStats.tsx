@@ -169,7 +169,7 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
         <div className="flex flex-col gap-8 pb-10">
             {/* Fasting Performance Panel */}
             {!minimal && (
-                <div className="order-last md:order-first bg-emerald-600 dark:bg-emerald-900/40 p-8 rounded-[2.5rem] shadow-xl shadow-emerald-500/10 flex flex-col md:flex-row items-center justify-between gap-8 text-white">
+                <div className="order-last md:order-first bg-emerald-600 dark:bg-emerald-900/40 p-8 rounded-2xl shadow-xl shadow-emerald-500/10 flex flex-col md:flex-row items-center justify-between gap-8 text-white">
                     <div className="flex items-center gap-6">
                         <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
                             <TrendingUp className="w-8 h-8" />
@@ -213,7 +213,7 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
 
             {/* Distribution Chart */}
             {!minimal && (
-                <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 border border-slate-200 dark:border-slate-800">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800">
                     <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
                         <Info className="w-4 h-4 text-emerald-500" />
                         {t.fasting.distribution}
@@ -252,7 +252,7 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
             )}
 
             {/* Monthly Forecast Calendar */}
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 border border-slate-200 dark:border-slate-800">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800">
                 <div className="flex items-center justify-between mb-6">
                     <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
                         <CalendarIcon className="w-4 h-4 text-emerald-500" />
@@ -262,7 +262,7 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
                         <button
                             type="button"
                             onClick={(e) => { e.preventDefault(); setViewMode(prev => prev === 'gregorian' ? 'hijri' : 'gregorian'); }}
-                            className="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors mr-1"
+                            className="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 p-2 rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors mr-1"
                             title="Switch Calendar View"
                         >
                             <ArrowLeftRight className="w-4 h-4" />
@@ -280,7 +280,7 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
                         <button
                             type="button"
                             onClick={(e) => { e.preventDefault(); handlePrevMonth(); }}
-                            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition-colors"
                         >
                             <ChevronLeft className="w-5 h-5 text-slate-400" />
                         </button>
@@ -293,7 +293,7 @@ export const FastingStats: React.FC<FastingStatsProps> = ({ hijriDate, minimal =
                         <button
                             type="button"
                             onClick={(e) => { e.preventDefault(); handleNextMonth(); }}
-                            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition-colors"
                         >
                             <ChevronRight className="w-5 h-5 text-slate-400" />
                         </button>

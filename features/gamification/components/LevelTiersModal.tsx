@@ -50,7 +50,7 @@ export const LevelTiersModal: React.FC<LevelTiersModalProps> = ({ currentLevel, 
 
             {/* Modal Card */}
             <div
-                className="relative bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] z-10"
+                className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] z-10"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Floating Close Button */}
@@ -85,7 +85,7 @@ export const LevelTiersModal: React.FC<LevelTiersModalProps> = ({ currentLevel, 
                             <div
                                 key={tier.level}
                                 className={`
-                                    relative p-4 rounded-3xl border transition-all duration-300 shadow-md
+                                    relative p-4 rounded-2xl border transition-all duration-300 shadow-md
                                     ${containerClass}
                                     ${isCurrent ? 'ring-2 ring-offset-2 dark:ring-offset-slate-900 ' + getTierColorClass(themeColor, 'ring') + ' scale-[1.02]' : ''}
                                     ${isNext ? 'border-dashed border-2 opacity-80' : 'border-solid'}

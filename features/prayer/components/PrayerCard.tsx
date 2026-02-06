@@ -31,7 +31,7 @@ export const PrayerCard: React.FC<PrayerCardProps> = ({
 }) => {
     const { t } = useLanguage();
     return (
-        <div className={`relative overflow-hidden bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 flex flex-col transition-all hover:shadow-2xl dark:hover:shadow-emerald-950/20 hover:border-emerald-100 dark:hover:border-emerald-900 group ${isFlashbackMode && !loggedToday ? 'ring-2 ring-amber-500/20' : ''}`}>
+        <div className={`relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 flex flex-col transition-all hover:shadow-2xl dark:hover:shadow-emerald-950/20 hover:border-emerald-100 dark:hover:border-emerald-900 group ${isFlashbackMode && !loggedToday ? 'ring-2 ring-amber-500/20' : ''}`}>
             {/* Thematic Background Image */}
             {showPrayerBg && (
                 <div
@@ -51,7 +51,7 @@ export const PrayerCard: React.FC<PrayerCardProps> = ({
                 {loggedToday ? (
                     <div className="space-y-3">
                         <div
-                            className="relative overflow-hidden flex items-center justify-between text-emerald-600 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl p-1 transition-colors"
+                            className="relative overflow-hidden flex items-center justify-between text-emerald-600 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl p-1 transition-colors"
                             onClick={() => onEditPrayer(loggedToday)}
                             title="Klik untuk ubah detail"
                         >
@@ -84,7 +84,7 @@ export const PrayerCard: React.FC<PrayerCardProps> = ({
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700 text-slate-400" title="Dilaksanakan di Rumah">
+                                    <div className="p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 text-slate-400" title="Dilaksanakan di Rumah">
                                         <Home className="w-4 h-4" />
                                     </div>
                                 </div>
@@ -92,12 +92,12 @@ export const PrayerCard: React.FC<PrayerCardProps> = ({
                         </div>
                         <div className="flex gap-2">
                             {loggedToday.isMasbuq && (
-                                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-100 dark:border-amber-900/50">
+                                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/20 rounded-2xl border border-amber-100 dark:border-amber-900/50">
                                     <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest">Masbuq: {loggedToday.masbuqRakaat}</span>
                                 </div>
                             )}
                             {loggedToday.executionType && (
-                                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                                     {loggedToday.executionType === 'Jamaah' ? <Users className="w-3 h-3 text-emerald-600" /> : <User className="w-3 h-3 text-slate-400" />}
                                     <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">
                                         {loggedToday.executionType === 'Jamaah' ? t.tracker.execution.jamaah : t.tracker.execution.munfarid}
@@ -105,7 +105,7 @@ export const PrayerCard: React.FC<PrayerCardProps> = ({
                                 </div>
                             )}
                             {loggedToday.weatherCondition && (
-                                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                                     {loggedToday.weatherCondition === 'Hujan' ? <CloudRain className="w-3 h-3 text-blue-500" /> : <SunMedium className="w-3 h-3 text-amber-500" />}
                                     <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">
                                         {loggedToday.weatherCondition === 'Hujan' ? t.tracker.weather.rainy : t.tracker.weather.clear}

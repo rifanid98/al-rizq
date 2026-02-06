@@ -208,7 +208,7 @@ export const DailyHabitTracker: React.FC<DailyHabitTrackerProps> = ({
                                                             }
                                                         }}
                                                         disabled={currentValue <= 0}
-                                                        className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center disabled:opacity-30"
+                                                        className="w-7 h-7 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center disabled:opacity-30"
                                                     >
                                                         <Minus className="w-3 h-3" />
                                                     </button>
@@ -218,7 +218,7 @@ export const DailyHabitTracker: React.FC<DailyHabitTrackerProps> = ({
                                                             e.stopPropagation();
                                                             updateValue(habit.id, currentValue + 1, date);
                                                         }}
-                                                        className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center"
+                                                        className="w-7 h-7 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center"
                                                     >
                                                         <Plus className="w-3 h-3" />
                                                     </button>

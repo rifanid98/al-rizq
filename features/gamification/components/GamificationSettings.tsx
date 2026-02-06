@@ -59,13 +59,13 @@ export const GamificationSettings: React.FC<GamificationSettingsProps> = ({ conf
         if (!sectionData) return null;
 
         return (
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
                 <button
                     onClick={() => toggleSubAccordion(sectionKey)}
                     className="w-full flex items-center justify-between p-3 text-left font-bold text-slate-700 dark:text-slate-200"
                 >
                     <span className="flex items-center gap-3 text-xs uppercase tracking-wider">
-                        <div className={`w-7 h-7 ${iconBgColor} rounded-lg flex items-center justify-center shrink-0`}>
+                        <div className={`w-7 h-7 ${iconBgColor} rounded-2xl flex items-center justify-center shrink-0`}>
                             {icon}
                         </div>
                         {title}
@@ -82,7 +82,7 @@ export const GamificationSettings: React.FC<GamificationSettingsProps> = ({ conf
                                         type="number"
                                         value={(sectionData as any)[key]}
                                         onChange={(e) => handleChange(sectionKey, key, parseInt(e.target.value))}
-                                        className={`w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-bold ${focusColor} outline-none transition-all`}
+                                        className={`w-full px-2.5 py-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-bold ${focusColor} outline-none transition-all`}
                                     />
                                     <span className="text-[10px] font-black text-amber-500">{t.gamification.settings.pts}</span>
                                 </div>
@@ -128,7 +128,7 @@ export const GamificationSettings: React.FC<GamificationSettingsProps> = ({ conf
                             className="w-full flex items-center justify-between p-3 text-left font-bold text-slate-700 dark:text-slate-200"
                         >
                             <span className="flex items-center gap-3 text-xs uppercase tracking-wider">
-                                <div className="w-8 h-8 bg-gradient-to-br from-amber-100 to-emerald-100 dark:from-amber-950/50 dark:to-emerald-950/50 rounded-xl flex items-center justify-center text-amber-600 shrink-0">
+                                <div className="w-8 h-8 bg-gradient-to-br from-amber-100 to-emerald-100 dark:from-amber-950/50 dark:to-emerald-950/50 rounded-2xl flex items-center justify-center text-amber-600 shrink-0">
                                     <Settings className="w-4 h-4" />
                                 </div>
                                 {t.gamification?.settings?.pointsConfig || 'Points Configuration'}

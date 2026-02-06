@@ -113,7 +113,7 @@ export const Settings: React.FC<SettingsProps> = ({
 
 
             {/* Profile Section */}
-            <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden relative group">
+            <section className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden relative group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-emerald-500/10 transition-colors" />
 
                 <div className="flex flex-col md:flex-row items-center gap-6 relative z-10">
@@ -124,9 +124,9 @@ export const Settings: React.FC<SettingsProps> = ({
                                     src={user.picture}
                                     alt={user.name}
                                     referrerPolicy="no-referrer"
-                                    className="w-24 h-24 rounded-3xl border-4 border-slate-50 dark:border-slate-800 shadow-xl object-cover"
+                                    className="w-24 h-24 rounded-2xl border-4 border-slate-50 dark:border-slate-800 shadow-xl object-cover"
                                 />
-                                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-xl flex items-center justify-center border-4 border-white dark:border-slate-900 shadow-lg">
+                                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-2xl flex items-center justify-center border-4 border-white dark:border-slate-900 shadow-lg">
                                     <ShieldCheck className="w-4 h-4 text-white" />
                                 </div>
                             </div>
@@ -153,7 +153,7 @@ export const Settings: React.FC<SettingsProps> = ({
                         </>
                     ) : (
                         <div className="w-full flex flex-col md:flex-row items-center gap-6 relative z-10">
-                            <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center shrink-0">
+                            <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center shrink-0">
                                 <User className="w-10 h-10 text-slate-400" />
                             </div>
                             <div className="text-center md:text-left flex-1">
@@ -170,7 +170,7 @@ export const Settings: React.FC<SettingsProps> = ({
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Gamification Settings Section */}
-                <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col lg:col-span-2">
+                <section className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col lg:col-span-2">
                     <GamificationSettings
                         config={gamificationConfig || DEFAULT_GAMIFICATION_CONFIG}
                         onChange={onGamificationConfigChange || (() => { })}
@@ -178,7 +178,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 </section>
 
                 {/* Sync Section */}
-                <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+                <section className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
                     <div className="flex items-center gap-4 mb-8">
                         <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-950/50 rounded-2xl flex items-center justify-center text-emerald-600">
                             <Cloud className="w-6 h-6" />
@@ -217,7 +217,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                 }}
                                 className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 sm:py-6 flex flex-row sm:flex-col items-center justify-start sm:justify-center gap-4 sm:gap-2 h-auto hover:border-emerald-500 transition-all group px-6 sm:px-4"
                             >
-                                <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform shrink-0">
+                                <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform shrink-0">
                                     {isSyncing ? (
                                         <Loader2 className="w-5 h-5 animate-spin" />
                                     ) : (
@@ -272,7 +272,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                 }}
                                 className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 sm:py-6 flex flex-row sm:flex-col items-center justify-start sm:justify-center gap-4 sm:gap-2 h-auto hover:border-blue-500 transition-all group px-6 sm:px-4"
                             >
-                                <div className="w-10 h-10 bg-blue-50 dark:bg-blue-950/30 rounded-xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform shrink-0">
+                                <div className="w-10 h-10 bg-blue-50 dark:bg-blue-950/30 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform shrink-0">
                                     {isSyncing ? (
                                         <Loader2 className="w-5 h-5 animate-spin" />
                                     ) : (
@@ -335,7 +335,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 </section>
 
                 {/* Appearance Section */}
-                <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+                <section className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
                     <div className="flex items-center gap-4 mb-8">
                         <div className="w-12 h-12 bg-amber-100 dark:bg-amber-950/50 rounded-2xl flex items-center justify-center text-amber-600">
                             <SettingsIcon className="w-6 h-6" />
@@ -350,7 +350,7 @@ export const Settings: React.FC<SettingsProps> = ({
                         {/* Theme Toggle */}
                         <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center shadow-sm">
+                                <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-sm">
                                     {themeMode === 'light' && <Sun className="w-5 h-5 text-amber-500" />}
                                     {themeMode === 'dark' && <Moon className="w-5 h-5 text-emerald-400" />}
                                     {themeMode === 'system' && <Monitor className="w-5 h-5 text-slate-400" />}
@@ -362,17 +362,17 @@ export const Settings: React.FC<SettingsProps> = ({
                             </div>
                             <button
                                 onClick={onCycleTheme}
-                                className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase tracking-widest text-emerald-600 hover:border-emerald-500 transition-all shadow-sm"
+                                className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-black uppercase tracking-widest text-emerald-600 hover:border-emerald-500 transition-all shadow-sm"
                             >
                                 {t.settings.appearance.changeTheme}
                             </button>
                         </div>
 
                         {/* Background Settings */}
-                        <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] border border-slate-100 dark:border-slate-800 space-y-6">
+                        <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-6">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center shadow-sm">
+                                    <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-sm">
                                         <ImageIcon className="w-5 h-5 text-blue-500" />
                                     </div>
                                     <div>
@@ -397,7 +397,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                     <input
                                         type="range" min="0" max="40" step="5" value={prayerBgOpacity}
                                         onChange={(e) => onOpacityChange(parseInt(e.target.value))}
-                                        className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                                        className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-2xl appearance-none cursor-pointer accent-emerald-500"
                                     />
                                     <div className="flex justify-between text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">
                                         <span>{t.settings.appearance.clear}</span>
@@ -410,7 +410,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 </section>
 
                 {/* Prayer Time Correction Section */}
-                <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+                <section className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
                     <div className="flex items-center gap-4 mb-8">
                         <div className="w-12 h-12 bg-blue-100 dark:bg-blue-950/50 rounded-2xl flex items-center justify-center text-blue-600">
                             <img src="https://img.icons8.com/?size=100&id=10255&format=png&color=2563EB" className="w-6 h-6" alt="Clock" />
@@ -421,7 +421,7 @@ export const Settings: React.FC<SettingsProps> = ({
                         </div>
                         <button
                             onClick={() => setIsCorrectionEditingEnabled(!isCorrectionEditingEnabled)}
-                            className={`ml-auto p-2 rounded-xl transition-all ${isCorrectionEditingEnabled
+                            className={`ml-auto p-2 rounded-2xl transition-all ${isCorrectionEditingEnabled
                                 ? 'bg-rose-50 text-rose-500 hover:bg-rose-100 dark:bg-rose-950/20 dark:text-rose-400'
                                 : 'bg-slate-100 text-slate-400 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-500'
                                 }`}
@@ -436,7 +436,7 @@ export const Settings: React.FC<SettingsProps> = ({
                         <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                             <div className="flex justify-between items-center mb-2">
                                 <span className="text-sm font-black text-slate-700 dark:text-slate-200">{t.settings.correction.global}</span>
-                                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-lg">
+                                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-2xl">
                                     {prayerTimeCorrection.global > 0 ? '+' : ''}{prayerTimeCorrection.global} {t.settings.correction.minutes}
                                 </span>
                             </div>
@@ -444,19 +444,19 @@ export const Settings: React.FC<SettingsProps> = ({
                                 <button
                                     disabled={!isCorrectionEditingEnabled}
                                     onClick={() => onCorrectionChange({ ...prayerTimeCorrection, global: Math.max(-30, prayerTimeCorrection.global - 1) })}
-                                    className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold transition-colors ${!isCorrectionEditingEnabled ? 'bg-slate-50 text-slate-300 dark:bg-slate-800/50 dark:text-slate-600 cursor-not-allowed' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                                    className={`w-8 h-8 rounded-2xl flex items-center justify-center font-bold transition-colors ${!isCorrectionEditingEnabled ? 'bg-slate-50 text-slate-300 dark:bg-slate-800/50 dark:text-slate-600 cursor-not-allowed' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                                 >-</button>
                                 <input
                                     type="range" min="-30" max="30" step="1"
                                     disabled={!isCorrectionEditingEnabled}
                                     value={prayerTimeCorrection.global}
                                     onChange={(e) => onCorrectionChange({ ...prayerTimeCorrection, global: parseInt(e.target.value) })}
-                                    className={`flex-1 h-2 rounded-lg appearance-none cursor-pointer ${!isCorrectionEditingEnabled ? 'bg-slate-100 dark:bg-slate-800 accent-slate-300' : 'bg-slate-200 dark:bg-slate-700 accent-blue-500'}`}
+                                    className={`flex-1 h-2 rounded-2xl appearance-none cursor-pointer ${!isCorrectionEditingEnabled ? 'bg-slate-100 dark:bg-slate-800 accent-slate-300' : 'bg-slate-200 dark:bg-slate-700 accent-blue-500'}`}
                                 />
                                 <button
                                     disabled={!isCorrectionEditingEnabled}
                                     onClick={() => onCorrectionChange({ ...prayerTimeCorrection, global: Math.min(30, prayerTimeCorrection.global + 1) })}
-                                    className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold transition-colors ${!isCorrectionEditingEnabled ? 'bg-slate-50 text-slate-300 dark:bg-slate-800/50 dark:text-slate-600 cursor-not-allowed' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                                    className={`w-8 h-8 rounded-2xl flex items-center justify-center font-bold transition-colors ${!isCorrectionEditingEnabled ? 'bg-slate-50 text-slate-300 dark:bg-slate-800/50 dark:text-slate-600 cursor-not-allowed' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                                 >+</button>
                             </div>
                             <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 px-1">
@@ -485,7 +485,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                 <div className="p-4 pt-0 animate-in slide-in-from-top-2 duration-300">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-2">
                                         {(['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'] as const).map((p) => (
-                                            <div key={p} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between">
+                                            <div key={p} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-between">
                                                 <div className="flex flex-col">
                                                     <span className="text-xs font-bold text-slate-700 dark:text-slate-300 capitalize">{t.tracker.prayerNames[p === 'subuh' ? 'Subuh' : p === 'dzuhur' ? 'Dzuhur' : p === 'ashar' ? 'Ashar' : p === 'maghrib' ? 'Maghrib' : 'Isya']}</span>
                                                     <span className="text-[10px] text-slate-400">{prayerTimeCorrection[p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p] > 0 ? '+' : ''}{prayerTimeCorrection[p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p]} min</span>
@@ -494,12 +494,12 @@ export const Settings: React.FC<SettingsProps> = ({
                                                     <button
                                                         disabled={!isCorrectionEditingEnabled}
                                                         onClick={() => onCorrectionChange({ ...prayerTimeCorrection, [p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p]: (prayerTimeCorrection[p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p] as number) - 1 })}
-                                                        className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold ${!isCorrectionEditingEnabled ? 'bg-slate-50 text-slate-300 dark:bg-slate-800/50 dark:text-slate-600 cursor-not-allowed' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                                                        className={`w-6 h-6 rounded-2xl flex items-center justify-center font-bold ${!isCorrectionEditingEnabled ? 'bg-slate-50 text-slate-300 dark:bg-slate-800/50 dark:text-slate-600 cursor-not-allowed' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
                                                     >-</button>
                                                     <button
                                                         disabled={!isCorrectionEditingEnabled}
                                                         onClick={() => onCorrectionChange({ ...prayerTimeCorrection, [p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p]: (prayerTimeCorrection[p === 'subuh' ? 'fajr' : p === 'isya' ? 'isha' : p] as number) + 1 })}
-                                                        className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold ${!isCorrectionEditingEnabled ? 'bg-slate-50 text-slate-300 dark:bg-slate-800/50 dark:text-slate-600 cursor-not-allowed' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                                                        className={`w-6 h-6 rounded-2xl flex items-center justify-center font-bold ${!isCorrectionEditingEnabled ? 'bg-slate-50 text-slate-300 dark:bg-slate-800/50 dark:text-slate-600 cursor-not-allowed' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
                                                     >+</button>
                                                 </div>
                                             </div>
@@ -512,7 +512,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 </section>
 
                 {/* Additional Links/Info */}
-                <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col group">
+                <section className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col group">
                     <div className="flex items-center gap-4 mb-8">
                         <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-950/50 rounded-2xl flex items-center justify-center text-indigo-600">
                             <LayoutGrid className="w-6 h-6" />
@@ -536,7 +536,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                 <p className="text-xs font-bold text-slate-400">{language === 'id' ? t.settings.language.id : t.settings.language.en}</p>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest px-2 py-1 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">{t.common.change}</span>
+                                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest px-2 py-1 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity">{t.common.change}</span>
                                 <ChevronRight className="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform" />
                             </div>
                         </div>
@@ -568,7 +568,7 @@ export const Settings: React.FC<SettingsProps> = ({
 
 
             {/* Danger Zone */}
-            <section className="bg-rose-50 dark:bg-rose-950/10 rounded-[2.5rem] p-6 border border-rose-100 dark:border-rose-900/30 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+            <section className="bg-rose-50 dark:bg-rose-950/10 rounded-2xl p-6 border border-rose-100 dark:border-rose-900/30 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-4 w-full md:w-auto">
                     <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-2xl flex items-center justify-center text-rose-600 shrink-0">
                         <Trash2 className="w-6 h-6" />
@@ -583,7 +583,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 <Button
                     variant="danger"
                     onClick={() => { if (window.confirm(t.common.confirmDeleteAll)) onClearData(); }}
-                    className="w-full md:w-auto rounded-xl px-6 py-3 shadow-lg shadow-rose-500/20"
+                    className="w-full md:w-auto rounded-2xl px-6 py-3 shadow-lg shadow-rose-500/20"
                 >
                     {t.common.deleteAll}
                 </Button>

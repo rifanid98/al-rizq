@@ -758,7 +758,7 @@ const AppContent: React.FC<any> = (props) => {
           <div className="relative group">
             <button
               onClick={() => setIsTrackerMenuOpen(!isTrackerMenuOpen)}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${['tracker', 'fasting', 'dzikir'].includes(activeTab) ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}
+              className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all ${['tracker', 'fasting', 'dzikir'].includes(activeTab) ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}
             >
               <div className={`p-1 rounded-full ${['tracker', 'fasting', 'dzikir'].includes(activeTab) ? 'bg-emerald-100' : ''}`}>
                 <Mosque className="w-5 h-5" />
@@ -769,15 +769,15 @@ const AppContent: React.FC<any> = (props) => {
             {/* Floating Sub-menu for Mobile Tracker */}
             <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-2 flex flex-col gap-1 min-w-[140px] transition-all transform origin-bottom ${isTrackerMenuOpen ? 'scale-100 opacity-100 z-50 pointer-events-auto' : 'scale-0 opacity-0 pointer-events-none'}`}>
               {/* Prayer */}
-              <button onClick={(e) => { e.stopPropagation(); setActiveTab('tracker'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'tracker' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+              <button onClick={(e) => { e.stopPropagation(); setActiveTab('tracker'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${activeTab === 'tracker' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
                 <Mosque className="w-4 h-4" /> <span className="text-xs">{t.common.prayer}</span>
               </button>
               {/* Fasting */}
-              <button onClick={(e) => { e.stopPropagation(); setActiveTab('fasting'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'fasting' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+              <button onClick={(e) => { e.stopPropagation(); setActiveTab('fasting'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${activeTab === 'fasting' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
                 <UtensilsCrossed className="w-4 h-4" /> <span className="text-xs">{t.tabs.fasting}</span>
               </button>
               {/* Sunnah */}
-              <button onClick={(e) => { e.stopPropagation(); setActiveTab('sunnah'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'sunnah' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+              <button onClick={(e) => { e.stopPropagation(); setActiveTab('sunnah'); setIsTrackerMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${activeTab === 'sunnah' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
                 <Star className="w-4 h-4" /> <span className="text-xs">{t.tabs.sunnah || t.tabs.dzikir}</span>
               </button>
               {/* Arrow */}
@@ -792,7 +792,7 @@ const AppContent: React.FC<any> = (props) => {
               id={tab === 'achievements' ? 'mobile-gamification-trigger' : undefined}
               ref={tab === 'settings' ? mobileSettingsRef : tab === 'achievements' ? mobileAchievementsRef : undefined}
               onClick={() => { setActiveTab(tab as any); setIsTrackerMenuOpen(false); }}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${activeTab === tab ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}
+              className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all ${activeTab === tab ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}
             >
               {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5" />}
               {tab === 'history' && <HistoryIcon className="w-5 h-5" />}
@@ -813,13 +813,13 @@ const AppContent: React.FC<any> = (props) => {
           <div className="mb-2">
             <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t.common.trackerCategory}</p>
             <div className="flex flex-col gap-1">
-              <button onClick={() => setActiveTab('tracker')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'tracker' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+              <button onClick={() => setActiveTab('tracker')} className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${activeTab === 'tracker' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
                 <Mosque className="w-5 h-5" /> <span className="text-sm">{t.common.prayer}</span>
               </button>
-              <button onClick={() => setActiveTab('fasting')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'fasting' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+              <button onClick={() => setActiveTab('fasting')} className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${activeTab === 'fasting' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
                 <UtensilsCrossed className="w-5 h-5" /> <span className="text-sm">{t.tabs.fasting}</span>
               </button>
-              <button onClick={() => setActiveTab('sunnah')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'sunnah' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+              <button onClick={() => setActiveTab('sunnah')} className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${activeTab === 'sunnah' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
                 <Star className="w-5 h-5" /> <span className="text-sm">{t.tabs.sunnah || t.tabs.dzikir}</span>
               </button>
             </div>
@@ -833,7 +833,7 @@ const AppContent: React.FC<any> = (props) => {
                   key={tab}
                   ref={tab === 'settings' ? desktopSettingsRef : tab === 'achievements' ? desktopAchievementsRef : undefined}
                   onClick={() => setActiveTab(tab as any)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === tab ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${activeTab === tab ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                 >
                   {tab === 'dashboard' && <LayoutDashboard className="w-5 h-5" />}
                   {tab === 'history' && <HistoryIcon className="w-5 h-5" />}
@@ -847,7 +847,7 @@ const AppContent: React.FC<any> = (props) => {
         </div>
 
         <div className="hidden lg:block w-full px-2 mt-auto border-t border-slate-100 dark:border-slate-800 pt-6 space-y-6">
-          <button onClick={cycleTheme} className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-emerald-500 transition-all group">
+          <button onClick={cycleTheme} className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-emerald-500 transition-all group">
             <div className="flex flex-col items-start">
               <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">{t.settings.appearance.title}</span>
               <span className="text-xs font-bold text-slate-800 dark:text-slate-100 capitalize">{t.settings.themes[themeMode]}</span>
@@ -857,7 +857,7 @@ const AppContent: React.FC<any> = (props) => {
             {themeMode === 'system' && <Monitor className="w-4 h-4 text-slate-400" />}
           </button>
 
-          <div className="flex flex-col gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="flex flex-col gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700">
             <div className="flex items-center justify-between">
               <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">{t.settings.appearance.background}</span>
               <button
@@ -872,7 +872,7 @@ const AppContent: React.FC<any> = (props) => {
                 <input
                   type="range" min="0" max="40" step="5" value={prayerBgOpacity}
                   onChange={(e) => setPrayerBgOpacity(parseInt(e.target.value))}
-                  className="flex-1 h-1 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                  className="flex-1 h-1 bg-slate-200 dark:bg-slate-700 rounded-2xl appearance-none cursor-pointer accent-emerald-500"
                 />
                 <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 w-6 text-right">{prayerBgOpacity}%</span>
               </div>
@@ -903,13 +903,13 @@ const AppContent: React.FC<any> = (props) => {
             </div>
 
             <div className="flex lg:hidden items-center gap-2 shrink-0">
-              <button onClick={cycleTheme} className="p-2 lg:p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
+              <button onClick={cycleTheme} className="p-2 lg:p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-500 dark:text-slate-400">
                 {themeMode === 'light' && <Sun className="w-4 h-4 lg:w-5 lg:h-5 text-amber-500" />}
                 {themeMode === 'dark' && <Moon className="w-4 h-4 lg:w-5 lg:h-5 text-emerald-400" />}
                 {themeMode === 'system' && <Monitor className="w-4 h-4 lg:w-5 lg:h-5 text-slate-400" />}
               </button>
 
-              <div className="flex items-center gap-2 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl relative">
+              <div className="flex items-center gap-2 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl relative">
                 <button
                   onClick={() => {
                     if (!showPrayerBg) {
@@ -927,9 +927,9 @@ const AppContent: React.FC<any> = (props) => {
                   <div className="absolute top-full right-0 mt-3 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-[100] flex items-center gap-4 min-w-[200px] animate-in slide-in-from-top-2 duration-300" onMouseEnter={() => { if (sliderTimerRef.current) window.clearTimeout(sliderTimerRef.current); }} onMouseLeave={resetSliderTimer}>
                     <div className="flex-1 flex flex-col gap-2">
                       <div className="flex justify-between items-center"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.settings.appearance.opacity}</span><span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">{prayerBgOpacity}%</span></div>
-                      <input type="range" min="0" max="40" step="5" value={prayerBgOpacity} onChange={(e) => { setPrayerBgOpacity(parseInt(e.target.value)); resetSliderTimer(); }} className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500" />
+                      <input type="range" min="0" max="40" step="5" value={prayerBgOpacity} onChange={(e) => { setPrayerBgOpacity(parseInt(e.target.value)); resetSliderTimer(); }} className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-2xl appearance-none cursor-pointer accent-emerald-500" />
                     </div>
-                    <button onClick={() => setShowOpacitySlider(false)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 transition-colors"><X className="w-4 h-4" /></button>
+                    <button onClick={() => setShowOpacitySlider(false)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl text-slate-400 transition-colors"><X className="w-4 h-4" /></button>
                   </div>
                 )}
               </div>
@@ -940,13 +940,13 @@ const AppContent: React.FC<any> = (props) => {
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2 lg:gap-3 w-full lg:w-auto">
             {activeTab === 'tracker' && (
               <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
-                <button onClick={() => setIsSearching(!isSearching)} className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden min-w-0">
+                <button onClick={() => setIsSearching(!isSearching)} className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-2xl flex items-center gap-2 shadow-sm hover:border-emerald-500 transition-all overflow-hidden min-w-0">
                   <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                   <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1 block max-w-none lg:max-w-[300px] text-left">{adjustedSchedule?.location || t.tracker.searchLocation}</span>
 
                   <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isSearching ? 'rotate-90' : ''}`} />
                 </button>
-                <Button variant="ghost" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0" onClick={() => getSchedule()} isLoading={isLoading && !isSearching}>
+                <Button variant="ghost" className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shrink-0" onClick={() => getSchedule()} isLoading={isLoading && !isSearching}>
                   <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                 </Button>
               </div>
@@ -967,7 +967,7 @@ const AppContent: React.FC<any> = (props) => {
         {activeTab === 'tracker' && (
           <div className="space-y-6 lg:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {isSearching && (
-              <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-xl animate-in zoom-in-95 duration-300 relative z-40">
+              <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl animate-in zoom-in-95 duration-300 relative z-40">
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                     <Search className={`w-4 h-4 ${isSearching ? 'text-emerald-500 animate-pulse' : 'text-slate-400'}`} />
@@ -989,7 +989,7 @@ const AppContent: React.FC<any> = (props) => {
                 {suggestions.length > 0 && (
                   <div className="mt-4 space-y-1 border-t border-slate-100 dark:border-slate-800 pt-4">
                     {suggestions.map((loc, i) => (
-                      <button key={i} onClick={() => { getSchedule({ address: loc }); addToHistory(loc); setIsSearching(false); setSearchQuery(''); }} className="w-full text-left px-4 py-3 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-3 transition-colors group">
+                      <button key={i} onClick={() => { getSchedule({ address: loc }); addToHistory(loc); setIsSearching(false); setSearchQuery(''); }} className="w-full text-left px-4 py-3 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-3 transition-colors group">
                         <MapPin className="w-4 h-4 text-slate-300 group-hover:text-emerald-500" /> {loc}
                       </button>
                     ))}
@@ -1002,11 +1002,11 @@ const AppContent: React.FC<any> = (props) => {
                     <div className="space-y-1">
                       {locationHistory.map((loc, i) => (
                         <div key={i} className="flex items-center gap-1 group">
-                          <button onClick={() => { getSchedule({ address: loc }); setIsSearching(false); }} className="flex-1 text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 flex items-center justify-between transition-colors">
+                          <button onClick={() => { getSchedule({ address: loc }); setIsSearching(false); }} className="flex-1 text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl text-sm font-bold text-slate-600 dark:text-slate-400 flex items-center justify-between transition-colors">
                             <div className="flex items-center gap-3"><Clock className="w-4 h-4 text-slate-300" /> {loc}</div>
                             <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
                           </button>
-                          <button onClick={(e) => { e.stopPropagation(); removeHistory(loc); }} className="p-3 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl text-slate-300 hover:text-rose-500 transition-colors">
+                          <button onClick={(e) => { e.stopPropagation(); removeHistory(loc); }} className="p-3 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-2xl text-slate-300 hover:text-rose-500 transition-colors">
                             <X className="w-4 h-4" />
                           </button>
                         </div>
@@ -1018,10 +1018,10 @@ const AppContent: React.FC<any> = (props) => {
             )}
 
             {error && (
-              <div className="bg-rose-50 dark:bg-rose-950/20 p-6 rounded-3xl border border-rose-100 dark:border-rose-900/50 flex items-center gap-4 text-rose-800 dark:text-rose-300 animate-in shake-x duration-500">
+              <div className="bg-rose-50 dark:bg-rose-950/20 p-6 rounded-2xl border border-rose-100 dark:border-rose-900/50 flex items-center gap-4 text-rose-800 dark:text-rose-300 animate-in shake-x duration-500">
                 <AlertCircle className="w-6 h-6 shrink-0" />
                 <p className="font-bold text-sm flex-1">{error}</p>
-                <button onClick={() => setError(null)} className="p-2 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-xl transition-colors"><X className="w-5 h-5" /></button>
+                <button onClick={() => setError(null)} className="p-2 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-2xl transition-colors"><X className="w-5 h-5" /></button>
               </div>
             )}
 
@@ -1029,7 +1029,7 @@ const AppContent: React.FC<any> = (props) => {
 
             {!isFlashbackMode && (
               <div className="flex flex-col md:flex-row gap-4">
-                <button onClick={() => setSelectedDate(getYesterdayDateStr())} className="flex-1 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-amber-500 transition-all group flex items-center justify-between shadow-sm">
+                <button onClick={() => setSelectedDate(getYesterdayDateStr())} className="flex-1 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-amber-500 transition-all group flex items-center justify-between shadow-sm">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
                       <Clock3 className="w-6 h-6 text-amber-600" />
@@ -1041,7 +1041,7 @@ const AppContent: React.FC<any> = (props) => {
                   </div>
                   <ChevronRight className="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform" />
                 </button>
-                <div className="flex-1 bg-emerald-600 dark:bg-emerald-900/40 p-5 rounded-3xl flex items-center justify-between text-white shadow-lg shadow-emerald-500/20">
+                <div className="flex-1 bg-emerald-600 dark:bg-emerald-900/40 p-5 rounded-2xl flex items-center justify-between text-white shadow-lg shadow-emerald-500/20">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
                       <Clock className="w-6 h-6" />
@@ -1056,7 +1056,7 @@ const AppContent: React.FC<any> = (props) => {
             )}
 
             {isFlashbackMode && (
-              <div className="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-[2rem] border border-amber-200 dark:border-amber-900/50 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+              <div className="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-2xl border border-amber-200 dark:border-amber-900/50 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20">
                     <RotateCcw className="w-8 h-8 text-white" />
@@ -1098,7 +1098,7 @@ const AppContent: React.FC<any> = (props) => {
             {/* Flashback Control */}
             {!isFlashbackMode && (
               <div className="flex flex-col md:flex-row gap-4">
-                <button onClick={() => setSelectedDate(getYesterdayDateStr())} className="flex-1 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-amber-500 transition-all group flex items-center justify-between shadow-sm">
+                <button onClick={() => setSelectedDate(getYesterdayDateStr())} className="flex-1 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-amber-500 transition-all group flex items-center justify-between shadow-sm">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
                       <Clock3 className="w-6 h-6 text-amber-600" />
@@ -1115,7 +1115,7 @@ const AppContent: React.FC<any> = (props) => {
 
             {/* Flashback Banner */}
             {isFlashbackMode && (
-              <div className="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-[2rem] border border-amber-200 dark:border-amber-900/50 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+              <div className="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-2xl border border-amber-200 dark:border-amber-900/50 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20">
                     <RotateCcw className="w-8 h-8 text-white" />
@@ -1163,7 +1163,7 @@ const AppContent: React.FC<any> = (props) => {
         {activeTab === 'history' && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 rounded-2xl p-4 flex items-center gap-3">
-              <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl text-emerald-600">
+              <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-2xl text-emerald-600">
                 <Calendar className="w-5 h-5" />
               </div>
               <div>
@@ -1178,10 +1178,10 @@ const AppContent: React.FC<any> = (props) => {
               <div className="flex items-center gap-3 flex-1 max-w-md">
                 <div className="relative flex-1 group">
                   <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
-                  <input type="date" value={historyDateFilter} placeholder={t.history.pickDate} onChange={(e) => { setHistoryDateFilter(e.target.value); setCurrentPage(1); }} className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500 transition-all" />
-                  {historyDateFilter && <button onClick={() => { setHistoryDateFilter(''); setCurrentPage(1); }} className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400"><X className="w-3.5 h-3.5" /></button>}
+                  <input type="date" value={historyDateFilter} placeholder={t.history.pickDate} onChange={(e) => { setHistoryDateFilter(e.target.value); setCurrentPage(1); }} className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500 transition-all" />
+                  {historyDateFilter && <button onClick={() => { setHistoryDateFilter(''); setCurrentPage(1); }} className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl text-slate-400"><X className="w-3.5 h-3.5" /></button>}
                 </div>
-                <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-sm shrink-0">
+                <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-1 shadow-sm shrink-0">
                   <button
                     onClick={() => {
                       const d = new Date(historyDateFilter || getLocalDateStr());
@@ -1189,7 +1189,7 @@ const AppContent: React.FC<any> = (props) => {
                       setHistoryDateFilter(d.toISOString().split('T')[0]);
                       setCurrentPage(1);
                     }}
-                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-all hover:text-emerald-500"
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl text-slate-500 transition-all hover:text-emerald-500"
                     title={t.common.prev}
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -1200,7 +1200,7 @@ const AppContent: React.FC<any> = (props) => {
                       setHistoryDateFilter(getLocalDateStr());
                       setCurrentPage(1);
                     }}
-                    className="px-2 py-1 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg text-[10px] font-black uppercase tracking-widest text-emerald-600 transition-all"
+                    className="px-2 py-1 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-2xl text-[10px] font-black uppercase tracking-widest text-emerald-600 transition-all"
                     title={t.common.backToToday}
                   >
                     {t.common.today}
@@ -1213,7 +1213,7 @@ const AppContent: React.FC<any> = (props) => {
                       setHistoryDateFilter(d.toISOString().split('T')[0]);
                       setCurrentPage(1);
                     }}
-                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-all hover:text-emerald-500"
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl text-slate-500 transition-all hover:text-emerald-500"
                     title={t.common.next}
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -1223,7 +1223,7 @@ const AppContent: React.FC<any> = (props) => {
 
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
@@ -1246,14 +1246,14 @@ const AppContent: React.FC<any> = (props) => {
                         <td className="px-6 lg:px-8 py-5"><span className="text-xs font-black uppercase tracking-widest text-emerald-600">{log.prayerName}</span></td>
                         <td className="px-6 lg:px-8 py-5"><p className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.actualTime}</p></td>
                         <td className="px-6 lg:px-8 py-5">
-                          <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase ${log.status === 'Tepat Waktu' || log.status === 'Ontime' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-500'}`}>
+                          <span className={`px-2 py-1 rounded-2xl text-[10px] font-black uppercase ${log.status === 'Tepat Waktu' || log.status === 'Ontime' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-500'}`}>
                             {log.status === 'Tepat Waktu' || log.status === 'Ontime' ? t.tracker.status.ontime : t.tracker.status.late} {log.delayMinutes > 0 && `(${log.delayMinutes}m)`}
                           </span>
                         </td>
                         <td className="px-6 lg:px-8 py-5">{log.locationType ? <div className="flex items-center gap-1.5">{log.locationType === 'Masjid' ? <MapPin className="w-3 h-3 text-emerald-600" /> : <Home className="w-3 h-3 text-slate-400" />}<span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.locationType === 'Masjid' ? t.tracker.execution.atMosque : t.tracker.execution.atHome}</span></div> : <span className="text-sm text-slate-300">-</span>}</td>
                         <td className="px-6 lg:px-8 py-5">{log.executionType ? <div className="flex items-center gap-1.5">{log.executionType === 'Jamaah' ? <Users className="w-3 h-3 text-emerald-600" /> : <User className="w-3 h-3 text-slate-400" />}<span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.executionType === 'Jamaah' ? t.tracker.execution.jamaah : t.tracker.execution.munfarid}</span></div> : <span className="text-sm text-slate-300">-</span>}</td>
                         <td className="px-6 lg:px-8 py-5">{log.weatherCondition ? <div className="flex items-center gap-1.5">{log.weatherCondition === 'Hujan' ? <CloudRain className="w-3 h-3 text-blue-500" /> : <SunMedium className="w-3 h-3 text-amber-500" />}<span className="text-xs font-bold text-slate-600 dark:text-slate-400">{log.weatherCondition === 'Hujan' ? t.tracker.weather.rainy : t.tracker.weather.clear}</span></div> : <span className="text-sm text-slate-300">-</span>}</td>
-                        <td className="px-6 lg:px-8 py-5">{log.isMasbuq ? <span className="px-2 py-1 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 rounded-lg text-[10px] font-black uppercase whitespace-nowrap">{t.tracker.masbuq} ({log.masbuqRakaat})</span> : <span className="text-sm text-slate-300">-</span>}</td>
+                        <td className="px-6 lg:px-8 py-5">{log.isMasbuq ? <span className="px-2 py-1 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 rounded-2xl text-[10px] font-black uppercase whitespace-nowrap">{t.tracker.masbuq} ({log.masbuqRakaat})</span> : <span className="text-sm text-slate-300">-</span>}</td>
                         <td className="px-6 lg:px-8 py-5 text-sm text-slate-500 dark:text-slate-400 max-w-[200px] truncate">{log.reason || '-'}</td>
                       </tr>
                     ))}
@@ -1265,9 +1265,9 @@ const AppContent: React.FC<any> = (props) => {
               </div>
               {totalPages > 1 && (
                 <div className="flex items-center justify-between p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                  <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all"><ChevronLeft className="w-3.5 h-3.5" />{t.common.prev}</button>
+                  <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-slate-700 rounded-2xl transition-all"><ChevronLeft className="w-3.5 h-3.5" />{t.common.prev}</button>
                   <span className="text-xs font-bold text-slate-500">{t.common.page} {currentPage} {t.common.of} {totalPages}</span>
-                  <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all">{t.common.next}<ChevronRight className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-slate-700 rounded-2xl transition-all">{t.common.next}<ChevronRight className="w-3.5 h-3.5" /></button>
                 </div>
               )}
             </div>

@@ -78,7 +78,7 @@ export const GamificationStats: React.FC<GamificationStatsProps> = ({
         <>
             <div
                 onClick={() => !readOnly && setShowLevelModal(true)}
-                className={`relative overflow-hidden bg-gradient-to-br ${cardClass} rounded-[2.5rem] p-6 text-white shadow-lg mb-8 transition-all duration-500 ${!readOnly ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]' : ''} ring-offset-2 dark:ring-offset-slate-950 focus:outline-none focus:ring-2`}
+                className={`relative overflow-hidden bg-gradient-to-br ${cardClass} rounded-2xl p-6 text-white shadow-lg mb-8 transition-all duration-500 ${!readOnly ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]' : ''} ring-offset-2 dark:ring-offset-slate-950 focus:outline-none focus:ring-2`}
                 role={readOnly ? undefined : "button"}
                 tabIndex={readOnly ? -1 : 0}
             >
@@ -94,7 +94,7 @@ export const GamificationStats: React.FC<GamificationStatsProps> = ({
                     {/* Left: Level & Progress */}
                     <div className="flex-1 w-full">
                         <div className={`flex items-center gap-3 mb-2 ${minimal ? 'justify-center flex-col text-center' : ''}`}>
-                            <div className="p-2 bg-white/20 backdrop-blur-md rounded-xl">
+                            <div className="p-2 bg-white/20 backdrop-blur-md rounded-2xl">
                                 <Trophy className="w-6 h-6 text-white" />
                             </div>
                             <div>
@@ -123,7 +123,7 @@ export const GamificationStats: React.FC<GamificationStatsProps> = ({
 
                     {/* Right: Star Points */}
                     {!minimal && (
-                        <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md px-6 py-4 rounded-3xl border border-white/20 shadow-inner min-w-[180px] justify-between">
+                        <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 shadow-inner min-w-[180px] justify-between">
                             <div className="relative">
                                 <Star className="w-10 h-10 text-yellow-200 fill-yellow-200 animate-pulse drop-shadow-[0_0_15px_rgba(253,224,71,0.6)]" />
                                 <Sparkles className="absolute -top-2 -right-2 w-5 h-5 text-white animate-bounce" />

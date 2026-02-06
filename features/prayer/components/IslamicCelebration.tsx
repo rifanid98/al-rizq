@@ -148,7 +148,7 @@ const IslamicCelebration: React.FC<IslamicCelebrationProps> = ({ show, onComplet
             ))}
 
             <div className="absolute inset-0 flex items-center justify-center px-6">
-                <div className="bg-white/10 dark:bg-emerald-900/10 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.3)] dark:shadow-[0_20px_50px_rgba(5,150,105,0.2)] animate-in zoom-in-75 duration-500 max-w-md w-full">
+                <div className="bg-white/10 dark:bg-emerald-900/10 backdrop-blur-xl p-8 rounded-2xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.3)] dark:shadow-[0_20px_50px_rgba(5,150,105,0.2)] animate-in zoom-in-75 duration-500 max-w-md w-full">
                     <div className="flex flex-col items-center gap-4">
                         <div className="bg-emerald-100 dark:bg-emerald-900/40 p-3 rounded-2xl">
                             <StarIcon className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />

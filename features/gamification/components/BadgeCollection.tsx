@@ -44,7 +44,7 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userBadges, ra
     return (
         <div className="space-y-6 pb-24">
             {/* Header with Year Tabs and Toggle */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 dark:bg-slate-900/50 p-2 rounded-[2rem] border border-slate-200 dark:border-white/10 backdrop-blur-md">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 dark:bg-slate-900/50 p-2 rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-md">
                 {/* Year Tabs */}
                 <div className="flex items-center gap-1 overflow-x-auto no-scrollbar p-1">
                     {availableYears.map(year => (
@@ -106,7 +106,7 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userBadges, ra
                 return (
                     <div key={cat.id} className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                         <div className="flex items-center gap-3 px-2">
-                            <div className="p-2 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl">
+                            <div className="p-2 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl">
                                 <cat.icon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">

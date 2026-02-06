@@ -140,7 +140,7 @@ const BadgeCard: React.FC<{
             >
                 {/* BACK */}
                 <div
-                    className={`absolute inset-0 w-full h-full rounded-3xl backface-hidden
+                    className={`absolute inset-0 w-full h-full rounded-2xl backface-hidden
                         bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900
                         border-2 border-slate-600
                         flex items-center justify-center
@@ -160,7 +160,7 @@ const BadgeCard: React.FC<{
 
                 {/* FRONT */}
                 <div
-                    className={`absolute inset-0 w-full h-full rounded-3xl backface-hidden rotate-y-180
+                    className={`absolute inset-0 w-full h-full rounded-2xl backface-hidden rotate-y-180
                         bg-gradient-to-br ${colors.bg}
                         border-2 border-white/20
                         shadow-2xl ${colors.glow}
@@ -199,7 +199,7 @@ const BadgeCard: React.FC<{
                         </p>
 
                         {history && history !== def.historyKey && (
-                            <div className="bg-black/20 rounded-xl p-3 mb-3 border border-white/10">
+                            <div className="bg-black/20 rounded-2xl p-3 mb-3 border border-white/10">
                                 <p className="text-xs text-white/70 italic leading-relaxed">
                                     "{String(history)}"
                                 </p>

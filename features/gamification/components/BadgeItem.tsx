@@ -104,7 +104,7 @@ export const BadgeItem: React.FC<BadgeItemProps> = ({ definition, userBadge, ram
         <>
             <div
                 onClick={() => setShowModal(true)}
-                className={`cursor-pointer relative group p-4 rounded-3xl border transition-all duration-300 flex flex-col items-center text-center gap-4 overflow-hidden bg-gradient-to-br ${getBadgeGradient()} ${getTierBorder()} ${!isUnlocked ? 'grayscale opacity-70' : ''}`}
+                className={`cursor-pointer relative group p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center gap-4 overflow-hidden bg-gradient-to-br ${getBadgeGradient()} ${getTierBorder()} ${!isUnlocked ? 'grayscale opacity-70' : ''}`}
             >
                 {/* Badge Icon (SVG) */}
                 <div className={`relative w-24 h-24 transition-transform duration-500 ${isUnlocked ? 'group-hover:scale-110 drop-shadow-xl' : 'opacity-50'}`}>

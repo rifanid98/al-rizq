@@ -107,12 +107,12 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
     return (
         <div className="fixed inset-0 z-[100] overflow-y-auto overflow-x-hidden flex items-center justify-center p-4">
             <div className="fixed inset-0 bg-slate-950/40 dark:bg-slate-950/80 backdrop-blur-md transition-opacity animate-in fade-in duration-300" onClick={onClose} />
-            <div className="relative bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 border border-slate-100 dark:border-slate-800">
+            <div className="relative bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 border border-slate-100 dark:border-slate-800">
                 {/* Modal Header */}
                 <div className="p-8 pb-4 flex justify-between items-start shrink-0">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl">
+                            <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl">
                                 <MapPin className="w-5 h-5 text-emerald-600" />
                             </div>
                             <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{t.tracker.prayerDetails} {pendingLatePrayer.name}</h3>
@@ -131,16 +131,16 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                     <div className="grid grid-cols-2 gap-4">
                         <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t.common.location}</p>
-                            <div className="flex gap-1 p-1 bg-slate-200/50 dark:bg-slate-900 rounded-xl">
+                            <div className="flex gap-1 p-1 bg-slate-200/50 dark:bg-slate-900 rounded-2xl">
                                 <button
                                     onClick={() => setLocationType('Masjid')}
-                                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${locationType === 'Masjid' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
+                                    className={`flex-1 py-1.5 rounded-2xl text-[10px] font-black uppercase transition-all ${locationType === 'Masjid' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
                                 >
                                     {t.tracker.execution.atMosque}
                                 </button>
                                 <button
                                     onClick={() => setLocationType('Rumah')}
-                                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${locationType === 'Rumah' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
+                                    className={`flex-1 py-1.5 rounded-2xl text-[10px] font-black uppercase transition-all ${locationType === 'Rumah' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
                                 >
                                     {t.tracker.execution.atHome}
                                 </button>
@@ -149,10 +149,10 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
 
                         <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t.tracker.execution.title}</p>
-                            <div className="flex gap-1 p-1 bg-slate-200/50 dark:bg-slate-900 rounded-xl">
+                            <div className="flex gap-1 p-1 bg-slate-200/50 dark:bg-slate-900 rounded-2xl">
                                 <button
                                     onClick={() => setExecutionType('Jamaah')}
-                                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${executionType === 'Jamaah' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
+                                    className={`flex-1 py-1.5 rounded-2xl text-[10px] font-black uppercase transition-all ${executionType === 'Jamaah' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
                                 >
                                     {t.tracker.execution.jamaah}
                                 </button>
@@ -162,7 +162,7 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                                         setIsMasbuq(false);
                                         setShowMasbuqPicker(false);
                                     }}
-                                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${executionType === 'Munfarid' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
+                                    className={`flex-1 py-1.5 rounded-2xl text-[10px] font-black uppercase transition-all ${executionType === 'Munfarid' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
                                 >
                                     {t.tracker.execution.munfarid}
                                 </button>
@@ -192,7 +192,7 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                                     setShowMasbuqPicker(newVal);
                                 }}
                                 disabled={executionType === 'Munfarid'}
-                                className={`w-full py-1.5 rounded-lg text-[10px] font-black uppercase transition-all border-2 ${isMasbuq ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-500 text-amber-700 dark:text-amber-400' : 'bg-white dark:bg-slate-900 border-transparent text-slate-500'} ${executionType === 'Munfarid' ? 'cursor-not-allowed' : ''}`}
+                                className={`w-full py-1.5 rounded-2xl text-[10px] font-black uppercase transition-all border-2 ${isMasbuq ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-500 text-amber-700 dark:text-amber-400' : 'bg-white dark:bg-slate-900 border-transparent text-slate-500'} ${executionType === 'Munfarid' ? 'cursor-not-allowed' : ''}`}
                             >
                                 {isMasbuq ? t.common.yes : t.common.no}
                             </button>
@@ -200,16 +200,16 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
 
                         <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t.tracker.weather.title}</p>
-                            <div className="flex gap-1 p-1 bg-slate-200/50 dark:bg-slate-900 rounded-xl">
+                            <div className="flex gap-1 p-1 bg-slate-200/50 dark:bg-slate-900 rounded-2xl">
                                 <button
                                     onClick={() => setWeatherCondition('Cerah')}
-                                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${weatherCondition === 'Cerah' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
+                                    className={`flex-1 py-1.5 rounded-2xl text-[10px] font-black uppercase transition-all ${weatherCondition === 'Cerah' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
                                 >
                                     {t.tracker.weather.clear}
                                 </button>
                                 <button
                                     onClick={() => setWeatherCondition('Hujan')}
-                                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${weatherCondition === 'Hujan' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
+                                    className={`flex-1 py-1.5 rounded-2xl text-[10px] font-black uppercase transition-all ${weatherCondition === 'Hujan' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
                                 >
                                     {t.tracker.weather.rainy}
                                 </button>
@@ -221,7 +221,7 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                         <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-2xl border border-amber-200 dark:border-amber-900 animate-in zoom-in-95 duration-200 relative">
                             <button
                                 onClick={() => setShowMasbuqPicker(false)}
-                                className="absolute top-2 right-2 p-1 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg text-amber-700 dark:text-amber-400 transition-colors"
+                                className="absolute top-2 right-2 p-1 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-2xl text-amber-700 dark:text-amber-400 transition-colors"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -254,14 +254,14 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                                         setExecutionType('Munfarid');
                                         setWeatherCondition('Hujan');
                                     }}
-                                    className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all group ${!isForgotMarking ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-500 shadow-sm shadow-amber-500/10' : 'bg-white dark:bg-slate-900 border-transparent text-slate-400'}`}
+                                    className={`flex items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all group ${!isForgotMarking ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-500 shadow-sm shadow-amber-500/10' : 'bg-white dark:bg-slate-900 border-transparent text-slate-400'}`}
                                 >
                                     <Clock className={`w-4 h-4 transition-transform ${!isForgotMarking ? 'text-amber-600 scale-110' : 'text-slate-400 group-hover:scale-105'}`} />
                                     <span className={`text-[10px] font-black uppercase tracking-tight ${!isForgotMarking ? 'text-amber-800 dark:text-amber-400' : 'text-slate-500'}`}>{t.tracker.status.late}</span>
                                 </button>
                                 <button
                                     onClick={() => setIsForgotMarking(true)}
-                                    className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all group ${isForgotMarking ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-500 shadow-sm shadow-emerald-500/10' : 'bg-white dark:bg-slate-900 border-transparent text-slate-400'}`}
+                                    className={`flex items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all group ${isForgotMarking ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-500 shadow-sm shadow-emerald-500/10' : 'bg-white dark:bg-slate-900 border-transparent text-slate-400'}`}
                                 >
                                     <CheckCircle className={`w-4 h-4 transition-transform ${isForgotMarking ? 'text-emerald-600 scale-110' : 'text-slate-400 group-hover:scale-105'}`} />
                                     <span className={`text-[10px] font-black uppercase tracking-tight ${isForgotMarking ? 'text-emerald-800 dark:text-emerald-400' : 'text-slate-500'}`}>{t.tracker.forgotMarking}</span>
@@ -285,9 +285,9 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                                     <button
                                         onClick={() => setHasQobliyah(!hasQobliyah)}
                                         onDoubleClick={() => { setHasQobliyah(true); setIsSunnahExpanded(false); }}
-                                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${hasQobliyah ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm' : 'bg-transparent border-transparent text-slate-400'}`}
+                                        className={`flex items-center gap-3 p-3 rounded-2xl border-2 transition-all ${hasQobliyah ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm' : 'bg-transparent border-transparent text-slate-400'}`}
                                     >
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasQobliyah ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                                        <div className={`w-8 h-8 rounded-2xl flex items-center justify-center ${hasQobliyah ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
                                             <SunMedium className="w-4 h-4" />
                                         </div>
                                         <span className="text-[10px] font-black uppercase text-left leading-tight">{t.tracker.qobliyah}</span>
@@ -304,14 +304,14 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                                             setIsSunnahExpanded(false);
                                         }}
                                         disabled={pendingLatePrayer.name === 'Subuh' || pendingLatePrayer.name === 'Ashar'}
-                                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${pendingLatePrayer.name === 'Subuh' || pendingLatePrayer.name === 'Ashar'
+                                        className={`flex items-center gap-3 p-3 rounded-2xl border-2 transition-all ${pendingLatePrayer.name === 'Subuh' || pendingLatePrayer.name === 'Ashar'
                                             ? 'opacity-50 cursor-not-allowed bg-slate-100 dark:bg-slate-800/50 border-transparent text-slate-400'
                                             : hasBadiyah
                                                 ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm'
                                                 : 'bg-transparent border-transparent text-slate-400'
                                             }`}
                                     >
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pendingLatePrayer.name === 'Subuh' || pendingLatePrayer.name === 'Ashar'
+                                        <div className={`w-8 h-8 rounded-2xl flex items-center justify-center ${pendingLatePrayer.name === 'Subuh' || pendingLatePrayer.name === 'Ashar'
                                             ? 'bg-slate-200 dark:bg-slate-800 text-slate-400'
                                             : hasBadiyah
                                                 ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600'
@@ -325,9 +325,9 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                                     <button
                                         onClick={() => setHasDzikir(!hasDzikir)}
                                         onDoubleClick={() => { setHasDzikir(true); setIsSunnahExpanded(false); }}
-                                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${hasDzikir ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm' : 'bg-transparent border-transparent text-slate-400'}`}
+                                        className={`flex items-center gap-3 p-3 rounded-2xl border-2 transition-all ${hasDzikir ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm' : 'bg-transparent border-transparent text-slate-400'}`}
                                     >
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasDzikir ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                                        <div className={`w-8 h-8 rounded-2xl flex items-center justify-center ${hasDzikir ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
                                             <Info className="w-4 h-4" />
                                         </div>
                                         <span className="text-[10px] font-black uppercase text-left leading-tight">{t.tracker.dzikir}</span>
@@ -336,9 +336,9 @@ export const LatePrayerModal: React.FC<LatePrayerModalProps> = ({
                                     <button
                                         onClick={() => setHasDua(!hasDua)}
                                         onDoubleClick={() => { setHasDua(true); setIsSunnahExpanded(false); }}
-                                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${hasDua ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm' : 'bg-transparent border-transparent text-slate-400'}`}
+                                        className={`flex items-center gap-3 p-3 rounded-2xl border-2 transition-all ${hasDua ? 'bg-white dark:bg-slate-800 border-emerald-500 text-emerald-600 shadow-sm' : 'bg-transparent border-transparent text-slate-400'}`}
                                     >
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasDua ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                                        <div className={`w-8 h-8 rounded-2xl flex items-center justify-center ${hasDua ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
                                             <User className="w-4 h-4" />
                                         </div>
                                         <span className="text-[10px] font-black uppercase text-left leading-tight">{t.tracker.dua}</span>

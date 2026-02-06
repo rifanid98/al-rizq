@@ -31,12 +31,12 @@ export const SunnahTracker: React.FC<SunnahTrackerProps> = ({
             className="flex flex-col gap-4"
         >
             {/* Sub-tabs */}
-            <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+            <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === tab.id
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl text-xs font-bold transition-all ${activeTab === tab.id
                                 ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm'
                                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                             }`}

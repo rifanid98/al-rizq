@@ -143,7 +143,7 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
 
                     {/* Card Body */}
                     <div className={`
-                        relative overflow-hidden rounded-[2.5rem] shadow-2xl 
+                        relative overflow-hidden rounded-2xl shadow-2xl 
                         bg-gradient-to-br ${getGradientStyle()}
                         text-white
                         border border-white/20
@@ -218,7 +218,7 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
                                 {history && (
                                     <div className="mb-6 relative">
                                         <div className="absolute -top-3 -left-2 text-4xl text-white/20 font-serif">"</div>
-                                        <div className="relative bg-black/20 backdrop-blur-md rounded-xl p-4 border border-white/10 shadow-inner">
+                                        <div className="relative bg-black/20 backdrop-blur-md rounded-2xl p-4 border border-white/10 shadow-inner">
                                             <p className="text-xs italic leading-relaxed text-white/90">
                                                 {history}
                                             </p>
@@ -232,14 +232,14 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
                                     <div className="text-[10px] font-bold text-left uppercase text-white/50 tracking-widest pl-1 mb-1">
                                         Milestones
                                     </div>
-                                    <div className="bg-black/20 rounded-xl p-2 space-y-1 backdrop-blur-sm">
+                                    <div className="bg-black/20 rounded-2xl p-2 space-y-1 backdrop-blur-sm">
                                         {dynamicDef.tiers.map((t) => {
                                             const isAchieved = (currentCount >= t.requirement);
                                             return (
                                                 <div
                                                     key={t.tier}
                                                     className={`
-                                                        flex justify-between items-center text-xs p-2 rounded-lg transition-all
+                                                        flex justify-between items-center text-xs p-2 rounded-2xl transition-all
                                                         ${isAchieved ? 'bg-white/20 shadow-sm' : 'opacity-40'}
                                                     `}
                                                 >

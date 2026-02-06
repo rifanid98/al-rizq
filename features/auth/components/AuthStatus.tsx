@@ -19,7 +19,7 @@ export const AuthStatus: React.FC<AuthStatusProps> = ({ user, onLogout, googleBt
             <div className="hidden lg:block w-full px-2 mt-auto border-t border-slate-100 dark:border-slate-800 pt-6 space-y-6">
                 {user ? (
                     <div className="space-y-4">
-                        <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800">
+                        <div className="flex items-center gap-3 p-2 rounded-2xl bg-slate-50 dark:bg-slate-800">
                             <img src={user.picture} alt="Avatar" referrerPolicy="no-referrer" className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-700 shadow-sm" />
                             <div className="flex-1 min-w-0">
                                 <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{user.name}</p>
@@ -38,12 +38,12 @@ export const AuthStatus: React.FC<AuthStatusProps> = ({ user, onLogout, googleBt
                                 </div>
                             </div>
                         </div>
-                        <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-slate-400 hover:text-rose-600 rounded-xl text-xs font-medium transition-all">
+                        <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-slate-400 hover:text-rose-600 rounded-2xl text-xs font-medium transition-all">
                             <LogOut className="w-4 h-4" /> {t.common.logout}
                         </button>
                     </div>
                 ) : (
-                    <div className="p-5 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 flex flex-col items-center gap-4">
+                    <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col items-center gap-4">
                         <p className="text-[11px] font-black uppercase text-slate-400 text-center">Cloud Sync</p>
                         <div ref={googleBtnRef} className="w-10 h-10 rounded-full shadow-md overflow-hidden transform hover:scale-110 active:scale-95 transition-all flex items-center justify-center"></div>
                     </div>
