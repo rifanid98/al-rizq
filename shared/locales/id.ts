@@ -285,7 +285,10 @@ export const id = {
         week: "Minggu",
         previousWeek: "Minggu Sebelumnya",
         peekLastWeek: "Lihat Minggu Lalu",
-        showingPreviousWeek: "Menampilkan minggu terakhir bulan sebelumnya"
+        showingPreviousWeek: "Menampilkan minggu terakhir bulan sebelumnya",
+        dailyProgress: "Progress Harian",
+        last7Days: "7 hari terakhir",
+        weeklyTracking: "Pelacakan 4 minggu"
     },
     history: {
         title: "Riwayat",

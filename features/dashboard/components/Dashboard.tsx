@@ -165,15 +165,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
       </div>
 
       {
-        (logs.length === 0 && fastingLogs.length === 0 && activeTab !== 'sunnah') ? (
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-16 text-center border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
-              <TrendingUp className="w-10 h-10 text-slate-300 dark:text-slate-700" />
-            </div>
-            <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">{t.dashboard.noData}</h3>
-            <p className="text-slate-500 dark:text-slate-500 mt-2 font-medium">{t.dashboard.noDataSubtitle}</p>
-          </div>
-        ) : (
+        (
           <>
 
             {/* Floating Scroll CTA (Visible based on scroll) */}
@@ -351,10 +343,90 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                     </div>
                   </div>
 
+                  {/* Daily Progress Line Chart */}
+                  <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="p-3 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-2xl">
+                        <TrendingUp className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">{t.dashboard.dailyProgress || 'Daily Progress'}</h3>
+                        <p className="text-xs font-bold text-slate-500 dark:text-slate-400">{t.dashboard.last7Days || 'Last 7 days tracking'}</p>
+                      </div>
+                    </div>
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                          data={(() => {
+                            const days: { name: string; date: string; dhuhaRakaat: number; quranPages: number; salawatCount: number }[] = [];
+                            const now = new Date();
+
+                            for (let i = 6; i >= 0; i--) {
+                              const date = new Date(now);
+                              date.setDate(date.getDate() - i);
+                              const dateStr = date.toISOString().split('T')[0];
+
+                              // Dhuha rakaat for the day
+                              const dhuhaLog = sunnahPrayerLogs.find(l => l.date === dateStr && l.prayerId === 'dhuha' && l.isCompleted);
+                              const dhuhaRakaat = dhuhaLog?.rakaat || 0;
+
+                              // Quran pages (tilawah) for the day
+                              const tilawahLog = dailyHabitLogs.find(l => l.date === dateStr && l.habitId === 'tilawah');
+                              const quranPages = typeof tilawahLog?.value === 'number' ? tilawahLog.value : 0;
+
+                              // Salawat count for the day
+                              const salawatLog = dailyHabitLogs.find(l => l.date === dateStr && l.habitId === 'shalawat');
+                              const salawatCount = typeof salawatLog?.value === 'number' ? salawatLog.value : 0;
+
+                              days.push({
+                                name: date.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { weekday: 'short' }),
+                                date: dateStr,
+                                dhuhaRakaat,
+                                quranPages,
+                                salawatCount
+                              });
+                            }
+
+                            return days;
+                          })()}
+                          margin={{ top: 5, right: 20, left: -20, bottom: 0 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#1e293b' : '#e2e8f0'} />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: isDark ? '#64748b' : '#94a3b8' }} dy={10} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: isDark ? '#64748b' : '#94a3b8' }} />
+                          <Tooltip
+                            cursor={{ stroke: isDark ? '#334155' : '#cbd5e1', strokeWidth: 2 }}
+                            contentStyle={{
+                              backgroundColor: isDark ? '#0f172a' : '#fff',
+                              border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
+                              borderRadius: '16px',
+                              fontWeight: 700,
+                              fontSize: '11px',
+                              boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
+                            }}
+                            itemStyle={{ padding: '2px 0' }}
+                          />
+                          <Legend iconType="circle" wrapperStyle={{ paddingTop: '10px', fontSize: '11px', fontWeight: 700 }} />
+                          <Line type="monotone" dataKey="dhuhaRakaat" name={t.sunnah?.prayers?.dhuha?.name || 'Dhuha'} stroke="#f97316" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                          <Line type="monotone" dataKey="quranPages" name={t.sunnah?.habits?.tilawah?.name || 'Quran'} stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                          <Line type="monotone" dataKey="salawatCount" name={t.sunnah?.habits?.shalawat?.name || 'Salawat'} stroke="#ec4899" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
                   {/* Monthly Progress Chart */}
                   <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">{t.dashboard.monthlyProgress || 'Monthly Progress'}</h3>
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 rounded-2xl">
+                          <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">{t.dashboard.monthlyProgress || 'Monthly Progress'}</h3>
+                          <p className="text-xs font-bold text-slate-500 dark:text-slate-400">{t.dashboard.weeklyTracking || '4 weeks tracking'}</p>
+                        </div>
+                      </div>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setWeekOffset(prev => prev - 1)}
@@ -388,8 +460,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                       <button
                         onClick={() => setIsPeekEnabled(!isPeekEnabled)}
                         className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all ${isPeekEnabled
-                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
+                          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
                           }`}
                       >
                         <SunMedium className="w-3 h-3" />
@@ -415,7 +487,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                             const baseDate = new Date(currentWeekStart);
                             baseDate.setDate(baseDate.getDate() + (weekOffset * 4 * 7) + (isPeekEnabled ? -7 : 0));
 
-                            const weeks: { name: string; dzikir: number; sunnah: number; habits: number; dateRange: string; isPeekWeek: boolean; }[] = [];
+                            const weeks: { name: string; dzikir: number; sunnah: number; habits: number; dhuhaRakaat: number; quranPages: number; salawatCount: number; dateRange: string; isPeekWeek: boolean; }[] = [];
 
                             for (let w = 0; w < 4; w++) {
                               const weekStart = new Date(baseDate);
@@ -426,12 +498,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                               let dzikirCount = 0;
                               let sunnahCount = 0;
                               let habitsCount = 0;
+                              let dhuhaRakaat = 0;
+                              let quranPages = 0;
+                              let salawatCount = 0;
 
                               for (let d = new Date(weekStart); d <= weekEnd; d.setDate(d.getDate() + 1)) {
                                 const dateStr = d.toISOString().split('T')[0];
                                 dzikirCount += dzikirLogs.filter(l => l.date === dateStr && l.isCompleted).length;
                                 sunnahCount += sunnahPrayerLogs.filter(l => l.date === dateStr && l.isCompleted).length;
                                 habitsCount += dailyHabitLogs.filter(l => l.date === dateStr && (l.value === true || (typeof l.value === 'number' && l.value > 0))).length;
+
+                                // Dhuha rakaat
+                                const dhuhaLog = sunnahPrayerLogs.find(l => l.date === dateStr && l.prayerId === 'dhuha' && l.isCompleted);
+                                dhuhaRakaat += dhuhaLog?.rakaat || 0;
+
+                                // Quran pages
+                                const tilawahLog = dailyHabitLogs.find(l => l.date === dateStr && l.habitId === 'tilawah');
+                                quranPages += typeof tilawahLog?.value === 'number' ? tilawahLog.value : 0;
+
+                                // Salawat count
+                                const shalawatLog = dailyHabitLogs.find(l => l.date === dateStr && l.habitId === 'shalawat');
+                                salawatCount += typeof shalawatLog?.value === 'number' ? shalawatLog.value : 0;
                               }
 
                               const formatDate = (d: Date) => `${d.getDate()}/${d.getMonth() + 1}`;
@@ -441,6 +528,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                                 dzikir: dzikirCount,
                                 sunnah: sunnahCount,
                                 habits: habitsCount,
+                                dhuhaRakaat,
+                                quranPages,
+                                salawatCount,
                                 dateRange: `${formatDate(weekStart)}-${formatDate(weekEnd)}`,
                                 isPeekWeek
                               });
@@ -475,6 +565,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                           <Line type="monotone" dataKey="dzikir" name={t.tabs.dzikir} stroke="#f59e0b" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
                           <Line type="monotone" dataKey="sunnah" name={t.sunnah.prayers.title} stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
                           <Line type="monotone" dataKey="habits" name={t.sunnah.habits.title} stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                          <Line type="monotone" dataKey="dhuhaRakaat" name={`${t.sunnah?.prayers?.dhuha?.name || 'Dhuha'} (Rak)`} stroke="#ef4444" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, strokeWidth: 2 }} activeDot={{ r: 5 }} />
+                          <Line type="monotone" dataKey="quranPages" name={`${t.sunnah?.habits?.tilawah?.name || 'Quran'} (Pg)`} stroke="#06b6d4" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, strokeWidth: 2 }} activeDot={{ r: 5 }} />
+                          <Line type="monotone" dataKey="salawatCount" name={`${t.sunnah?.habits?.shalawat?.name || 'Salawat'} (x)`} stroke="#ec4899" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, strokeWidth: 2 }} activeDot={{ r: 5 }} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>

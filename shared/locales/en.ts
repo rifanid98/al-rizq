@@ -284,7 +284,10 @@ export const en = {
         week: "Week",
         previousWeek: "Previous Week",
         peekLastWeek: "Peek Last Week",
-        showingPreviousWeek: "Showing last week of previous month"
+        showingPreviousWeek: "Showing last week of previous month",
+        dailyProgress: "Daily Progress",
+        last7Days: "Last 7 days tracking",
+        weeklyTracking: "4 weeks tracking"
     },
     history: {
         title: "History",
