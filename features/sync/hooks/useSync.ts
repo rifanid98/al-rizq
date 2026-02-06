@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { PrayerLog, AppSettings, FastingLog, DzikirLog } from '../../../shared/types';
-import { uploadToCloud, downloadFromCloud } from '../services/syncService';
+import { uploadToCloud, downloadFromCloud, deleteCloudData } from '../services/syncService';
 import { STORAGE_KEYS } from '../../../shared/constants';
 
 export const useSync = (userEmail: string | undefined) => {
@@ -151,5 +151,24 @@ export const useSync = (userEmail: string | undefined) => {
         return null;
     }, [backupSource, userEmail, clearBackup]);
 
-    return { isSyncing, setIsSyncing, hasBackup, setHasBackup, backupSource, setBackupSource, handleUpload, handleDownload, handleRevert, clearBackup };
+    const handleDeleteCloudData = useCallback(async () => {
+        if (!userEmail) return;
+        if (!window.confirm('PERINGATAN: Semua data Anda di cloud akan dihapus secara permanen. Data lokal Anda tidak akan terpengaruh. Lanjutkan?')) return;
+
+        setIsSyncing(true);
+        try {
+            await deleteCloudData(userEmail);
+            localStorage.removeItem(STORAGE_KEYS.LAST_UPDATED);
+            localStorage.removeItem(STORAGE_KEYS.LAST_SYNC);
+            alert('Data cloud berhasil dihapus.');
+        } catch (err) {
+            console.error('Failed to delete cloud data:', err);
+            alert('Gagal menghapus data cloud. Silakan coba lagi.');
+            throw err;
+        } finally {
+            setIsSyncing(false);
+        }
+    }, [userEmail]);
+
+    return { isSyncing, setIsSyncing, hasBackup, setHasBackup, backupSource, setBackupSource, handleUpload, handleDownload, handleRevert, clearBackup, handleDeleteCloudData };
 };

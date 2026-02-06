@@ -84,7 +84,7 @@ const App: React.FC = () => {
   const { logs, setLogs, logPrayer, deleteLog, clearLogs: clearPrayerLogs } = usePrayerLogs();
   const { fastingLogs, clearFastingLogs } = useFastingLogs();
   const { logs: dzikirLogs, clearLogs: clearDzikirLogs } = useDzikir();
-  const { isSyncing, handleUpload, handleDownload, hasBackup, handleRevert } = useSync(user?.email);
+  const { isSyncing, handleUpload, handleDownload, hasBackup, handleRevert, handleDeleteCloudData } = useSync(user?.email);
 
   const gamification = useGamification(logs, fastingLogs, dzikirLogs, gamificationConfig, ramadhanConfig, qadhaConfig);
 
@@ -588,7 +588,7 @@ const App: React.FC = () => {
           logs, setLogs, logPrayer, deleteLog, clearPrayerLogs,
           fastingLogs, clearFastingLogs,
           dzikirLogs, clearDzikirLogs,
-          isSyncing, handleUpload, handleDownload, hasBackup, handleRevert,
+          isSyncing, handleUpload, handleDownload, hasBackup, handleRevert, handleDeleteCloudData,
           gamification,
           activeTab, setActiveTab,
           isSearching, setIsSearching,
@@ -661,7 +661,7 @@ const AppContent: React.FC<any> = (props) => {
     logs, setLogs, logPrayer, deleteLog, clearPrayerLogs,
     fastingLogs, clearFastingLogs,
     dzikirLogs, clearDzikirLogs,
-    isSyncing, handleUpload, handleDownload, hasBackup, handleRevert,
+    isSyncing, handleUpload, handleDownload, hasBackup, handleRevert, handleDeleteCloudData,
     gamification,
     activeTab, setActiveTab,
     isSearching, setIsSearching,
@@ -1280,6 +1280,7 @@ const AppContent: React.FC<any> = (props) => {
             onUpload={handleUpload}
             onDownload={handleDownload}
             onRevert={handleRevert}
+            onDeleteCloudData={handleDeleteCloudData}
             onLogout={logout}
             onCycleTheme={cycleTheme}
             onToggleBg={() => setShowPrayerBg(!showPrayerBg)}

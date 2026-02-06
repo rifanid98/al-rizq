@@ -1,6 +1,6 @@
 import { PrayerLog, AppSettings, FastingLog, DzikirLog } from '../../../shared/types';
 import { STORAGE_KEYS } from '../../../shared/constants';
-import { supabaseAdmin as supabase } from '../../../shared/services/supabaseClient';
+import { supabase } from '../../../shared/services/supabaseClient';
 
 // ============================================
 // Helper: Get or Create User
@@ -11,18 +11,18 @@ const getOrCreateUserId = async (email: string, name?: string, picture?: string)
         .from('users')
         .select('id')
         .eq('email', email)
-        .single();
+        .maybeSingle();
 
     if (existingUser) return existingUser.id;
 
-    // Create new user
     const { data: newUser, error } = await supabase
         .from('users')
         .insert({ email, name, picture })
         .select('id')
-        .single();
+        .maybeSingle();
 
     if (error) throw new Error('Failed to create user: ' + error.message);
+    if (!newUser) throw new Error('Failed to create user: No data returned');
     return newUser.id;
 };
 
@@ -407,12 +407,11 @@ export const downloadFromCloud = async (email: string): Promise<{
     last_updated: number
 } | null> => {
     try {
-        // Get user ID
         const { data: user } = await supabase
             .from('users')
             .select('id')
             .eq('email', email)
-            .single();
+            .maybeSingle();
 
         if (!user) {
             // Fallback to legacy table
@@ -457,13 +456,15 @@ const downloadFromCloudLegacy = async (email: string): Promise<{
         .from('user_backups')
         .select('logs, last_updated')
         .eq('email', email)
-        .single();
+        .maybeSingle();
 
     if (error) {
         if (error.code === 'PGRST116') return null;
         console.error('Supabase Download Error:', error);
         throw new Error('Gagal mengunduh data dari cloud.');
     }
+
+    if (!data) return null;
 
     let logs: PrayerLog[] = [];
     let settings: any = {};
@@ -497,4 +498,22 @@ export const shouldAutoSync = (): boolean => {
 
     const msPerHour = 60 * 60 * 1000;
     return Date.now() - parseInt(lastSync) > msPerHour;
+};
+
+// ============================================
+// Delete Functions
+// ============================================
+
+export const deleteCloudData = async (email: string): Promise<void> => {
+    // 1. Delete from legacy backup table
+    await supabase
+        .from('user_backups')
+        .delete()
+        .eq('email', email);
+
+    // 2. Delete from new schema (cascades logs, settings, etc.)
+    await supabase
+        .from('users')
+        .delete()
+        .eq('email', email);
 };

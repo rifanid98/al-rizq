@@ -43,6 +43,7 @@ interface SettingsProps {
     onUpload: (logs: PrayerLog[], settings: AppSettings, fastingLogs: FastingLog[], dzikirLogs: any[]) => Promise<void>;
     onDownload: () => Promise<any>;
     onRevert: (logs: PrayerLog[]) => Promise<any>;
+    onDeleteCloudData: () => Promise<void>;
     onLogout: () => void;
     onCycleTheme: () => void;
     onToggleBg: () => void;
@@ -83,6 +84,7 @@ export const Settings: React.FC<SettingsProps> = ({
     onUpload,
     onDownload,
     onRevert,
+    onDeleteCloudData,
     onLogout,
     onCycleTheme,
     onToggleBg,
@@ -295,6 +297,18 @@ export const Settings: React.FC<SettingsProps> = ({
                             >
                                 <RotateCcw className="w-5 h-5" />
                                 <span className="text-xs font-black uppercase tracking-widest">{t.settings.sync.revert}</span>
+                            </Button>
+                        )}
+
+                        {user && (
+                            <Button
+                                variant="ghost"
+                                disabled={isSyncing}
+                                onClick={onDeleteCloudData}
+                                className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-slate-400 py-3 flex items-center justify-center gap-2 mt-4 hover:text-rose-500 hover:border-rose-500 transition-all opacity-50 hover:opacity-100"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">{language === 'id' ? 'Hapus Data Cloud' : 'Delete Cloud Data'}</span>
                             </Button>
                         )}
                     </div>
