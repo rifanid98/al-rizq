@@ -7,10 +7,11 @@ interface StarAnimation {
     targetX: number;
     targetY: number;
     count: number;
+    points: number;
 }
 
 interface StarAnimationContextType {
-    triggerAnimation: (rect: DOMRect, count?: number) => void;
+    triggerAnimation: (rect: DOMRect | null, points?: number) => void;
     registerTarget: (ref: React.RefObject<HTMLElement>) => void;
     animations: StarAnimation[];
     removeAnimation: (id: string) => void;
@@ -33,7 +34,7 @@ export const StarAnimationProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const lastTriggerTime = useRef<number>(0);
 
-    const triggerAnimation = useCallback((_startRect?: DOMRect | null, count: number = 5) => {
+    const triggerAnimation = useCallback((_startRect?: DOMRect | null, points: number = 5) => {
         const now = Date.now();
         if (now - lastTriggerTime.current < 300) return; // Reduced cooldown for better interactive feel
         lastTriggerTime.current = now;
@@ -52,13 +53,17 @@ export const StarAnimationProvider: React.FC<{ children: React.ReactNode }> = ({
 
         const id = Date.now().toString() + Math.random();
 
+        // Calculate star count based on points (1 star per 5 points, min 1, max 10)
+        const count = Math.min(10, Math.max(1, Math.ceil(points / 5)));
+
         setAnimations(prev => [...prev, {
             id,
             startX,
             startY,
             targetX,
             targetY,
-            count
+            count,
+            points
         }]);
     }, []);
 

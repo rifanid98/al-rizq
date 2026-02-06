@@ -93,13 +93,110 @@ const SingleStar: React.FC<SingleStarProps> = ({ startX, startY, targetX, target
     );
 };
 
+// Floating points text component
+interface PointsFloaterProps {
+    points: number;
+    startX: number;
+    startY: number;
+    onComplete: () => void;
+}
+
+const PointsFloater: React.FC<PointsFloaterProps> = ({ points, startX, startY, onComplete }) => {
+    const [style, setStyle] = useState<React.CSSProperties>({
+        position: 'fixed',
+        left: startX,
+        top: startY - 30,
+        transform: 'translate(-50%, -50%) scale(0.8)',
+        opacity: 0,
+        zIndex: 10000,
+        transition: 'none',
+        pointerEvents: 'none',
+    });
+
+    useEffect(() => {
+        // Phase 1: Fade in quickly
+        const timer1 = setTimeout(() => {
+            setStyle({
+                position: 'fixed',
+                left: startX,
+                top: startY - 50,
+                transform: 'translate(-50%, -50%) scale(1)',
+                opacity: 1,
+                zIndex: 10000,
+                transition: 'all 150ms ease-out',
+                pointerEvents: 'none',
+            });
+        }, 20);
+
+        // Phase 2: Hold briefly then float up and fade out
+        const timer2 = setTimeout(() => {
+            setStyle(prev => ({
+                ...prev,
+                top: startY - 100,
+                opacity: 0,
+                transition: 'all 600ms ease-out',
+            }));
+        }, 500);
+
+        // Cleanup
+        const timer3 = setTimeout(() => {
+            onComplete();
+        }, 1200);
+
+        return () => {
+            clearTimeout(timer1);
+            clearTimeout(timer2);
+            clearTimeout(timer3);
+        };
+    }, [startX, startY, onComplete]);
+
+    return (
+        <div
+            style={style}
+            className="font-black text-2xl text-amber-500 dark:text-amber-400"
+        >
+            <span className="drop-shadow-[0_2px_8px_rgba(245,158,11,0.5)]">
+                +{points}
+            </span>
+        </div>
+    );
+};
+
 export const StarAnimationLayer: React.FC = () => {
     const { animations, removeAnimation } = useStarAnimation();
+    const [completedFloaters, setCompletedFloaters] = useState<Set<string>>(new Set());
+
+    const handleFloaterComplete = (id: string) => {
+        setCompletedFloaters(prev => new Set([...prev, id]));
+    };
+
+    // Clean up completed floaters when animation is removed
+    useEffect(() => {
+        const animIds = new Set(animations.map(a => a.id));
+        setCompletedFloaters(prev => {
+            const next = new Set<string>();
+            prev.forEach(id => {
+                if (animIds.has(id)) next.add(id);
+            });
+            return next;
+        });
+    }, [animations]);
 
     return (
         <>
             {animations.map(anim => (
                 <div key={anim.id}>
+                    {/* Floating points text */}
+                    {!completedFloaters.has(anim.id) && (
+                        <PointsFloater
+                            points={anim.points}
+                            startX={anim.startX}
+                            startY={anim.startY}
+                            onComplete={() => handleFloaterComplete(anim.id)}
+                        />
+                    )}
+
+                    {/* Stars */}
                     {Array.from({ length: anim.count }).map((_, i) => (
                         <SingleStar
                             key={`${anim.id}-${i}`}

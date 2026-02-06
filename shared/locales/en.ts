@@ -480,6 +480,7 @@ export const en = {
             pointsFasting: "Fasting Points",
             pointsDzikir: "Dhikr Points",
             pts: "Pts",
+            pointsConfig: "Points Configuration",
             keys: {
                 mosque: "Mosque",
                 jamaah: "Jamaah",

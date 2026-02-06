@@ -50,9 +50,9 @@ export const DailyHabitTracker: React.FC<DailyHabitTrackerProps> = ({
             const points = gamificationConfig?.points?.dailyHabit?.[habitId as keyof typeof gamificationConfig.points.dailyHabit] || 5;
             triggerAnimation(null, points);
 
-            // Bonus +10 when all daily habits are completed
             if (completedCount === habits.length - 1) {
-                setTimeout(() => triggerAnimation(null, 10), 300);
+                const bonusPoints = gamificationConfig?.points?.dailyHabit?.bonusPerfect || 10;
+                setTimeout(() => triggerAnimation(null, bonusPoints), 300);
             }
         }
 

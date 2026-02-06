@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { GamificationConfig } from '../../../shared/types';
+import { GamificationConfig, DEFAULT_GAMIFICATION_CONFIG } from '../../../shared/types';
 import { useLanguage } from '../../../shared/hooks/useLanguage';
-import { Star, ChevronDown, Utensils, Sparkles } from 'lucide-react';
+import { Star, ChevronDown, Utensils, Sparkles, Sun, Heart, Settings } from 'lucide-react';
 
 interface GamificationSettingsProps {
     config: GamificationConfig;
@@ -12,6 +12,7 @@ interface GamificationSettingsProps {
 export const GamificationSettings: React.FC<GamificationSettingsProps> = ({ config, onChange }) => {
     const { t } = useLanguage();
     const [openSection, setOpenSection] = React.useState<string | null>(null);
+    const [openSubSection, setOpenSubSection] = React.useState<string | null>(null);
 
     const handleChange = (section: keyof GamificationConfig['points'], key: string, value: number) => {
         const newConfig = {
@@ -19,7 +20,7 @@ export const GamificationSettings: React.FC<GamificationSettingsProps> = ({ conf
             points: {
                 ...config.points,
                 [section]: {
-                    ...config.points[section],
+                    ...(config.points[section] || DEFAULT_GAMIFICATION_CONFIG.points[section]),
                     [key]: isNaN(value) ? 0 : value
                 }
             }
@@ -37,6 +38,60 @@ export const GamificationSettings: React.FC<GamificationSettingsProps> = ({ conf
 
     const toggleAccordion = (section: string) => {
         setOpenSection(openSection === section ? null : section);
+    };
+
+    const toggleSubAccordion = (section: string) => {
+        setOpenSubSection(openSubSection === section ? null : section);
+    };
+
+    const renderPointsSection = (
+        sectionKey: keyof GamificationConfig['points'],
+        title: string,
+        icon: React.ReactNode,
+        iconBgColor: string,
+        focusColor: string,
+        gridCols: string = 'grid-cols-2'
+    ) => {
+        // Merge saved config with defaults to ensure all keys are present
+        const defaultSection = DEFAULT_GAMIFICATION_CONFIG.points[sectionKey];
+        const savedSection = config.points[sectionKey];
+        const sectionData = defaultSection ? { ...defaultSection, ...savedSection } : savedSection;
+        if (!sectionData) return null;
+
+        return (
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <button
+                    onClick={() => toggleSubAccordion(sectionKey)}
+                    className="w-full flex items-center justify-between p-3 text-left font-bold text-slate-700 dark:text-slate-200"
+                >
+                    <span className="flex items-center gap-3 text-xs uppercase tracking-wider">
+                        <div className={`w-7 h-7 ${iconBgColor} rounded-lg flex items-center justify-center shrink-0`}>
+                            {icon}
+                        </div>
+                        {title}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 mr-1 text-slate-400 transition-transform ${openSubSection === sectionKey ? 'rotate-180' : ''}`} />
+                </button>
+                <div className={`transition-all duration-300 ${openSubSection === sectionKey ? 'max-h-[800px] border-t border-slate-100 dark:border-slate-700 p-4' : 'max-h-0 overflow-hidden'}`}>
+                    <div className={`grid ${gridCols} gap-3`}>
+                        {Object.keys(sectionData).map((key) => (
+                            <div key={key} className="flex flex-col gap-1">
+                                <label className="text-[11px] font-bold text-slate-500 capitalize">{getKeyName(key)}</label>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="number"
+                                        value={(sectionData as any)[key]}
+                                        onChange={(e) => handleChange(sectionKey, key, parseInt(e.target.value))}
+                                        className={`w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-bold ${focusColor} outline-none transition-all`}
+                                    />
+                                    <span className="text-[10px] font-black text-amber-500">{t.gamification.settings.pts}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     return (
@@ -66,104 +121,58 @@ export const GamificationSettings: React.FC<GamificationSettingsProps> = ({ conf
 
             {config.enabled && (
                 <div className="space-y-3 pt-2">
-                    {/* Prayer Points Accordion */}
+                    {/* Points Configuration Parent Accordion */}
                     <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
                         <button
-                            onClick={() => toggleAccordion('prayer')}
+                            onClick={() => toggleAccordion('points')}
                             className="w-full flex items-center justify-between p-3 text-left font-bold text-slate-700 dark:text-slate-200"
                         >
                             <span className="flex items-center gap-3 text-xs uppercase tracking-wider">
-                                <div className="w-8 h-8 bg-amber-100 dark:bg-amber-950/50 rounded-xl flex items-center justify-center text-amber-600 shrink-0">
-                                    <Star className="w-4 h-4" />
+                                <div className="w-8 h-8 bg-gradient-to-br from-amber-100 to-emerald-100 dark:from-amber-950/50 dark:to-emerald-950/50 rounded-xl flex items-center justify-center text-amber-600 shrink-0">
+                                    <Settings className="w-4 h-4" />
                                 </div>
-                                {t.gamification.settings.pointsPrayer}
+                                {t.gamification?.settings?.pointsConfig || 'Points Configuration'}
                             </span>
-                            <ChevronDown className={`w-4 h-4 mr-1 text-slate-400 transition-transform ${openSection === 'prayer' ? 'rotate-180' : ''}`} />
+                            <ChevronDown className={`w-4 h-4 mr-1 text-slate-400 transition-transform ${openSection === 'points' ? 'rotate-180' : ''}`} />
                         </button>
-                        <div className={`transition-all duration-300 ${openSection === 'prayer' ? 'max-h-[800px] border-t border-slate-100 dark:border-slate-700 p-5' : 'max-h-0 overflow-hidden'}`}>
-                            <div className="grid grid-cols-3 max-[574px]:grid-cols-2 gap-4">
-                                {Object.keys(config.points.prayer).map((key) => (
-                                    <div key={key} className="flex flex-col gap-1">
-                                        <label className="text-xs font-bold text-slate-500 capitalize">{getKeyName(key)}</label>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="number"
-                                                value={(config.points.prayer as any)[key]}
-                                                onChange={(e) => handleChange('prayer', key, parseInt(e.target.value))}
-                                                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-bold focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all"
-                                            />
-                                            <span className="text-xs font-black text-amber-500">{t.gamification.settings.pts}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Fasting Points Accordion */}
-                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                        <button
-                            onClick={() => toggleAccordion('fasting')}
-                            className="w-full flex items-center justify-between p-3 text-left font-bold text-slate-700 dark:text-slate-200"
-                        >
-                            <span className="flex items-center gap-3 text-xs uppercase tracking-wider">
-                                <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-950/50 rounded-xl flex items-center justify-center text-emerald-600 shrink-0">
-                                    <Utensils className="w-4 h-4" />
-                                </div>
-                                {t.gamification.settings.pointsFasting}
-                            </span>
-                            <ChevronDown className={`w-4 h-4 mr-1 text-slate-400 transition-transform ${openSection === 'fasting' ? 'rotate-180' : ''}`} />
-                        </button>
-                        <div className={`transition-all duration-300 ${openSection === 'fasting' ? 'max-h-[500px] border-t border-slate-100 dark:border-slate-700 p-5' : 'max-h-0 overflow-hidden'}`}>
-                            <div className="grid grid-cols-2 gap-4">
-                                {Object.keys(config.points.fasting).map((key) => (
-                                    <div key={key} className="flex flex-col gap-1">
-                                        <label className="text-xs font-bold text-slate-500 capitalize">{getKeyName(key)}</label>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="number"
-                                                value={(config.points.fasting as any)[key]}
-                                                onChange={(e) => handleChange('fasting', key, parseInt(e.target.value))}
-                                                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-bold focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                                            />
-                                            <span className="text-xs font-black text-amber-500">{t.gamification.settings.pts}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Dzikir Points Accordion */}
-                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                        <button
-                            onClick={() => toggleAccordion('dzikir')}
-                            className="w-full flex items-center justify-between p-3 text-left font-bold text-slate-700 dark:text-slate-200"
-                        >
-                            <span className="flex items-center gap-3 text-xs uppercase tracking-wider">
-                                <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-950/50 rounded-xl flex items-center justify-center text-indigo-600 shrink-0">
-                                    <Sparkles className="w-4 h-4" />
-                                </div>
-                                {t.gamification.settings.pointsDzikir}
-                            </span>
-                            <ChevronDown className={`w-4 h-4 mr-1 text-slate-400 transition-transform ${openSection === 'dzikir' ? 'rotate-180' : ''}`} />
-                        </button>
-                        <div className={`transition-all duration-300 ${openSection === 'dzikir' ? 'max-h-[500px] border-t border-slate-100 dark:border-slate-700 p-5' : 'max-h-0 overflow-hidden'}`}>
-                            <div className="grid grid-cols-2 gap-4">
-                                {Object.keys(config.points.dzikir).map((key) => (
-                                    <div key={key} className="flex flex-col gap-1">
-                                        <label className="text-xs font-bold text-slate-500 capitalize">{getKeyName(key)}</label>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="number"
-                                                value={(config.points.dzikir as any)[key]}
-                                                onChange={(e) => handleChange('dzikir', key, parseInt(e.target.value))}
-                                                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
-                                            />
-                                            <span className="text-xs font-black text-amber-500">{t.gamification.settings.pts}</span>
-                                        </div>
-                                    </div>
-                                ))}
+                        <div className={`transition-all duration-300 ${openSection === 'points' ? 'max-h-[2000px] border-t border-slate-100 dark:border-slate-700 p-3' : 'max-h-0 overflow-hidden'}`}>
+                            <div className="space-y-2">
+                                {renderPointsSection(
+                                    'prayer',
+                                    t.gamification.settings.pointsPrayer,
+                                    <Star className="w-3.5 h-3.5 text-amber-600" />,
+                                    'bg-amber-100 dark:bg-amber-950/50',
+                                    'focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500',
+                                    'grid-cols-3 max-[574px]:grid-cols-2'
+                                )}
+                                {renderPointsSection(
+                                    'fasting',
+                                    t.gamification.settings.pointsFasting,
+                                    <Utensils className="w-3.5 h-3.5 text-emerald-600" />,
+                                    'bg-emerald-100 dark:bg-emerald-950/50',
+                                    'focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500'
+                                )}
+                                {renderPointsSection(
+                                    'dzikir',
+                                    t.gamification.settings.pointsDzikir,
+                                    <Sparkles className="w-3.5 h-3.5 text-indigo-600" />,
+                                    'bg-indigo-100 dark:bg-indigo-950/50',
+                                    'focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500'
+                                )}
+                                {renderPointsSection(
+                                    'sunnahPrayer',
+                                    t.gamification?.settings?.pointsSunnahPrayer || 'Sunnah Prayer Points',
+                                    <Sun className="w-3.5 h-3.5 text-amber-600" />,
+                                    'bg-amber-100 dark:bg-amber-950/50',
+                                    'focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500'
+                                )}
+                                {renderPointsSection(
+                                    'dailyHabit',
+                                    t.gamification?.settings?.pointsDailyHabit || 'Daily Habit Points',
+                                    <Heart className="w-3.5 h-3.5 text-rose-600" />,
+                                    'bg-rose-100 dark:bg-rose-950/50',
+                                    'focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500'
+                                )}
                             </div>
                         </div>
                     </div>

@@ -481,6 +481,7 @@ export const id = {
             pointsFasting: "Poin Puasa",
             pointsDzikir: "Poin Dzikir",
             pts: "Pts",
+            pointsConfig: "Konfigurasi Poin",
             keys: {
                 mosque: "Masjid",
                 jamaah: "Jamaah",

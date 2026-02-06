@@ -189,9 +189,10 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
                                             const perItemPoints = Math.ceil(points / list.length) || 2;
                                             triggerAnimation(null, perItemPoints);
 
-                                            // Bonus +10 when all dzikir are completed
+                                            // Bonus when all dzikir are completed
                                             if (completedItems.length === list.length - 1) {
-                                                setTimeout(() => triggerAnimation(null, 10), 300);
+                                                const bonusPoints = gamificationConfig?.points?.dzikir?.bonusPerfect || 10;
+                                                setTimeout(() => triggerAnimation(null, bonusPoints), 300);
                                             }
                                         }
                                         toggleItem(item.id, activeCategory.id, date);
@@ -216,9 +217,10 @@ export const DzikirTracker: React.FC<DzikirTrackerProps> = ({ gamificationConfig
                                             const perItemPoints = Math.ceil(points / list.length) || 2;
                                             triggerAnimation(null, perItemPoints);
 
-                                            // Bonus +10 when all dzikir are completed
+                                            // Bonus when all dzikir are completed
                                             if (completedItems.length === list.length - 1) {
-                                                setTimeout(() => triggerAnimation(null, 10), 300);
+                                                const bonusPoints = gamificationConfig?.points?.dzikir?.bonusPerfect || 10;
+                                                setTimeout(() => triggerAnimation(null, bonusPoints), 300);
                                             }
                                         }
                                         toggleItem(item.id, activeCategory.id, date);

@@ -204,17 +204,20 @@ export interface GamificationPointsConfig {
   };
   dzikir: {
     morningEvening: number; // Pagi/Petang
+    bonusPerfect: number; // Bonus when all dzikir completed
   };
   sunnahPrayer: {
     dhuha: number;
     tahajjud: number;
     witir: number;
+    bonusPerfect: number; // Bonus when all sunnah prayers completed
   };
   dailyHabit: {
     tilawah: number;
     shalawat: number;
     sedekah: number;
     doaTidur: number;
+    bonusPerfect: number; // Bonus when all daily habits completed
   };
 }
 
@@ -248,17 +251,20 @@ export const DEFAULT_GAMIFICATION_CONFIG: GamificationConfig = {
     },
     dzikir: {
       morningEvening: 10,
+      bonusPerfect: 10,
     },
     sunnahPrayer: {
       dhuha: 15,
       tahajjud: 20,
       witir: 10,
+      bonusPerfect: 10,
     },
     dailyHabit: {
       tilawah: 10,
       shalawat: 5,
       sedekah: 10,
       doaTidur: 5,
+      bonusPerfect: 10,
     },
   },
 };
