@@ -406,7 +406,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                             }}
                             itemStyle={{ padding: '2px 0' }}
                           />
-                          <Legend iconType="circle" wrapperStyle={{ paddingTop: '10px', fontSize: '11px', fontWeight: 700 }} />
+                          <Legend iconType="circle" align="center" wrapperStyle={{ paddingTop: '10px', fontSize: '11px', fontWeight: 700, width: 'calc(100% + 20px)', marginLeft: '0px', left: '0px', textAlign: 'center' }} />
                           <Line type="monotone" dataKey="dhuhaRakaat" name={t.sunnah?.prayers?.dhuha?.name || 'Dhuha'} stroke="#f97316" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
                           <Line type="monotone" dataKey="quranPages" name={t.sunnah?.habits?.tilawah?.name || 'Quran'} stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
                           <Line type="monotone" dataKey="salawatCount" name={t.sunnah?.habits?.shalawat?.name || 'Salawat'} stroke="#ec4899" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
@@ -561,7 +561,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                               return label;
                             }}
                           />
-                          <Legend iconType="circle" wrapperStyle={{ paddingTop: '10px', fontSize: '11px', fontWeight: 700 }} />
+                          <Legend iconType="circle" align="center" wrapperStyle={{ paddingTop: '10px', fontSize: '11px', fontWeight: 700, width: 'calc(100% + 20px)', marginLeft: '0px', left: '0px', textAlign: 'center' }} />
                           <Line type="monotone" dataKey="dzikir" name={t.tabs.dzikir} stroke="#f59e0b" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
                           <Line type="monotone" dataKey="sunnah" name={t.sunnah.prayers.title} stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
                           <Line type="monotone" dataKey="habits" name={t.sunnah.habits.title} stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
@@ -731,7 +731,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ logs, fastingLogs, dzikirL
                               }}
                               itemStyle={{ padding: '2px 0' }}
                             />
-                            <Legend iconType="circle" wrapperStyle={{ paddingTop: '10px', fontSize: '11px', fontWeight: 700 }} />
+                            <Legend iconType="circle" align="center" wrapperStyle={{ paddingTop: '10px', fontSize: '11px', fontWeight: 700, width: 'calc(100% + 20px)', marginLeft: '0px', left: '0px', textAlign: 'center' }} />
                             <Line type="monotone" dataKey="ontime" name={t.tracker.status.ontime} stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
                             <Line type="monotone" dataKey="late" name={t.tracker.status.late} stroke="#f59e0b" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
                             <Line type="monotone" dataKey="sunnah" name={t.dashboard.sunnahStats} stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
