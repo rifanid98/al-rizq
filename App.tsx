@@ -745,7 +745,7 @@ const AppContent: React.FC<any> = (props) => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col lg:flex-row font-sans selection:bg-emerald-100 dark:selection:bg-emerald-900 selection:text-emerald-900 dark:selection:text-emerald-100">
       {/* Sidebar for Desktop, Bottom Nav for Mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 z-[100] lg:sticky lg:top-0 lg:w-72 lg:flex-shrink-0 lg:h-screen lg:z-50 bg-white dark:bg-slate-900 border-t lg:border-t-0 lg:border-r border-slate-100 dark:border-slate-800 p-6 lg:p-6 flex flex-col items-center gap-8 rounded-t-[2.5rem] lg:rounded-none shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.15)] lg:shadow-none">
+      <nav className="fixed bottom-0 left-0 right-0 z-[100] lg:sticky lg:top-0 lg:w-72 lg:flex-shrink-0 lg:h-screen lg:z-50 bg-white dark:bg-slate-900 border-t lg:border-t-0 lg:border-r border-slate-100 dark:border-slate-800 p-6 lg:p-6 flex flex-col items-center gap-8 rounded-none shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.15)] lg:shadow-none">
         <div className="hidden lg:flex items-center gap-3 self-start px-2">
           <img src={isDark ? "logo-dark.png" : "logo-light.png"} alt="Al-Rizq Logo" className="w-10 h-10 rounded-2xl transition-all duration-300" />
           <h1 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">AL-RIZQ <span className="text-emerald-600">APP</span></h1>
