@@ -49,4 +49,4 @@ export const STORAGE_KEYS = {
   DAILY_HABIT_LOGS: 'al_rizq_daily_habit_logs'
 };
 
-export const CURRENT_VERSION = '1.2.25';
+export const CURRENT_VERSION = '1.3.0';
