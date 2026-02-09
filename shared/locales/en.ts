@@ -113,6 +113,20 @@ export const en = {
             clearData: "Clear All Data",
             clearDataDesc: "Delete all prayer, fasting, dzikir logs and settings from this device",
             confirmClear: "Are you sure you want to delete ALL data? This action cannot be undone."
+        },
+        security: {
+            title: "Security",
+            subtitle: "PIN Lock & Protection",
+            enablePin: "Enable PIN",
+            disablePin: "Disable PIN",
+            changePin: "Change PIN",
+            setupPin: "Setup PIN",
+            pinRequired: "PIN Required",
+            enterPin: "Enter your 5-digit PIN to continue",
+            correctPin: "Correct PIN",
+            incorrectPin: "Incorrect PIN",
+            pinLocked: "Settings Locked",
+            unlockToEdit: "Unlock to change points configuration"
         }
     },
     dzikir: {

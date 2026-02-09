@@ -79,7 +79,8 @@ const App: React.FC = () => {
     themeMode, cycleTheme, isDark, showPrayerBg, setShowPrayerBg, prayerBgOpacity, setPrayerBgOpacity,
     locationHistory, getCurrentSettings, restoreSettings, addToHistory, language, setLanguage,
     prayerTimeCorrection, setPrayerTimeCorrection, setLastKnownLocation, lastKnownLocation, removeHistory,
-    gamificationConfig, setGamificationConfig, ramadhanConfig, qadhaConfig, nadzarConfig
+    gamificationConfig, setGamificationConfig, ramadhanConfig, qadhaConfig, nadzarConfig,
+    security, setSecurity
   } = useSettings();
   const {
     schedule, setSchedule, yesterdaySchedule, setYesterdaySchedule, isLoading, error, setError, getSchedule, getYesterdaySchedule
@@ -641,7 +642,8 @@ const App: React.FC = () => {
           lastDateRef, sliderTimerRef, resetSliderTimer,
           filteredHistoryLogs, totalPages, currentHistoryLogs, applyCorrection, adjustedSchedule, adjustedYesterdaySchedule,
           handlePrayerClick, handleEditPrayer, confirmLatePrayer, confirmCloudReplace, keepLocalData, t,
-          mobileSettingsRef, desktopSettingsRef, mobileAchievementsRef, desktopAchievementsRef
+          mobileSettingsRef, desktopSettingsRef, mobileAchievementsRef, desktopAchievementsRef,
+          security, setSecurity
         }}
       />
       <StarAnimationLayer />
@@ -715,7 +717,8 @@ const AppContent: React.FC<any> = (props) => {
     lastDateRef, sliderTimerRef, resetSliderTimer,
     filteredHistoryLogs, totalPages, currentHistoryLogs, applyCorrection, adjustedSchedule, adjustedYesterdaySchedule,
     handlePrayerClick, handleEditPrayer, confirmLatePrayer, confirmCloudReplace, keepLocalData, t,
-    mobileSettingsRef, desktopSettingsRef, mobileAchievementsRef, desktopAchievementsRef
+    mobileSettingsRef, desktopSettingsRef, mobileAchievementsRef, desktopAchievementsRef,
+    security, setSecurity
   } = props;
 
   const { registerTarget } = useStarAnimation();
@@ -1325,6 +1328,8 @@ const AppContent: React.FC<any> = (props) => {
             gamificationConfig={gamificationConfig}
             gamification={gamification}
             onGamificationConfigChange={setGamificationConfig}
+            security={security}
+            onSecurityChange={setSecurity}
           />
         )}
       </main>

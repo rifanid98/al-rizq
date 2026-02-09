@@ -1,18 +1,24 @@
 
 import React from 'react';
-import { GamificationConfig, DEFAULT_GAMIFICATION_CONFIG } from '../../../shared/types';
+import { GamificationConfig, DEFAULT_GAMIFICATION_CONFIG, SecurityConfig } from '../../../shared/types';
 import { useLanguage } from '../../../shared/hooks/useLanguage';
-import { Star, ChevronDown, Utensils, Sparkles, Sun, Heart, Settings } from 'lucide-react';
+import { Star, ChevronDown, Utensils, Sparkles, Sun, Heart, Settings, Lock, Unlock } from 'lucide-react';
+import { PinLock } from '../../../shared/components/ui/PinLock';
 
 interface GamificationSettingsProps {
     config: GamificationConfig;
     onChange: (config: GamificationConfig) => void;
+    security?: SecurityConfig;
 }
 
-export const GamificationSettings: React.FC<GamificationSettingsProps> = ({ config, onChange }) => {
+export const GamificationSettings: React.FC<GamificationSettingsProps> = ({ config, onChange, security }) => {
     const { t } = useLanguage();
     const [openSection, setOpenSection] = React.useState<string | null>(null);
     const [openSubSection, setOpenSubSection] = React.useState<string | null>(null);
+    const [isUnlocked, setIsUnlocked] = React.useState(false);
+    const [showPinEntry, setShowPinEntry] = React.useState(false);
+
+    const isLocked = security?.isPinEnabled && !isUnlocked;
 
     const handleChange = (section: keyof GamificationConfig['points'], key: string, value: number) => {
         const newConfig = {
@@ -37,6 +43,16 @@ export const GamificationSettings: React.FC<GamificationSettingsProps> = ({ conf
     };
 
     const toggleAccordion = (section: string) => {
+        if (section === 'points' && isLocked) {
+            setShowPinEntry(true);
+            return;
+        }
+
+        // If we are closing the points section, lock it back
+        if (section === 'points' && openSection === 'points') {
+            setIsUnlocked(false);
+        }
+
         setOpenSection(openSection === section ? null : section);
     };
 
@@ -96,6 +112,20 @@ export const GamificationSettings: React.FC<GamificationSettingsProps> = ({ conf
 
     return (
         <div className="space-y-6">
+            {showPinEntry && security && (
+                <PinLock
+                    savedPin={security.pin}
+                    onSuccess={() => {
+                        setIsUnlocked(true);
+                        setShowPinEntry(false);
+                        setOpenSection('points');
+                    }}
+                    onCancel={() => setShowPinEntry(false)}
+                    title={t.settings.security.pinRequired}
+                    description={t.settings.security.unlockToEdit}
+                />
+            )}
+
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-amber-100 dark:bg-amber-950/50 rounded-2xl flex items-center justify-center text-amber-600">
@@ -122,7 +152,7 @@ export const GamificationSettings: React.FC<GamificationSettingsProps> = ({ conf
             {config.enabled && (
                 <div className="space-y-3 pt-2">
                     {/* Points Configuration Parent Accordion */}
-                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden relative">
                         <button
                             onClick={() => toggleAccordion('points')}
                             className="w-full flex items-center justify-between p-3 text-left font-bold text-slate-700 dark:text-slate-200"
@@ -132,6 +162,12 @@ export const GamificationSettings: React.FC<GamificationSettingsProps> = ({ conf
                                     <Settings className="w-4 h-4" />
                                 </div>
                                 {t.gamification?.settings?.pointsConfig || 'Points Configuration'}
+                                {security?.isPinEnabled && (
+                                    <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${isUnlocked ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
+                                        {isUnlocked ? <Unlock className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
+                                        {isUnlocked ? t.settings.security.correctPin : t.settings.security.pinLocked}
+                                    </span>
+                                )}
                             </span>
                             <ChevronDown className={`w-4 h-4 mr-1 text-slate-400 transition-transform ${openSection === 'points' ? 'rotate-180' : ''}`} />
                         </button>

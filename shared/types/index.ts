@@ -73,6 +73,11 @@ export interface UserProfile {
   picture: string;
 }
 
+export interface SecurityConfig {
+  pin: string;
+  isPinEnabled: boolean;
+}
+
 export interface AppSettings {
   theme: 'light' | 'dark' | 'system';
   locationHistory: string[];
@@ -95,6 +100,7 @@ export interface AppSettings {
     startDate: string;
     endDate: string;
   };
+  security?: SecurityConfig;
 }
 
 export interface AppState {

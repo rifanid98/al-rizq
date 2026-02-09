@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '../../../shared/hooks/useLanguage';
 import { STORAGE_KEYS } from '../../../shared/constants';
-import { AppSettings, Language, DEFAULT_GAMIFICATION_CONFIG } from '../../../shared/types';
+import { AppSettings, Language, DEFAULT_GAMIFICATION_CONFIG, SecurityConfig } from '../../../shared/types';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -60,6 +60,15 @@ export const useSettings = () => {
         }
     });
 
+    const [security, setSecurity] = useState<SecurityConfig>(() => {
+        try {
+            const saved = localStorage.getItem('al_rizq_security');
+            return saved ? JSON.parse(saved) : { pin: '', isPinEnabled: false };
+        } catch (e) {
+            return { pin: '', isPinEnabled: false };
+        }
+    });
+
     const [nadzarConfig, setNadzarConfig] = useState<any>(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEYS.NADZAR_CONFIG);
@@ -113,8 +122,6 @@ export const useSettings = () => {
         };
     }, []);
 
-
-
     useEffect(() => {
         localStorage.setItem('al_rizq_show_bg', JSON.stringify(showPrayerBg));
     }, [showPrayerBg]);
@@ -140,6 +147,12 @@ export const useSettings = () => {
     }, [gamificationConfig]);
 
     useEffect(() => {
+        if (security) {
+            localStorage.setItem('al_rizq_security', JSON.stringify(security));
+        }
+    }, [security]);
+
+    useEffect(() => {
         const handleReset = () => {
             setThemeMode('system');
             setShowPrayerBg(true);
@@ -148,6 +161,7 @@ export const useSettings = () => {
             setLocationHistory([]);
             setLastKnownLocation('');
             setGamificationConfig(DEFAULT_GAMIFICATION_CONFIG);
+            setSecurity({ pin: '', isPinEnabled: false });
             setRamadhanConfig(undefined);
             setQadhaConfig(undefined);
             setNadzarConfig(undefined);
@@ -192,9 +206,10 @@ export const useSettings = () => {
             ramadhanConfig: ramadhan ? JSON.parse(ramadhan) : undefined,
             prayerTimeCorrection: prayerTimeCorrection,
             lastKnownLocation: lastKnownLocation,
-            gamificationConfig: gamificationConfig
+            gamificationConfig: gamificationConfig,
+            security: security
         };
-    }, [themeMode, locationHistory, showPrayerBg, prayerBgOpacity, language, prayerTimeCorrection, lastKnownLocation, gamificationConfig, nadzarConfig, qadhaConfig, ramadhanConfig]);
+    }, [themeMode, locationHistory, showPrayerBg, prayerBgOpacity, language, prayerTimeCorrection, lastKnownLocation, gamificationConfig, security, nadzarConfig, qadhaConfig, ramadhanConfig]);
 
     const restoreSettings = useCallback((s: AppSettings) => {
         if (s.theme) setThemeMode(s.theme);
@@ -204,6 +219,7 @@ export const useSettings = () => {
         if (s.prayerTimeCorrection) setPrayerTimeCorrection(s.prayerTimeCorrection as any);
         if (s.lastKnownLocation) setLastKnownLocation(s.lastKnownLocation);
         if (s.gamificationConfig) setGamificationConfig(s.gamificationConfig);
+        if (s.security) setSecurity(s.security);
 
         if (s.nadzarConfig) {
             localStorage.setItem(STORAGE_KEYS.NADZAR_CONFIG, JSON.stringify(s.nadzarConfig));
@@ -232,6 +248,7 @@ export const useSettings = () => {
         if (s.prayerTimeCorrection) localStorage.setItem('al_rizq_prayer_correction', JSON.stringify(s.prayerTimeCorrection));
         if (s.lastKnownLocation) localStorage.setItem(STORAGE_KEYS.LAST_KNOWN_LOCATION, s.lastKnownLocation);
         if (s.gamificationConfig) localStorage.setItem(STORAGE_KEYS.GAMIFICATION_CONFIG, JSON.stringify(s.gamificationConfig));
+        if (s.security) localStorage.setItem('al_rizq_security', JSON.stringify(s.security));
     }, []);
 
     const [isResolvedDark, setIsResolvedDark] = useState<boolean>(() => {
@@ -277,9 +294,13 @@ export const useSettings = () => {
         removeHistory,
         gamificationConfig,
         setGamificationConfig,
+        security,
+        setSecurity,
         ramadhanConfig,
         qadhaConfig,
         nadzarConfig,
-        setNadzarConfig
+        setNadzarConfig,
+        setRamadhanConfig,
+        setQadhaConfig
     };
 };

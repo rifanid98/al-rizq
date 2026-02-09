@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../../../shared/components/ui/Button';
 import { GamificationSettings } from '../../gamification/components/GamificationSettings';
+import { PinLock } from '../../../shared/components/ui/PinLock';
 import { UserBadge } from '../../../shared/types/gamification';
 import { PrayerLog, AppSettings, UserProfile, FastingLog, GamificationConfig, DEFAULT_GAMIFICATION_CONFIG, SunnahPrayerLog, DailyHabitLog } from '../../../shared/types';
 import { STORAGE_KEYS, CURRENT_VERSION } from '../../../shared/constants';
@@ -71,6 +72,8 @@ interface SettingsProps {
         badges: UserBadge[];
     };
     onGamificationConfigChange?: (config: GamificationConfig) => void;
+    security?: AppSettings['security'];
+    onSecurityChange?: (security: AppSettings['security']) => void;
 }
 
 export const Settings: React.FC<SettingsProps> = ({
@@ -102,14 +105,48 @@ export const Settings: React.FC<SettingsProps> = ({
     onClearData,
     gamificationConfig,
     gamification,
-    onGamificationConfigChange
+    onGamificationConfigChange,
+    security,
+    onSecurityChange
 }) => {
     const { t, language, setLanguage } = useLanguage();
     const [showIndividualCorrection, setShowIndividualCorrection] = React.useState(false);
     const [isCorrectionEditingEnabled, setIsCorrectionEditingEnabled] = React.useState(false);
+    const [showPinSetup, setShowPinSetup] = React.useState(false);
+    const [isSetupMode, setIsSetupMode] = React.useState(false);
+
+    const handlePinSetup = () => {
+        setIsSetupMode(true);
+        setShowPinSetup(true);
+    };
+
+    const handlePinVerify = () => {
+        setIsSetupMode(false);
+        setShowPinSetup(true);
+    };
 
     return (
         <div className="space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {showPinSetup && onSecurityChange && (
+                <PinLock
+                    setupMode={isSetupMode}
+                    savedPin={isSetupMode ? undefined : security?.pin}
+                    onSuccess={(newPin) => {
+                        if (isSetupMode && newPin) {
+                            onSecurityChange({ pin: newPin, isPinEnabled: true });
+                        } else if (!isSetupMode) {
+                            // Verified for disabling or changing
+                            if (security?.isPinEnabled) {
+                                onSecurityChange({ pin: security.pin, isPinEnabled: false });
+                            }
+                        }
+                        setShowPinSetup(false);
+                    }}
+                    onCancel={() => setShowPinSetup(false)}
+                    title={isSetupMode ? t.settings.security.setupPin : t.settings.security.pinRequired}
+                    description={isSetupMode ? undefined : t.settings.security.enterPin}
+                />
+            )}
 
 
             {/* Profile Section */}
@@ -174,6 +211,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     <GamificationSettings
                         config={gamificationConfig || DEFAULT_GAMIFICATION_CONFIG}
                         onChange={onGamificationConfigChange || (() => { })}
+                        security={security}
                     />
                 </section>
 
@@ -330,6 +368,69 @@ export const Settings: React.FC<SettingsProps> = ({
                                 <Trash2 className="w-4 h-4" />
                                 <span className="text-[10px] font-black uppercase tracking-widest">{language === 'id' ? 'Hapus Data Cloud' : 'Delete Cloud Data'}</span>
                             </Button>
+                        )}
+                    </div>
+                </section>
+
+                {/* Security Section */}
+                <section className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="w-12 h-12 bg-rose-100 dark:bg-rose-950/50 rounded-2xl flex items-center justify-center text-rose-600">
+                            <ShieldCheck className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h4 className="text-lg font-black text-slate-800 dark:text-slate-100">{t.settings.security.title}</h4>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">{t.settings.security.subtitle}</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6 flex-1">
+                        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-sm">
+                                    <Lock className={`w-5 h-5 ${security?.isPinEnabled ? 'text-emerald-500' : 'text-slate-400'}`} />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-black text-slate-800 dark:text-slate-100">{t.settings.security.enablePin}</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                        {security?.isPinEnabled ? t.common.yes : t.common.no}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    if (security?.isPinEnabled) {
+                                        // Disable requires pin verification
+                                        setIsSetupMode(false);
+                                        setShowPinSetup(true);
+                                    } else {
+                                        handlePinSetup();
+                                    }
+                                }}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${security?.isPinEnabled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
+                            >
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${security?.isPinEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                            </button>
+                        </div>
+
+                        {security?.isPinEnabled && (
+                            <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 animate-in fade-in slide-in-from-top-1">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-sm">
+                                        <Unlock className="w-5 h-5 text-amber-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-black text-slate-800 dark:text-slate-100">{t.settings.security.changePin}</p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.settings.security.setupPin}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handlePinSetup}
+                                    className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-black uppercase tracking-widest text-emerald-600 hover:border-emerald-500 transition-all shadow-sm"
+                                >
+                                    {t.common.change}
+                                </button>
+                            </div>
                         )}
                     </div>
                 </section>

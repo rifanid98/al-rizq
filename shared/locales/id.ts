@@ -114,6 +114,20 @@ export const id = {
             clearData: "Hapus Semua Data",
             clearDataDesc: "Hapus semua log sholat, puasa, dzikir, dan pengaturan dari perangkat ini",
             confirmClear: "Apakah Anda yakin ingin menghapus SEMUA data? Tindakan ini tidak dapat dibatalkan."
+        },
+        security: {
+            title: 'Keamanan',
+            subtitle: 'Kunci PIN & Proteksi',
+            enablePin: 'Aktifkan PIN',
+            disablePin: 'Nonaktifkan PIN',
+            changePin: 'Ganti PIN',
+            setupPin: 'Atur PIN',
+            pinRequired: 'PIN Diperlukan',
+            enterPin: 'Masukkan 4 digit PIN Anda untuk melanjutkan',
+            correctPin: 'PIN Benar',
+            incorrectPin: 'PIN Salah',
+            pinLocked: 'Pengaturan Terkunci',
+            unlockToEdit: 'Buka kunci untuk mengubah konfigurasi poin'
         }
     },
     dzikir: {
